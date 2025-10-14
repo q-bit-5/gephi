@@ -150,20 +150,6 @@ public class CopyOrMoveToWorkspaceSubItem extends BasicItem implements NodesMani
         currentGraphModel.getGraph().readLock();
         try {
             targetGraphModel.bridge().copyNodes(nodes);
-            Graph targetGraph = targetGraphModel.getGraph();
-
-            Graph visibleCurrentGraph = currentGraphModel.getGraphVisible();
-            List<Edge> edgesToRemove = new ArrayList<>();
-            for (Edge edge : targetGraph.getEdges()) {
-                if (!visibleCurrentGraph.hasEdge(edge.getId())) {
-                    edgesToRemove.add(edge);
-                }
-            }
-
-            if (!edgesToRemove.isEmpty()) {
-                targetGraph.removeAllEdges(edgesToRemove);
-            }
-
             return true;
         } catch (Exception e) {
             String error = NbBundle.getMessage(CopyOrMoveToWorkspace.class,
