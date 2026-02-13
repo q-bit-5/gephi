@@ -82,8 +82,6 @@ import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 import org.w3c.dom.Element;
 import org.w3c.dom.Text;
-import org.w3c.dom.svg.SVGLocatable;
-import org.w3c.dom.svg.SVGRect;
 
 /**
  * @author Yudi Xue, Mathieu Bastian
@@ -319,7 +317,7 @@ public class NodeLabelRenderer implements Renderer {
             Element outlineElem = target.createElement("text");
             outlineElem.setAttribute("class", SVGUtils.idAsClassAttribute(node.getId()));
             outlineElem.setAttribute("x", String.valueOf(x));
-            outlineElem.setAttribute("y", String.valueOf(y));
+            outlineElem.setAttribute("y", String.valueOf(baselineY));
             outlineElem.setAttribute("style", "text-anchor: middle;");
             outlineElem.setAttribute("font-family", font.getFamily());
             outlineElem.setAttribute("font-size", String.valueOf(fontSize));
@@ -331,17 +329,12 @@ public class NodeLabelRenderer implements Renderer {
             outlineElem.setAttribute("stroke-opacity", String.valueOf(outlineColor.getAlpha() / 255f));
             outlineElem.appendChild(labelTextOutline);
             target.getTopElement(SVGTarget.TOP_NODE_LABELS_OUTLINE).appendChild(outlineElem);
-
-            //Trick to center text vertically on node:
-            //Better results with dominant-baseline: central, but the bbox is wrong.
-            SVGRect rect = ((SVGLocatable) outlineElem).getBBox();
-            outlineElem.setAttribute("y", String.valueOf(y + (rect != null ? rect.getHeight() / 4f : 0)));
         }
 
         Element labelElem = target.createElement("text");
         labelElem.setAttribute("class", SVGUtils.idAsClassAttribute(node.getId()));
         labelElem.setAttribute("x", String.valueOf(x));
-        labelElem.setAttribute("y", String.valueOf(y));
+        labelElem.setAttribute("y", String.valueOf(baselineY));
         labelElem.setAttribute("style", "text-anchor: middle;");
         labelElem.setAttribute("fill", target.toHexString(color));
         labelElem.setAttribute("fill-opacity", String.valueOf(color.getAlpha() / 255f));
@@ -350,20 +343,20 @@ public class NodeLabelRenderer implements Renderer {
         labelElem.appendChild(labelText);
         target.getTopElement(SVGTarget.TOP_NODE_LABELS).appendChild(labelElem);
 
-        //Trick to center text vertically on node:
-        //Better results with dominant-baseline: central, but the bbox is wrong.
-        SVGRect rect = ((SVGLocatable) labelElem).getBBox();
-        labelElem.setAttribute("y", String.valueOf(y + (rect != null ? rect.getHeight() / 4f : 0)));
-
         //Box
         if (showBox) {
+            // Calculate box dimensions using font metrics to match G2D rendering
+            // Using ascent + descent ensures consistent box height across renderers
+            float textWidth = (float) bounds.getWidth();
+            float textHeight = ascent + descent;
+
             Element boxElem = target.createElement("rect");
             float strokeWidth = boxStrokeSize * target.getScaleRatio();
             float padding = strokeWidth + outlineSize * target.getScaleRatio();
-            boxElem.setAttribute("x", Float.toString(rect.getX() - padding / 2f));
-            boxElem.setAttribute("y", Float.toString(rect.getY() - padding / 2f));
-            boxElem.setAttribute("width", Float.toString(rect.getWidth() + padding));
-            boxElem.setAttribute("height", Float.toString(rect.getHeight() + padding));
+            boxElem.setAttribute("x", Float.toString(x - textWidth / 2f - padding / 2f));
+            boxElem.setAttribute("y", Float.toString(y - textHeight / 2f - padding / 2f));
+            boxElem.setAttribute("width", Float.toString(textWidth + padding));
+            boxElem.setAttribute("height", Float.toString(textHeight + padding));
             boxElem.setAttribute("fill", "none");
             boxElem.setAttribute("stroke", target.toHexString(boxColor));
             boxElem.setAttribute("stroke-opacity", String.valueOf(boxColor.getAlpha() / 255f));
@@ -464,7 +457,8 @@ public class NodeLabelRenderer implements Renderer {
             PreviewProperty.createProperty(this, PreviewProperty.NODE_LABEL_FONT, Font.class,
                 NbBundle.getMessage(NodeLabelRenderer.class, "NodeLabelRenderer.property.font.displayName"),
                 NbBundle.getMessage(NodeLabelRenderer.class, "NodeLabelRenderer.property.font.description"),
-                PreviewProperty.CATEGORY_NODE_LABELS, PreviewProperty.SHOW_NODE_LABELS, PreviewProperty.NODE_LABEL_CUSTOM_FONT).setValue(defaultFont),
+                PreviewProperty.CATEGORY_NODE_LABELS, PreviewProperty.SHOW_NODE_LABELS,
+                PreviewProperty.NODE_LABEL_CUSTOM_FONT).setValue(defaultFont),
             PreviewProperty.createProperty(this, PreviewProperty.NODE_LABEL_PROPORTIONAL_SIZE, Boolean.class,
                 NbBundle.getMessage(NodeLabelRenderer.class, "NodeLabelRenderer.property.proportionalSize.displayName"),
                 NbBundle.getMessage(NodeLabelRenderer.class, "NodeLabelRenderer.property.proportionalSize.description"),
