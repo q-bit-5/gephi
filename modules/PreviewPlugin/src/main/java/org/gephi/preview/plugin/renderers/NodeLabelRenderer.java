@@ -111,7 +111,6 @@ public class NodeLabelRenderer implements Renderer {
     protected final int defaultOutlineOpacity = 40;
     protected final boolean defaultShowBox = false;
     protected final DependantColor defaultBoxColor = new DependantColor(DependantColor.Mode.PARENT);
-    protected final float defaultBoxStrokeSize = 0.16f;
     protected final int defaultBoxOpacity = 100;
     //Font cache
     protected final Map<Integer, Font> fontCache = new HashMap<>();
@@ -223,18 +222,17 @@ public class NodeLabelRenderer implements Renderer {
         if (boxAlpha > 255) {
             boxAlpha = 255;
         }
-        float boxStrokeSize = showBox ? getBoxStrokeSize(properties, item) : 0f;
         boxColor = new Color(boxColor.getRed(), boxColor.getGreen(), boxColor.getBlue(), boxAlpha);
 
         if (target instanceof G2DTarget) {
             renderG2D((G2DTarget) target, label, x, y, fontSize, color, outlineSize, outlineColor, showBox,
-                boxColor, boxStrokeSize);
+                boxColor, borderWidth);
         } else if (target instanceof SVGTarget) {
             renderSVG((SVGTarget) target, node, label, x, y, fontSize, color, outlineSize, outlineColor, showBox,
-                boxColor, boxStrokeSize);
+                boxColor, borderWidth);
         } else if (target instanceof PDFTarget) {
             renderPDF((PDFTarget) target, node, label, x, y, fontSize, color, outlineSize, outlineColor, showBox,
-                boxColor, boxStrokeSize);
+                boxColor, borderWidth);
         }
     }
 
@@ -258,15 +256,6 @@ public class NodeLabelRenderer implements Renderer {
         return new CanvasSize(x - textWidth / 2f, y - textHeight / 2f, textWidth, textHeight);
     }
 
-    private float getBoxStrokeSize(PreviewProperties properties, Item item) {
-        if (properties.getBooleanValue(PreviewProperty.NODE_BORDER_FIXED) ||
-            !properties.getBooleanValue(PreviewProperty.NODE_LABEL_PROPORTIONAL_SIZE)) {
-            return properties.getFloatValue(PreviewProperty.NODE_BORDER_WIDTH);
-        } else {
-            return (float) item.getData(NODE_SIZE) * defaultBoxStrokeSize / 2f;
-        }
-    }
-
     public void renderG2D(G2DTarget target, String label, float x, float y, int fontSize, Color color,
                           float outlineSize, Color outlineColor, boolean showBox, Color boxColor, float boxStrokeSize) {
         Graphics2D graphics = target.getGraphics();
@@ -286,7 +275,6 @@ public class NodeLabelRenderer implements Renderer {
         if (showBox) {
             graphics.setStroke(new BasicStroke(boxStrokeSize, BasicStroke.CAP_ROUND, BasicStroke.JOIN_MITER));
             graphics.setColor(boxColor);
-            graphics.setStroke(new BasicStroke(boxThickness));
             Rectangle2D.Float rect = new Rectangle2D.Float();
             rect.setFrame(posX - (outlineSize + boxStrokeSize) / 2f,
                 y - (fm.getAscent() + fm.getDescent()) / 2f - (outlineSize + boxStrokeSize) / 2f,
