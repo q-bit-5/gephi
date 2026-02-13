@@ -142,13 +142,13 @@ public class ProcessorIssuesReportPanel extends javax.swing.JPanel {
     }
 
     public void initIcons() {
-        infoIcon = ImageUtilities.loadImageIcon("DesktopImport/info.png", false);
+        infoIcon = ImageUtilities.loadImageIcon("DesktopImport/info.svg", false);
         warningIcon =
-            ImageUtilities.loadImageIcon("DesktopImport/warning.gif", false);
+            ImageUtilities.loadImageIcon("DesktopImport/warning.svg", false);
         severeIcon =
-            ImageUtilities.loadImageIcon("DesktopImport/severe.png", false);
+            ImageUtilities.loadImageIcon("DesktopImport/severe.svg", false);
         criticalIcon =
-            ImageUtilities.loadImageIcon("DesktopImport/critical.png", false);
+            ImageUtilities.loadImageIcon("DesktopImport/critical.svg", false);
     }
 
     public void setData(Report report) {

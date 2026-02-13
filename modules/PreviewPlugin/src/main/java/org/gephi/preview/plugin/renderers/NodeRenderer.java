@@ -80,8 +80,6 @@ public class NodeRenderer implements Renderer {
     protected float defaultOpacity = 100f;
     protected boolean defaultPerNodeOpacity = false;
     protected boolean defaultFixedNodeBorder = true;
-    // Same as overview
-    protected float defaultBorderWidthFactor = 0.16f;
 
     @Override
     public void preProcess(PreviewModel previewModel) {
@@ -108,7 +106,7 @@ public class NodeRenderer implements Renderer {
         final PreviewProperties properties) {
         final float x = item.getData(NodeItem.X);
         final float y = item.getData(NodeItem.Y);
-        final float s = item.getData(NodeItem.SIZE);
+        final float s = SizeUtils.getNodeSize(item, properties);
         final float r = s / 2F;
         final int intS = Math.round(s);
         return new CanvasSize(
@@ -118,22 +116,14 @@ public class NodeRenderer implements Renderer {
             intS);
     }
 
-    private float getBorderWidth(PreviewProperties properties, float nodeSize) {
-        if (properties.getBooleanValue(PreviewProperty.NODE_BORDER_FIXED)) {
-            return properties.getFloatValue(PreviewProperty.NODE_BORDER_WIDTH);
-        } else {
-            return nodeSize * defaultBorderWidthFactor / 2f;
-        }
-    }
-
     public void renderG2D(Item item, G2DTarget target, PreviewProperties properties) {
         //Params
         Float x = item.getData(NodeItem.X);
         Float y = item.getData(NodeItem.Y);
-        Float size = item.getData(NodeItem.SIZE);
+        float size = SizeUtils.getNodeSize(item, properties);
         Color color = item.getData(NodeItem.COLOR);
         Color borderColor = ((DependantColor) properties.getValue(PreviewProperty.NODE_BORDER_COLOR)).getColor(color);
-        float borderSize = getBorderWidth(properties, size);
+        float borderSize = SizeUtils.getBorderWidth(properties, size);
 
         int alpha = properties.getBooleanValue(PreviewProperty.NODE_PER_NODE_OPACITY) ?
             color.getAlpha() :
@@ -183,10 +173,10 @@ public class NodeRenderer implements Renderer {
         //Params
         Float x = item.getData(NodeItem.X);
         Float y = item.getData(NodeItem.Y);
-        Float size = item.getData(NodeItem.SIZE);
+        float size = SizeUtils.getNodeSize(item, properties);
         Color color = item.getData(NodeItem.COLOR);
         Color borderColor = ((DependantColor) properties.getValue(PreviewProperty.NODE_BORDER_COLOR)).getColor(color);
-        float borderSize = getBorderWidth(properties, size);
+        float borderSize = SizeUtils.getBorderWidth(properties, size);
         float alpha = properties.getBooleanValue(PreviewProperty.NODE_PER_NODE_OPACITY) ?
             color.getAlpha() / 255f :
             properties.getFloatValue(PreviewProperty.NODE_OPACITY) / 100f;
@@ -234,10 +224,10 @@ public class NodeRenderer implements Renderer {
     public void renderPDF(Item item, PDFTarget target, PreviewProperties properties) {
         Float x = item.getData(NodeItem.X);
         Float y = item.getData(NodeItem.Y);
-        Float size = item.getData(NodeItem.SIZE);
+        float size = SizeUtils.getNodeSize(item, properties);
         Color color = item.getData(NodeItem.COLOR);
         Color borderColor = ((DependantColor) properties.getValue(PreviewProperty.NODE_BORDER_COLOR)).getColor(color);
-        float borderSize = getBorderWidth(properties, size);
+        float borderSize = SizeUtils.getBorderWidth(properties, size);
         float alpha = properties.getBooleanValue(PreviewProperty.NODE_PER_NODE_OPACITY) ?
             color.getAlpha() / 255f :
             properties.getFloatValue(PreviewProperty.NODE_OPACITY) / 100f;

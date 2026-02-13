@@ -61,6 +61,11 @@ public class BasicDependantColorPropertyEditor extends AbstractColorPropertyEdit
 
     @Override
     public String getAsText() {
+        return getAsSerializableText();
+    }
+
+    @Override
+    public String getAsSerializableText() {
         DependantColor c = (DependantColor) getValue();
         if (c.getMode().equals(DependantColor.Mode.CUSTOM)) {
             return toText(c.getMode().name(), c.getCustomColor() == null ? Color.BLACK : c.getCustomColor());
@@ -77,6 +82,8 @@ public class BasicDependantColorPropertyEditor extends AbstractColorPropertyEdit
             setValue(new DependantColor(DependantColor.Mode.PARENT));
         } else if (matchColorMode(s, DependantColor.Mode.DARKER.name().toLowerCase())) {
             setValue(new DependantColor(DependantColor.Mode.DARKER));
+        } else if (matchColorMode(s, DependantColor.Mode.LIGHTER.name().toLowerCase())) {
+            setValue(new DependantColor(DependantColor.Mode.LIGHTER));
         }
     }
 

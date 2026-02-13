@@ -69,9 +69,13 @@ public class PreviewProperty {
 
     //Constants global
     /**
-     * General <code>Boolean</code> property which indicates wheter the graph is directed
+     * General <code>Boolean</code> property which indicates whether the graph is directed
      */
     public static final String DIRECTED = "directed";
+    /**
+     * General <code>Float</code> property defining a global scale factor applied to all nodes sizes
+     */
+    public static final String NODE_SCALE_FACTOR = "node.scale.factor";
     /**
      * General <code>Color</code> property of the background color
      */
@@ -130,7 +134,7 @@ public class PreviewProperty {
     public static final String EDGE_CURVED = "edge.curved";
     /**
      * Edge <code>EdgeColor</code> property defining the edge color. It could be
-     * the source's color, the target's color, a mixed color, the edge's original
+     * the source's color, the target's color, a mixed color, the edge's self
      * color or a custom color.
      */
     public static final String EDGE_COLOR = "edge.color";
@@ -168,9 +172,19 @@ public class PreviewProperty {
      */
     public static final String SHOW_NODE_LABELS = "node.label.show";
     /**
+     * When <code>True</code>, uses the node label <code>Font</code>, and otherwise uses the font from the
+     * Visualization API.
+     */
+    public static final String NODE_LABEL_CUSTOM_FONT = "node.label.customFont";
+    /**
      * Node Label <code>Font</code> property defining node label's font.
      */
     public static final String NODE_LABEL_FONT = "node.label.font";
+
+    /**
+     * Node Label <code>Float</code> property defining a global scale factor applied to all node labels sizes.
+     */
+    public static final String NODE_LABEL_SCALE = "node.label.scale";
     /**
      * Node Label <code>Boolean</code> property defining whether to use node's size
      * in label size calculation.
@@ -178,7 +192,7 @@ public class PreviewProperty {
     public static final String NODE_LABEL_PROPORTIONAL_SIZE = "node.label.proportinalSize";
     /**
      * Node Label <code>DependantOriginalColor</code> property defining the color label.
-     * The color could either be the node's color, the label original color if it has any
+     * The color could either be the node's color, the label self color if it has any
      * or a custom color.
      */
     public static final String NODE_LABEL_COLOR = "node.label.color";
@@ -219,7 +233,7 @@ public class PreviewProperty {
     public static final String EDGE_LABEL_FONT = "edge.label.font";
     /**
      * Edge Label <code>DependantOriginalColor</code> property defining the color label.
-     * The color could either be the edge's color, the label original color if it has any
+     * The color could either be the edge's color, the label self color if it has any
      * or a custom color.
      */
     public static final String EDGE_LABEL_COLOR = "edge.label.color";

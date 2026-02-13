@@ -77,6 +77,7 @@ import org.gephi.preview.spi.ItemBuilder;
 import org.gephi.preview.spi.Renderer;
 import org.gephi.preview.types.DependantColor;
 import org.gephi.preview.types.DependantOriginalColor;
+import org.gephi.visualization.api.VisualizationModel;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 import org.w3c.dom.Element;
@@ -97,7 +98,8 @@ public class NodeLabelRenderer implements Renderer {
     public static final String NODE_Y = "node.y";
     public static final String FONT_SIZE = "node.label.fontSize";
     //Default values
-    protected final boolean defaultShowLabels = true;
+    protected final boolean defaultShowLabels = false;
+    protected final boolean defaultCustomFont = false;
     protected final Font defaultFont = new Font("Arial", Font.PLAIN, 12);
     protected final boolean defaultShorten = false;
     protected final DependantOriginalColor defaultColor =
@@ -112,7 +114,8 @@ public class NodeLabelRenderer implements Renderer {
     protected final float defaultBoxStrokeSize = 0.16f;
     protected final int defaultBoxOpacity = 100;
     //Font cache
-    protected Map<Integer, Font> fontCache;
+    protected final Map<Integer, Font> fontCache = new HashMap<>();
+    protected final FontRenderContext frc = new FontRenderContext(new AffineTransform(), true, true);
 
     @Override
     public void preProcess(PreviewModel previewModel) {
@@ -136,24 +139,40 @@ public class NodeLabelRenderer implements Renderer {
             Node node = (Node) item.getSource();
             Item nodeItem = previewModel.getItem(Item.NODE, node);
             item.setData(NODE_COLOR, nodeItem.getData(NodeItem.COLOR));
-            item.setData(NODE_SIZE, nodeItem.getData(NodeItem.SIZE));
+            item.setData(NODE_SIZE, SizeUtils.getNodeSize(nodeItem, properties) / 2f);
             item.setData(NODE_X, nodeItem.getData(NodeItem.X));
             item.setData(NODE_Y, nodeItem.getData(NodeItem.Y));
         }
 
-        //Calculate font size and cache fonts
-        fontCache = new HashMap<>();
+        // Get Viz model
+        final VisualizationModel vizModel = previewModel.getWorkspace().getLookup().lookup(VisualizationModel.class);
+
+        // Get font
         Font font = properties.getFontValue(PreviewProperty.NODE_LABEL_FONT);
+        if (!properties.getBooleanValue(PreviewProperty.NODE_LABEL_CUSTOM_FONT)) {
+            // Use font from visualization model for consistent font family and style with the graph view
+            if (vizModel != null && vizModel.getNodeLabelFont() != null) {
+                font = vizModel.getNodeLabelFont();
+            }
+        }
+
+        // TODO: Access those values directly from GraphRenderingOptions
+        float fitNodeLabelsToNodeSizeFactor = 0.05f;
+
+        //Calculate font size and cache fonts
         for (Item item : previewModel.getItems(Item.NODE_LABEL)) {
-            Float nodeSize = item.getData(NODE_SIZE);
-            Float fontSize = 1f;
-            if (item.getData(NodeLabelItem.SIZE) != null) {
-                fontSize = item.getData(NodeLabelItem.SIZE);
-            }
+            float nodeSize = item.getData(NODE_SIZE);
+            float fontSize = font.getSize() * properties.getFloatValue(PreviewProperty.NODE_LABEL_SCALE);
             if (properties.getBooleanValue(PreviewProperty.NODE_LABEL_PROPORTIONAL_SIZE)) {
-                fontSize *= nodeSize / 10f;
+                fontSize *= nodeSize * fitNodeLabelsToNodeSizeFactor;
+            } else {
+                // Add tiny bias (<1%) based on node size to prioritize labels of larger nodes in overlap detection
+                fontSize *= (1.0f + nodeSize * 0.00001f);
             }
-            fontSize *= font.getSize();
+            if (item.getData(NodeLabelItem.SIZE) != null) {
+                Float labelSize = item.getData(NodeLabelItem.SIZE);
+                fontSize *= (float) Math.sqrt(labelSize);
+            }
             Font labelFont = font.deriveFont(fontSize);
             fontCache.put(labelFont.getSize(), labelFont);
             item.setData(FONT_SIZE, labelFont.getSize());
@@ -180,7 +199,7 @@ public class NodeLabelRenderer implements Renderer {
 
         //Outline
         DependantColor outlineDependantColor = properties.getValue(PreviewProperty.NODE_LABEL_OUTLINE_COLOR);
-        Float outlineSize = properties.getFloatValue(PreviewProperty.NODE_LABEL_OUTLINE_SIZE);
+        float outlineSize = properties.getFloatValue(PreviewProperty.NODE_LABEL_OUTLINE_SIZE);
         outlineSize = outlineSize * (fontSize / 32f);
         int outlineAlpha = (int) ((properties.getFloatValue(PreviewProperty.NODE_LABEL_OUTLINE_OPACITY) / 100f) * 255f);
         if (outlineAlpha < 0) {
@@ -194,6 +213,7 @@ public class NodeLabelRenderer implements Renderer {
 
         //Box
         Boolean showBox = properties.getValue(PreviewProperty.NODE_LABEL_SHOW_BOX);
+        float borderWidth = SizeUtils.getBorderWidth(properties, item.getData(NODE_SIZE));
         DependantColor boxDependantColor = properties.getValue(PreviewProperty.NODE_LABEL_BOX_COLOR);
         Color boxColor = boxDependantColor.getColor(nodeColor);
         int boxAlpha = (int) ((properties.getFloatValue(PreviewProperty.NODE_LABEL_BOX_OPACITY) / 100f) * 255f);
@@ -231,8 +251,6 @@ public class NodeLabelRenderer implements Renderer {
         Integer fontSize = item.getData(FONT_SIZE);
 
         Font font = fontCache.get(fontSize);
-        AffineTransform affinetransform = new AffineTransform();
-        FontRenderContext frc = new FontRenderContext(affinetransform,true,true);
         String label = item.getData(NodeLabelItem.LABEL);
         float textWidth = (float) font.getStringBounds(label, frc).getWidth();
         float textHeight = (float) font.getStringBounds(label, frc).getHeight();
@@ -258,7 +276,9 @@ public class NodeLabelRenderer implements Renderer {
 
         FontMetrics fm = graphics.getFontMetrics();
         float posX = x - fm.stringWidth(label) / 2f;
-        float posY = y + fm.getDescent();
+        // Center text vertically: baseline = centerY + (ascent - descent) / 2
+        // This matches the TextRenderer approach for consistent positioning
+        float posY = y + (fm.getAscent() - fm.getDescent()) / 2f;
 
         Shape outlineGlyph = null;
 
@@ -266,6 +286,7 @@ public class NodeLabelRenderer implements Renderer {
         if (showBox) {
             graphics.setStroke(new BasicStroke(boxStrokeSize, BasicStroke.CAP_ROUND, BasicStroke.JOIN_MITER));
             graphics.setColor(boxColor);
+            graphics.setStroke(new BasicStroke(boxThickness));
             Rectangle2D.Float rect = new Rectangle2D.Float();
             rect.setFrame(posX - (outlineSize + boxStrokeSize) / 2f,
                 y - (fm.getAscent() + fm.getDescent()) / 2f - (outlineSize + boxStrokeSize) / 2f,
@@ -296,6 +317,14 @@ public class NodeLabelRenderer implements Renderer {
                           float outlineSize, Color outlineColor, boolean showBox, Color boxColor, float boxStrokeSize) {
         Text labelText = target.createTextNode(label);
         Font font = fontCache.get(fontSize);
+
+        // Calculate proper baseline Y position using font metrics
+        // This matches G2D and TextRenderer approaches for consistency
+
+        Rectangle2D bounds = font.getStringBounds(label, frc);
+        float ascent = (float) -bounds.getY();
+        float descent = (float) (bounds.getHeight() + bounds.getY());
+        float baselineY = y + (ascent - descent) / 2f;
 
         if (outlineSize > 0) {
             Text labelTextOutline = target.createTextNode(label);
@@ -440,10 +469,14 @@ public class NodeLabelRenderer implements Renderer {
                 NbBundle.getMessage(NodeLabelRenderer.class, "NodeLabelRenderer.property.display.displayName"),
                 NbBundle.getMessage(NodeLabelRenderer.class, "NodeLabelRenderer.property.display.description"),
                 PreviewProperty.CATEGORY_NODE_LABELS).setValue(defaultShowLabels),
+            PreviewProperty.createProperty(this, PreviewProperty.NODE_LABEL_CUSTOM_FONT, Boolean.class,
+                NbBundle.getMessage(NodeLabelRenderer.class, "NodeLabelRenderer.property.customFont.displayName"),
+                NbBundle.getMessage(NodeLabelRenderer.class, "NodeLabelRenderer.property.customFont.description"),
+                PreviewProperty.CATEGORY_NODE_LABELS, PreviewProperty.SHOW_NODE_LABELS).setValue(defaultCustomFont),
             PreviewProperty.createProperty(this, PreviewProperty.NODE_LABEL_FONT, Font.class,
                 NbBundle.getMessage(NodeLabelRenderer.class, "NodeLabelRenderer.property.font.displayName"),
                 NbBundle.getMessage(NodeLabelRenderer.class, "NodeLabelRenderer.property.font.description"),
-                PreviewProperty.CATEGORY_NODE_LABELS, PreviewProperty.SHOW_NODE_LABELS).setValue(defaultFont),
+                PreviewProperty.CATEGORY_NODE_LABELS, PreviewProperty.SHOW_NODE_LABELS, PreviewProperty.NODE_LABEL_CUSTOM_FONT).setValue(defaultFont),
             PreviewProperty.createProperty(this, PreviewProperty.NODE_LABEL_PROPORTIONAL_SIZE, Boolean.class,
                 NbBundle.getMessage(NodeLabelRenderer.class, "NodeLabelRenderer.property.proportionalSize.displayName"),
                 NbBundle.getMessage(NodeLabelRenderer.class, "NodeLabelRenderer.property.proportionalSize.description"),

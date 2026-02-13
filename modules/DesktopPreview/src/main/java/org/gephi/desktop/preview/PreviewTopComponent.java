@@ -46,10 +46,12 @@ import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.geom.AffineTransform;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.Field;
@@ -81,7 +83,7 @@ import org.openide.windows.TopComponent;
 @ConvertAsProperties(dtd = "-//org.gephi.desktop.preview//Preview//EN",
     autostore = false)
 @TopComponent.Description(preferredID = "PreviewTopComponent",
-    iconBase = "org/gephi/desktop/preview/resources/preview.png",
+    iconBase = "DesktopPreview/preview.svg",
     persistenceType = TopComponent.PERSISTENCE_NEVER)
 @TopComponent.Registration(mode = "editor", openAtStartup = true, roles = {"preview"})
 @ActionID(category = "Window", id = "org.gephi.desktop.preview.PreviewTopComponent")
@@ -180,18 +182,9 @@ public final class PreviewTopComponent extends TopComponent implements PropertyC
 
         try {
             GraphicsDevice graphicsDevice = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
-            Field field = retrieveField(graphicsDevice, "scale");
-            if (field == null) {
-                field = retrieveField(graphicsDevice, "scaleX");
-            }
-            if (field != null) {
-                field.setAccessible(true);
-                Object scale = field.get(graphicsDevice);
-                if (scale instanceof Number) {
-                    return ((Number) scale).floatValue();
-                }
-            }
-
+            GraphicsConfiguration graphicsConfiguration = graphicsDevice.getDefaultConfiguration();
+            AffineTransform tx = graphicsConfiguration.getDefaultTransform();
+            return (float)tx.getScaleX();
         } catch (Exception e) {
             //Ignore
             e.printStackTrace();
@@ -218,10 +211,21 @@ public final class PreviewTopComponent extends TopComponent implements PropertyC
                 @Override
                 public void run() {
                     target.refresh();
+                    refreshBackgroundColorButton();
                 }
             });
         } else if (evt.getPropertyName().equals(PreviewUIController.REFRESHING)) {
             setRefresh((Boolean) evt.getNewValue());
+        }
+    }
+
+    private void refreshBackgroundColorButton() {
+        if (model != null) {
+            PreviewModel previewModel = model.getPreviewModel();
+            Color background = previewModel.getProperties().getColorValue(PreviewProperty.BACKGROUND_COLOR);
+            if (background != null && !background.equals(((JColorButton) backgroundButton).getColor())) {
+                setBackgroundColor(background);
+            }
         }
     }
 
@@ -395,7 +399,7 @@ public final class PreviewTopComponent extends TopComponent implements PropertyC
         southToolbar.add(plusButton);
         southToolbar.add(filler1);
 
-        globalCanvasSizeButton.setIcon(ImageUtilities.loadImageIcon("DesktopPreview/globalCanvasSize.png", false)
+        globalCanvasSizeButton.setIcon(ImageUtilities.loadImageIcon("DesktopPreview/globalCanvasSize.svg", false)
         );
         globalCanvasSizeButton.setToolTipText(org.openide.util.NbBundle.getMessage(PreviewTopComponent.class, "PreviewTopComponent.globalCanvasSizeButton.toolTipText")); // NOI18N
         globalCanvasSizeButton.setFocusable(false);

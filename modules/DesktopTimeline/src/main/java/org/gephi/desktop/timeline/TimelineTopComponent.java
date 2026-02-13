@@ -74,6 +74,13 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 
+import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
 /**
  * Top component corresponding to the Timeline component
  *
@@ -229,7 +236,7 @@ public final class TimelineTopComponent extends JPanel implements TimelineModelL
 
                 //Custom bounds
                 Icon customBoundsIcon =
-                    ImageUtilities.loadImageIcon("DesktopTimeline/custom_bounds.png", false);
+                    ImageUtilities.loadImageIcon("DesktopTimeline/custom_bounds.svg", false);
                 JMenuItem customBoundsItem = new JMenuItem(
                     NbBundle.getMessage(TimelineTopComponent.class, "TimelineTopComponent.settings.setCustomBounds"),
                     customBoundsIcon);
@@ -259,7 +266,7 @@ public final class TimelineTopComponent extends JPanel implements TimelineModelL
 
                 //Animation
                 Icon animationIcon =
-                    ImageUtilities.loadImageIcon("DesktopTimeline/animation_settings.png", false);
+                    ImageUtilities.loadImageIcon("DesktopTimeline/animation_settings.svg", false);
                 JMenuItem animationItem = new JMenuItem(
                     NbBundle.getMessage(TimelineTopComponent.class, "TimelineTopComponent.settings.setPlaySettings"),
                     animationIcon);
@@ -281,7 +288,7 @@ public final class TimelineTopComponent extends JPanel implements TimelineModelL
 
                 //Date format
                 Icon dateFormatIcon =
-                    ImageUtilities.loadImageIcon("DesktopTimeline/time_format_small.png", false);
+                    ImageUtilities.loadImageIcon("DesktopTimeline/time_format_small.svg", false);
                 JMenuItem dateFormatItem = new JMenuItem(
                     NbBundle.getMessage(TimelineTopComponent.class, "TimelineTopComponent.settings.setTimeFormat"),
                     dateFormatIcon);
@@ -400,7 +407,6 @@ public final class TimelineTopComponent extends JPanel implements TimelineModelL
             @Override
             public void run() {
                 if (visible != TimelineTopComponent.this.isVisible()) {
-
                     TimelineTopComponent.this.setVisible(visible);
                     // Not needed anymore
                     // VizController.getInstance().getDrawable().reinitWindow();
@@ -447,7 +453,7 @@ public final class TimelineTopComponent extends JPanel implements TimelineModelL
         toolbarEnable.setRollover(true);
         toolbarEnable.setOpaque(false);
 
-        enableTimelineButton.setIcon(ImageUtilities.loadImageIcon("DesktopTimeline/activate.png", false)); // NOI18N
+        enableTimelineButton.setIcon(ImageUtilities.loadImageIcon("DesktopTimeline/activate.svg", false)); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(enableTimelineButton, NbBundle
             .getMessage(TimelineTopComponent.class, "TimelineTopComponent.enableTimelineButton.text")); // NOI18N
         enableTimelineButton.setToolTipText(org.openide.util.NbBundle
@@ -468,7 +474,7 @@ public final class TimelineTopComponent extends JPanel implements TimelineModelL
 
         disabledTimeline.setLayout(new java.awt.GridBagLayout());
 
-        disabledTimelineLabel.setIcon(ImageUtilities.loadImageIcon("DesktopTimeline/activate.png", false)); // NOI18N
+        disabledTimelineLabel.setIcon(ImageUtilities.loadImageIcon("DesktopTimeline/activate.svg", false)); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(disabledTimelineLabel, NbBundle
             .getMessage(TimelineTopComponent.class, "TimelineTopComponent.disabledTimelineLabel.text")); // NOI18N
         disabledTimelineLabel.setEnabled(false);
@@ -480,14 +486,14 @@ public final class TimelineTopComponent extends JPanel implements TimelineModelL
 
         controlPanel.setLayout(new java.awt.GridBagLayout());
 
-        playButton.setIcon(ImageUtilities.loadImageIcon("DesktopTimeline/disabled.png", false)); // NOI18N
+        playButton.setIcon(ImageUtilities.loadImageIcon("DesktopTimeline/disabled.svg", false)); // NOI18N
         playButton.setToolTipText(org.openide.util.NbBundle
             .getMessage(TimelineTopComponent.class, "TimelineTopComponent.playButton.toolTipText")); // NOI18N
-        playButton.setDisabledIcon(ImageUtilities.loadImageIcon("DesktopTimeline/disabled.png", false)); // NOI18N
+        playButton.setDisabledIcon(ImageUtilities.loadImageIcon("DesktopTimeline/disabled.svg", false)); // NOI18N
         playButton.setFocusable(false);
         playButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         playButton.setRequestFocusEnabled(false);
-        playButton.setSelectedIcon(ImageUtilities.loadImageIcon("DesktopTimeline/enabled.png", false)); // NOI18N
+        playButton.setSelectedIcon(ImageUtilities.loadImageIcon("DesktopTimeline/enabled.svg", false)); // NOI18N
         playButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -500,7 +506,7 @@ public final class TimelineTopComponent extends JPanel implements TimelineModelL
         innerToolbar.setRollover(true);
         innerToolbar.setOpaque(false);
 
-        disableButon.setIcon(ImageUtilities.loadImageIcon("DesktopTimeline/cross.png", false)); // NOI18N
+        disableButon.setIcon(ImageUtilities.loadImageIcon("DesktopTimeline/cross.svg", false)); // NOI18N
         disableButon.setToolTipText(org.openide.util.NbBundle
             .getMessage(TimelineTopComponent.class, "TimelineTopComponent.disableButon.toolTipText")); // NOI18N
         disableButon.setFocusable(false);
@@ -509,13 +515,13 @@ public final class TimelineTopComponent extends JPanel implements TimelineModelL
         disableButon.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         innerToolbar.add(disableButon);
 
-        columnsButton.setIcon(ImageUtilities.loadImageIcon("DesktopTimeline/chart.png", false)); // NOI18N
+        columnsButton.setIcon(ImageUtilities.loadImageIcon("DesktopTimeline/chart.svg", false)); // NOI18N
         columnsButton.setFocusable(false);
         columnsButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         columnsButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         innerToolbar.add(columnsButton);
 
-        settingsButton.setIcon(ImageUtilities.loadImageIcon("DesktopTimeline/settings.png", false)); // NOI18N
+        settingsButton.setIcon(ImageUtilities.loadImageIcon("DesktopTimeline/settings.svg", false)); // NOI18N
         settingsButton.setFocusable(false);
         settingsButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         settingsButton.setIconTextGap(0);

@@ -15,7 +15,7 @@
 
 [Download Gephi](https://gephi.github.io/users/download) for Windows, Mac OS X and Linux and consult the [release notes](https://github.com/gephi/gephi/releases). Example datasets can be found on our [wiki](https://github.com/gephi/gephi/wiki/Datasets).
 
-![Gephi](https://gephi.github.io/images/screenshots/select-tool-mini.png)
+![Gephi](https://gephi.org/select-tool-mini.png)
 
 ## Install and use Gephi
 
@@ -33,27 +33,27 @@ If you run into any trouble or have questions consult our [discussions](https://
 
 ### Development builds
 
-Development builds are [generated regularly](https://github.com/gephi/gephi/actions/workflows/release.yml). Current version is 0.10.2-SNAPSHOT
+Development builds are [generated regularly](https://github.com/gephi/gephi/actions/workflows/release.yml?query=is%3Asuccess++). Current version is 0.11.0-SNAPSHOT
 
-- [gephi-0.10.2-SNAPSHOT-windows-x64.exe](https://oss.sonatype.org/service/local/artifact/maven/content?r=snapshots&g=org.gephi&a=gephi&v=0.10.2-SNAPSHOT&c=windows-x64&p=exe) (Windows)
+- [gephi-0.11.0-SNAPSHOT-windows-x64.exe](https://central.sonatype.com/repository/maven-snapshots/org/gephi/gephi/0.11.0-SNAPSHOT/gephi-0.11.0-20260105.185031-47-windows-x64.exe) (Windows)
 
-- [gephi-0.10.2-SNAPSHOT-windows-x32.exe](https://oss.sonatype.org/service/local/artifact/maven/content?r=snapshots&g=org.gephi&a=gephi&v=0.10.2-SNAPSHOT&c=windows-x32&p=exe) (Windows x32)
+- [gephi-0.11.0-SNAPSHOT-macos-x64.dmg](https://central.sonatype.com/repository/maven-snapshots/org/gephi/gephi/0.11.0-SNAPSHOT/gephi-0.11.0-20260105.185516-48-macos-x64.dmg) (Mac OS X)
 
-- [gephi-0.10.2-SNAPSHOT-macos-x64.dmg](https://oss.sonatype.org/service/local/artifact/maven/content?r=snapshots&g=org.gephi&a=gephi&v=0.10.2-SNAPSHOT&c=macos-x64&p=dmg) (Mac OS X)
+- [gephi-0.11.0-SNAPSHOT-macos-aarch64.dmg](https://central.sonatype.com/repository/maven-snapshots/org/gephi/gephi/0.11.0-SNAPSHOT/gephi-0.11.0-20260105.191321-50-macos-aarch64.dmg) (Mac OS X Silicon)
 
-- [gephi-0.10.2-SNAPSHOT-macos-aarch64.dmg](https://oss.sonatype.org/service/local/artifact/maven/content?r=snapshots&g=org.gephi&a=gephi&v=0.10.2-SNAPSHOT&c=macos-aarch64&p=dmg) (Mac OS X Silicon)
+- [gephi-0.11.0-SNAPSHOT-linux-aarch64.tar.gz](https://central.sonatype.com/repository/maven-snapshots/org/gephi/gephi/0.11.0-SNAPSHOT/gephi-0.11.0-20260105.191104-49-linux-aarch64.tar.gz) (Linux aarch64)
 
-- [gephi-0.10.2-SNAPSHOT-linux-x64.tar.gz](https://oss.sonatype.org/service/local/artifact/maven/content?r=snapshots&g=org.gephi&a=gephi&v=0.10.2-SNAPSHOT&c=linux-x64&p=tar.gz) (Linux)
+- [gephi-0.11.0-SNAPSHOT-linux-x64.tar.gz](https://central.sonatype.com/repository/maven-snapshots/org/gephi/gephi/0.11.0-SNAPSHOT/gephi-0.11.0-20260105.184806-46-linux-x64.tar.gz) (Linux)
 
 ## Developer Introduction
 
 Gephi is developed in Java and uses OpenGL for its visualization engine. Built on the top of Netbeans Platform, it follows a loosely-coupled, modular architecture philosophy. Gephi is split into modules, which depend on other modules through well-written APIs. Plugins can reuse existing APIs, create new services and even replace a default implementation with a new one.
 
-Consult the [**Javadoc**](http://gephi.github.io/gephi/0.9.2/apidocs/index.html) for an overview of the APIs.
+Consult the [**Javadoc**](https://javadoc.io/doc/org.gephi/gephi/latest/index.html) for an overview of the APIs.
 
 ### Requirements
 
-- Java JDK 11 (or later)
+- Java JDK 17 (or later)
 
 - [Apache Maven](http://maven.apache.org/) version 3.6.3 or later
 
@@ -72,7 +72,7 @@ Consult the [**Javadoc**](http://gephi.github.io/gephi/0.9.2/apidocs/index.html)
 		cd modules/application
 		mvn nbm:cluster-app nbm:run-platform
 
-Note that while Gephi can be built using JDK 11 or later, it currently requires JDK 11 to run.
+Note that while Gephi can be built using JDK 17 or later, it currently requires JDK 17 to run.
 
 ### Create Plug-ins
 
@@ -137,3 +137,4 @@ to extend the choice of license to its licensees as provided above.
 However, if you add GPL Version 3 code and therefore, elected the GPL
 Version 3 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
+
