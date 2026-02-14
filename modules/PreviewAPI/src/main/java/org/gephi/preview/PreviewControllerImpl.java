@@ -123,9 +123,13 @@ public class PreviewControllerImpl implements PreviewController, Controller<Prev
         if (vizModel != null) {
             previewModel.getProperties().putValue(PreviewProperty.NODE_SCALE_FACTOR, vizModel.getNodeScale());
             previewModel.getProperties().putValue(PreviewProperty.NODE_LABEL_SCALE, vizModel.getNodeLabelScale());
+            previewModel.getProperties().putValue(PreviewProperty.EDGE_SCALE_FACTOR, vizModel.getEdgeScale());
+            previewModel.getProperties().putValue(PreviewProperty.EDGE_LABEL_SCALE, vizModel.getEdgeLabelScale());
         } else {
             previewModel.getProperties().putValue(PreviewProperty.NODE_SCALE_FACTOR, 1f);
             previewModel.getProperties().putValue(PreviewProperty.NODE_LABEL_SCALE, 1f);
+            previewModel.getProperties().putValue(PreviewProperty.EDGE_SCALE_FACTOR, 1f);
+            previewModel.getProperties().putValue(PreviewProperty.EDGE_LABEL_SCALE, 1f);
         }
 
         //Graph
