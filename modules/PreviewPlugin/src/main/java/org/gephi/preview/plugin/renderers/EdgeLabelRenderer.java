@@ -330,6 +330,12 @@ public class EdgeLabelRenderer implements Renderer {
             outlineElem.setAttribute("fill", "none");
             outlineElem.setAttribute("font-family", font.getFamily());
             outlineElem.setAttribute("font-size", font.getSize() + "");
+            if (font.isBold()) {
+                outlineElem.setAttribute("font-weight", "bold");
+            }
+            if (font.isItalic()) {
+                outlineElem.setAttribute("font-style", "italic");
+            }
             outlineElem.setAttribute("stroke", target.toHexString(outlineColor));
             outlineElem.setAttribute("stroke-width", (outlineSize * target.getScaleRatio()) + "px");
             outlineElem.setAttribute("stroke-linecap", "round");
@@ -347,6 +353,12 @@ public class EdgeLabelRenderer implements Renderer {
         labelElem.setAttribute("fill", target.toHexString(color));
         labelElem.setAttribute("font-family", font.getFamily());
         labelElem.setAttribute("font-size", font.getSize() + "");
+        if (font.isBold()) {
+            labelElem.setAttribute("font-weight", "bold");
+        }
+        if (font.isItalic()) {
+            labelElem.setAttribute("font-style", "italic");
+        }
         labelElem.appendChild(labelText);
         target.getTopElement(SVGTarget.TOP_EDGE_LABELS).appendChild(labelElem);
     }

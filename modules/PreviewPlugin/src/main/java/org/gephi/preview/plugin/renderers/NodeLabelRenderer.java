@@ -321,6 +321,12 @@ public class NodeLabelRenderer implements Renderer {
             outlineElem.setAttribute("style", "text-anchor: middle;");
             outlineElem.setAttribute("font-family", font.getFamily());
             outlineElem.setAttribute("font-size", String.valueOf(fontSize));
+            if (font.isBold()) {
+                outlineElem.setAttribute("font-weight", "bold");
+            }
+            if (font.isItalic()) {
+                outlineElem.setAttribute("font-style", "italic");
+            }
             outlineElem.setAttribute("fill", "none");
             outlineElem.setAttribute("stroke", target.toHexString(outlineColor));
             outlineElem.setAttribute("stroke-width", Float.toString(outlineSize * target.getScaleRatio()));
@@ -340,6 +346,12 @@ public class NodeLabelRenderer implements Renderer {
         labelElem.setAttribute("fill-opacity", String.valueOf(color.getAlpha() / 255f));
         labelElem.setAttribute("font-family", font.getFamily());
         labelElem.setAttribute("font-size", String.valueOf(fontSize));
+        if (font.isBold()) {
+            labelElem.setAttribute("font-weight", "bold");
+        }
+        if (font.isItalic()) {
+            labelElem.setAttribute("font-style", "italic");
+        }
         labelElem.appendChild(labelText);
         target.getTopElement(SVGTarget.TOP_NODE_LABELS).appendChild(labelElem);
 
