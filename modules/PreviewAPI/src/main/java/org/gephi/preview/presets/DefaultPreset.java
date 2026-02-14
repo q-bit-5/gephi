@@ -64,7 +64,10 @@ public class DefaultPreset extends PreviewPreset {
 
         properties.put(PreviewProperty.EDGE_COLOR, new EdgeColor(EdgeColor.Mode.MIXED));
         properties.put(PreviewProperty.EDGE_CURVED, true);
+        properties.put(PreviewProperty.EDGE_USE_WEIGHT, true);
         properties.put(PreviewProperty.EDGE_RESCALE_WEIGHT, Boolean.FALSE);
+        properties.put(PreviewProperty.EDGE_RESCALE_WEIGHT_MIN, 0.4f);
+        properties.put(PreviewProperty.EDGE_RESCALE_WEIGHT_MAX, 8f);
         properties.put(PreviewProperty.EDGE_OPACITY, 100f);
         properties.put(PreviewProperty.EDGE_RADIUS, 0f);
         properties.put(PreviewProperty.EDGE_THICKNESS, 1f);

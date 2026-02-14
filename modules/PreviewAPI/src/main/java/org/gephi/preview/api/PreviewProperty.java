@@ -144,6 +144,11 @@ public class PreviewProperty {
      */
     public static final String EDGE_OPACITY = "edge.opacity";
     /**
+     * Edge <code>Boolean</code> property defining whether edge's weight should be used
+     * in edge thickness calculation.
+     */
+    public static final String EDGE_USE_WEIGHT = "edge.use-weight";
+    /**
      * Edge <code>Boolean</code> property defining whether edge's weight should be
      * rescaled between fixed bounds.
      */
