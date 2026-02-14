@@ -104,9 +104,10 @@ public class EdgeRenderer implements Renderer {
     //Default values
     protected boolean defaultShowEdges = true;
     protected float defaultThickness = 1;
+    protected boolean defaultUseWeight = true;
     protected boolean defaultRescaleWeight = true;
-    protected float defaultRescaleWeightMin = 0.1f;
-    protected float defaultRescaleWeightMax = 1.0f;
+    protected float defaultRescaleWeightMin = 0.4f;
+    protected float defaultRescaleWeightMax = 8f;
     protected EdgeColor defaultColor = new EdgeColor(EdgeColor.Mode.MIXED);
     protected boolean defaultEdgeCurved = true;
     protected static float defaultArcCurviness = 1.2f;
@@ -184,10 +185,15 @@ public class EdgeRenderer implements Renderer {
         }
 
         //Rescale weight if necessary - and avoid negative weights
+        final boolean useWeight = properties.getBooleanValue(
+            PreviewProperty.EDGE_USE_WEIGHT);
         final boolean rescaleWeight = properties.getBooleanValue(
             PreviewProperty.EDGE_RESCALE_WEIGHT);
 
-        if (rescaleWeight) {
+        // Get thickness
+        double thickness = properties.getFloatValue(PreviewProperty.EDGE_THICKNESS);
+
+        if (useWeight && rescaleWeight) {
             final double weightDiff = maxWeight - minWeight;
             double minRescaledWeight = properties.getFloatValue(PreviewProperty.EDGE_RESCALE_WEIGHT_MIN);
             double maxRescaledWeight = properties.getFloatValue(PreviewProperty.EDGE_RESCALE_WEIGHT_MAX);
@@ -214,14 +220,14 @@ public class EdgeRenderer implements Renderer {
                 for (final Item item : edgeItems) {
                     double weight = item.getData(EdgeItem.WEIGHT);
                     weight = rescaledWeightsDiff * (weight - minWeight) / weightDiff + minRescaledWeight;
-                    setEdgeWeight(weight, properties, item);
+                    item.setData(EdgeItem.WEIGHT, weight * thickness);
                 }
             } else {
                 for (final Item item : edgeItems) {
-                    setEdgeWeight(1.0, properties, item);
+                    item.setData(EdgeItem.WEIGHT, thickness);
                 }
             }
-        } else {
+        } else if (useWeight) {
             for (final Item item : edgeItems) {
                 double weight = item.getData(EdgeItem.WEIGHT);
 
@@ -231,7 +237,11 @@ public class EdgeRenderer implements Renderer {
                 }
 
                 //Multiply by thickness
-                setEdgeWeight(weight, properties, item);
+                item.setData(EdgeItem.WEIGHT, weight * thickness);
+            }
+        } else {
+            for (final Item item : edgeItems) {
+                item.setData(EdgeItem.WEIGHT, thickness);
             }
         }
 
@@ -270,12 +280,6 @@ public class EdgeRenderer implements Renderer {
                 item.setData(SOURCE_RADIUS, SizeUtils.getNodeSize(sourceItem, properties));
             }
         }
-    }
-
-    private void setEdgeWeight(double weight, final PreviewProperties properties, final Item item) {
-        //Multiply by thickness
-        weight *= properties.getFloatValue(PreviewProperty.EDGE_THICKNESS);
-        item.setData(EdgeItem.WEIGHT, weight);
     }
 
     @Override
@@ -318,18 +322,25 @@ public class EdgeRenderer implements Renderer {
                 NbBundle.getMessage(EdgeRenderer.class, "EdgeRenderer.property.thickness.displayName"),
                 NbBundle.getMessage(EdgeRenderer.class, "EdgeRenderer.property.thickness.description"),
                 PreviewProperty.CATEGORY_EDGES, PreviewProperty.SHOW_EDGES).setValue(defaultThickness),
+            PreviewProperty.createProperty(this, PreviewProperty.EDGE_USE_WEIGHT, Boolean.class,
+                NbBundle.getMessage(EdgeRenderer.class, "EdgeRenderer.property.useWeight.displayName"),
+                NbBundle.getMessage(EdgeRenderer.class, "EdgeRenderer.property.useWeight.description"),
+                PreviewProperty.CATEGORY_EDGES, PreviewProperty.SHOW_EDGES).setValue(defaultUseWeight),
             PreviewProperty.createProperty(this, PreviewProperty.EDGE_RESCALE_WEIGHT, Boolean.class,
                 NbBundle.getMessage(EdgeRenderer.class, "EdgeRenderer.property.rescaleWeight.displayName"),
                 NbBundle.getMessage(EdgeRenderer.class, "EdgeRenderer.property.rescaleWeight.description"),
-                PreviewProperty.CATEGORY_EDGES, PreviewProperty.SHOW_EDGES).setValue(defaultRescaleWeight),
+                PreviewProperty.CATEGORY_EDGES, PreviewProperty.SHOW_EDGES, PreviewProperty.EDGE_USE_WEIGHT).setValue(
+                defaultRescaleWeight),
             PreviewProperty.createProperty(this, PreviewProperty.EDGE_RESCALE_WEIGHT_MIN, Float.class,
                 NbBundle.getMessage(EdgeRenderer.class, "EdgeRenderer.property.rescaleWeight.min.displayName"),
                 NbBundle.getMessage(EdgeRenderer.class, "EdgeRenderer.property.rescaleWeight.min.description"),
-                PreviewProperty.CATEGORY_EDGES, PreviewProperty.EDGE_RESCALE_WEIGHT).setValue(defaultRescaleWeightMin),
+                PreviewProperty.CATEGORY_EDGES, PreviewProperty.SHOW_EDGES, PreviewProperty.EDGE_RESCALE_WEIGHT,
+                PreviewProperty.EDGE_USE_WEIGHT).setValue(defaultRescaleWeightMin),
             PreviewProperty.createProperty(this, PreviewProperty.EDGE_RESCALE_WEIGHT_MAX, Float.class,
                 NbBundle.getMessage(EdgeRenderer.class, "EdgeRenderer.property.rescaleWeight.max.displayName"),
                 NbBundle.getMessage(EdgeRenderer.class, "EdgeRenderer.property.rescaleWeight.max.description"),
-                PreviewProperty.CATEGORY_EDGES, PreviewProperty.EDGE_RESCALE_WEIGHT).setValue(defaultRescaleWeightMax),
+                PreviewProperty.CATEGORY_EDGES, PreviewProperty.SHOW_EDGES, PreviewProperty.EDGE_RESCALE_WEIGHT,
+                PreviewProperty.EDGE_USE_WEIGHT).setValue(defaultRescaleWeightMax),
             PreviewProperty.createProperty(this, PreviewProperty.EDGE_COLOR, EdgeColor.class,
                 NbBundle.getMessage(EdgeRenderer.class, "EdgeRenderer.property.color.displayName"),
                 NbBundle.getMessage(EdgeRenderer.class, "EdgeRenderer.property.color.description"),
@@ -561,7 +572,8 @@ public class EdgeRenderer implements Renderer {
                 final PDFTarget pdfTarget = (PDFTarget) target;
                 final PDPageContentStream cb = pdfTarget.getContentStream();
                 try {
-                    PDFUtils.drawArc(cb, (float)h.bbx, (float)-h.bby, (float)(h.bbx+h.bbw), (float)-(h.bby+h.bbh), (float)h.astart, (float)h.asweep);
+                    PDFUtils.drawArc(cb, (float) h.bbx, (float) -h.bby, (float) (h.bbx + h.bbw),
+                        (float) -(h.bby + h.bbh), (float) h.astart, (float) h.asweep);
                     cb.setStrokingColor(color);
                     cb.setLineWidth(getThickness(item));
                     cb.setLineJoinStyle(1); //round
@@ -682,8 +694,8 @@ public class EdgeRenderer implements Renderer {
                     Double targetOffset = this.computeTruncateAngle(r, (double) targetRadius, (double) arcAngle);
                     angle2 += targetOffset;
 
-                    x2WithRadius = (float)(r*Math.cos(angle2) + xc);
-                    y2WithRadius = (float)(r*Math.sin(angle2) + yc);
+                    x2WithRadius = (float) (r * Math.cos(angle2) + xc);
+                    y2WithRadius = (float) (r * Math.sin(angle2) + yc);
                 } else {
                     x2WithRadius = x2;
                     y2WithRadius = y2;
@@ -696,8 +708,8 @@ public class EdgeRenderer implements Renderer {
                     Double sourceOffset = this.computeTruncateAngle(r, (double) sourceRadius, (double) arcAngle);
                     angle1 -= sourceOffset;
 
-                    x1WithRadius = (float)(r*Math.cos(angle1) + xc);
-                    y1WithRadius = (float)(r*Math.sin(angle1) + yc);
+                    x1WithRadius = (float) (r * Math.cos(angle1) + xc);
+                    y1WithRadius = (float) (r * Math.sin(angle1) + yc);
                 } else {
                     x1WithRadius = x1;
                     y1WithRadius = y1;
@@ -719,7 +731,8 @@ public class EdgeRenderer implements Renderer {
                 }
             }
 
-            private Double computeTruncateAngle(Double radius_curvature_edge, Double truncature_length, Double arc_angle) {
+            private Double computeTruncateAngle(Double radius_curvature_edge, Double truncature_length,
+                                                Double arc_angle) {
                 // The edge is an arc of a circle.
                 // We want to truncate that arc so that truncated part has a chord of a given length.
                 // i.e. not the length along the arc, but as a straight segment (like the string of a bow)
