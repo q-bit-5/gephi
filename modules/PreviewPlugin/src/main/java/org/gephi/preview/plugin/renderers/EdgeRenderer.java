@@ -192,6 +192,7 @@ public class EdgeRenderer implements Renderer {
 
         // Get thickness
         double thickness = properties.getFloatValue(PreviewProperty.EDGE_THICKNESS);
+        thickness *= properties.getFloatValue(PreviewProperty.EDGE_SCALE_FACTOR);
 
         if (useWeight && rescaleWeight) {
             final double weightDiff = maxWeight - minWeight;

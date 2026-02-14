@@ -73,10 +73,6 @@ public class PreviewProperty {
      */
     public static final String DIRECTED = "directed";
     /**
-     * General <code>Float</code> property defining a global scale factor applied to all nodes sizes
-     */
-    public static final String NODE_SCALE_FACTOR = "node.scale.factor";
-    /**
      * General <code>Color</code> property of the background color
      */
     public static final String BACKGROUND_COLOR = "background-color";
@@ -92,6 +88,10 @@ public class PreviewProperty {
      */
     public static final String MARGIN = "margin";
     //Constants nodes
+    /**
+     * General <code>Float</code> property defining a global scale factor applied to all nodes sizes
+     */
+    public static final String NODE_SCALE_FACTOR = "node.scale.factor";
     /**
      * Node <code>Boolean</code> property which indicates if the border size is either fixed or relative to the node size
      */
@@ -123,6 +123,10 @@ public class PreviewProperty {
      * Edge <code>Boolean</code> property defining whether to show edges.
      */
     public static final String SHOW_EDGES = "edge.show";
+    /**
+     * General <code>Float</code> property defining a global scale factor applied to all edge thickness
+     */
+    public static final String EDGE_SCALE_FACTOR = "edge.scale.factor";
     /**
      * Edge <code>Float</code> property for the edge's thickness
      */
@@ -185,7 +189,6 @@ public class PreviewProperty {
      * Node Label <code>Font</code> property defining node label's font.
      */
     public static final String NODE_LABEL_FONT = "node.label.font";
-
     /**
      * Node Label <code>Float</code> property defining a global scale factor applied to all node labels sizes.
      */
@@ -232,6 +235,10 @@ public class PreviewProperty {
      * Edge Label <code>Boolean</code> property defining whether to show edge labels.
      */
     public static final String SHOW_EDGE_LABELS = "edge.label.show";
+    /**
+     * Edge Label <code>Float</code> property defining a global scale factor applied to all edge labels sizes.
+     */
+    public static final String EDGE_LABEL_SCALE = "edge.label.scale";
     /**
      * Edge Label <code>Font</code> property defining edge label's font.
      */
