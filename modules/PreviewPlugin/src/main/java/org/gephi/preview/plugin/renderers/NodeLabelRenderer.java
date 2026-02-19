@@ -157,9 +157,10 @@ public class NodeLabelRenderer implements Renderer {
         float fitNodeLabelsToNodeSizeFactor = 0.05f;
 
         //Calculate font size and cache fonts
+        final float baseFontSize = font.getSize() * properties.getFloatValue(PreviewProperty.NODE_LABEL_SCALE);
         for (Item item : previewModel.getItems(Item.NODE_LABEL)) {
             float nodeSize = item.getData(NODE_SIZE);
-            float fontSize = font.getSize() * properties.getFloatValue(PreviewProperty.NODE_LABEL_SCALE);
+            float fontSize = baseFontSize;
             if (properties.getBooleanValue(PreviewProperty.NODE_LABEL_PROPORTIONAL_SIZE)) {
                 fontSize *= nodeSize * fitNodeLabelsToNodeSizeFactor;
             } else {
