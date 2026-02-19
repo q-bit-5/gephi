@@ -46,7 +46,7 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.geom.Arc2D;
-import java.awt.geom.GeneralPath;
+import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
 import java.io.IOException;
 import java.util.Locale;
@@ -85,6 +85,8 @@ public class EdgeRenderer implements Renderer {
     //Custom properties
     public static final String EDGE_MIN_WEIGHT = "edge.min-weight";
     public static final String EDGE_MAX_WEIGHT = "edge.max-weight";
+    // Same multiplier as the GLSL selfloop.vert shader constant
+    public static final float STROKE_MULTIPLIER = 1.3f;
     /**
      * @deprecated We now use circle arcs to draw curved edges. See ARC_CURVENESS instead.
      */
@@ -140,7 +142,7 @@ public class EdgeRenderer implements Renderer {
         return item instanceof EdgeItem && sourceItem == targetItem;
     }
 
-    private static float getThickness(final Item item) {
+    public static float getThickness(final Item item) {
         return ((Double) item.getData(EdgeItem.WEIGHT)).floatValue();
     }
 
@@ -277,8 +279,14 @@ public class EdgeRenderer implements Renderer {
                     + SizeUtils.getNodeSize(sourceItem, properties) / 2f);
                 item.setData(SOURCE_RADIUS, sourceRadius);
             } else {
+                // Self-loop: precompute loopRadius matching the GLSL selfloop.vert shader formula:
+                //   loopRadius = scaledNodeSize * 0.5 + strokeWidth * 0.33
+                //   strokeWidth = thickness * STROKE_MULTIPLIER
                 final Item sourceItem = item.getData(SOURCE);
-                item.setData(SOURCE_RADIUS, SizeUtils.getNodeSize(sourceItem, properties));
+                final float nodeRadius = SizeUtils.getNodeSize(sourceItem, properties) / 2f;
+                final float strokeWidth = getThickness(item) * STROKE_MULTIPLIER;
+                final float loopRadius = nodeRadius * 0.5f + strokeWidth * 0.33f;
+                item.setData(SOURCE_RADIUS, loopRadius);
             }
         }
     }
@@ -757,7 +765,8 @@ public class EdgeRenderer implements Renderer {
 
     private static class SelfLoopEdgeRenderer {
 
-        public static final String ID = "SelfLoopEdge";
+        // Bezier kappa constant for approximating a circle with 4 cubic segments
+        private static final float CIRCLE_KAPPA = 0.5523f;
 
         public void render(
             final Item item,
@@ -769,43 +778,50 @@ public class EdgeRenderer implements Renderer {
             if (target instanceof G2DTarget) {
                 final Graphics2D graphics = ((G2DTarget) target).getGraphics();
                 graphics.setStroke(new BasicStroke(
-                    getThickness(item),
-                    BasicStroke.CAP_BUTT,
-                    BasicStroke.JOIN_MITER));
+                    h.strokeWidth,
+                    BasicStroke.CAP_ROUND,
+                    BasicStroke.JOIN_ROUND));
                 graphics.setColor(color);
-                final GeneralPath gp
-                    = new GeneralPath(GeneralPath.WIND_NON_ZERO);
-                gp.moveTo(h.x, h.y);
-                gp.curveTo(h.v1.x, h.v1.y, h.v2.x, h.v2.y, h.x, h.y);
-                graphics.draw(gp);
+                // Draw a circle matching the VisualizationEngine's selfloop.vert geometry
+                graphics.draw(new Ellipse2D.Float(
+                    h.cx - h.loopRadius,
+                    h.cy - h.loopRadius,
+                    2 * h.loopRadius,
+                    2 * h.loopRadius));
             } else if (target instanceof SVGTarget) {
                 final SVGTarget svgTarget = (SVGTarget) target;
 
-                final Element selfLoopElem = svgTarget.createElement("path");
-                selfLoopElem.setAttribute("d", String.format(
-                    Locale.ENGLISH,
-                    "M %f,%f C %f,%f %f,%f %f,%f",
-                    h.x, h.y, h.v1.x, h.v1.y, h.v2.x, h.v2.y, h.x, h.y));
+                final Element selfLoopElem = svgTarget.createElement("circle");
+                selfLoopElem.setAttribute("cx", String.format(Locale.ENGLISH, "%f", h.cx));
+                selfLoopElem.setAttribute("cy", String.format(Locale.ENGLISH, "%f", h.cy));
+                selfLoopElem.setAttribute("r", String.format(Locale.ENGLISH, "%f", h.loopRadius));
                 selfLoopElem.setAttribute("class", SVGUtils.idAsClassAttribute(h.node.getId()));
-                selfLoopElem.setAttribute(
-                    "stroke",
-                    svgTarget.toHexString(color));
-                selfLoopElem.setAttribute(
-                    "stroke-opacity",
-                    (color.getAlpha() / 255f) + "");
-                selfLoopElem.setAttribute("stroke-width", Float.toString(
-                    getThickness(item) * svgTarget.getScaleRatio()));
+                selfLoopElem.setAttribute("stroke", svgTarget.toHexString(color));
+                selfLoopElem.setAttribute("stroke-opacity", (color.getAlpha() / 255f) + "");
+                selfLoopElem.setAttribute("stroke-width",
+                    Float.toString(h.strokeWidth * svgTarget.getScaleRatio()));
                 selfLoopElem.setAttribute("fill", "none");
-                svgTarget.getTopElement(SVGTarget.TOP_EDGES)
-                    .appendChild(selfLoopElem);
+                svgTarget.getTopElement(SVGTarget.TOP_EDGES).appendChild(selfLoopElem);
             } else if (target instanceof PDFTarget) {
                 final PDFTarget pdfTarget = (PDFTarget) target;
                 final PDPageContentStream cb = pdfTarget.getContentStream();
                 try {
-                    cb.moveTo(h.x, -h.y);
-                    cb.curveTo(h.v1.x, -h.v1.y, h.v2.x, -h.v2.y, h.x, -h.y);
+                    // Approximate circle with 4 cubic bezier curves.
+                    // PDF uses y+ up, so negate y relative to Preview/G2D coordinates.
+                    final float pdfCx = h.cx;
+                    final float pdfCy = -h.cy;
+                    final float r = h.loopRadius;
+                    final float k = CIRCLE_KAPPA * r;
+
+                    cb.moveTo(pdfCx + r, pdfCy);
+                    cb.curveTo(pdfCx + r, pdfCy + k, pdfCx + k, pdfCy + r, pdfCx, pdfCy + r);
+                    cb.curveTo(pdfCx - k, pdfCy + r, pdfCx - r, pdfCy + k, pdfCx - r, pdfCy);
+                    cb.curveTo(pdfCx - r, pdfCy - k, pdfCx - k, pdfCy - r, pdfCx, pdfCy - r);
+                    cb.curveTo(pdfCx + k, pdfCy - r, pdfCx + r, pdfCy - k, pdfCx + r, pdfCy);
+                    cb.closePath();
+
                     cb.setStrokingColor(color);
-                    cb.setLineWidth(getThickness(item));
+                    cb.setLineWidth(h.strokeWidth);
                     if (color.getAlpha() < 255) {
                         PDExtendedGraphicsState graphicsState = new PDExtendedGraphicsState();
                         graphicsState.setStrokingAlphaConstant(color.getAlpha() / 255f);
@@ -826,11 +842,9 @@ public class EdgeRenderer implements Renderer {
             final Item item,
             final PreviewProperties properties) {
             final Helper h = new Helper(item);
-            final float minX = Math.min(Math.min(h.x, h.v1.x), h.v2.x);
-            final float minY = Math.min(Math.min(h.y, h.v1.y), h.v2.y);
-            final float maxX = Math.max(Math.max(h.x, h.v1.x), h.v2.x);
-            final float maxY = Math.max(Math.max(h.y, h.v1.y), h.v2.y);
-            return new CanvasSize(minX, minY, maxX - minX, maxY - minY);
+            final float halfStroke = h.strokeWidth / 2f;
+            final float extent = h.loopRadius + halfStroke;
+            return new CanvasSize(h.cx - extent, h.cy - extent, 2 * extent, 2 * extent);
         }
 
         private static class Helper {
@@ -838,22 +852,27 @@ public class EdgeRenderer implements Renderer {
             public final Float x;
             public final Float y;
             public final Node node;
-            public final Vector v1;
-            public final Vector v2;
+            // Circle center in Preview/G2D coordinates (y increases downward):
+            // upper-right of node to match VisualizationEngine's selfloop shader placement
+            public final float cx;
+            public final float cy;
+            public final float loopRadius;
+            public final float strokeWidth;
 
             public Helper(final Item item) {
                 node = ((Edge) item.getSource()).getSource();
 
-                Item nodeSource = item.getData(SOURCE);
+                final Item nodeSource = item.getData(SOURCE);
                 x = nodeSource.getData(NodeItem.X);
                 y = nodeSource.getData(NodeItem.Y);
-                Float size = nodeSource.getData(item.getData(SOURCE_RADIUS));
-
-                v1 = new Vector(x, y);
-                v1.add(size, -size);
-
-                v2 = new Vector(x, y);
-                v2.add(size, size);
+                // loopRadius was precomputed in EdgeRenderer.preProcess using the shader formula:
+                //   loopRadius = nodeRadius * 0.5 + strokeWidth * 0.33
+                loopRadius = item.getData(SOURCE_RADIUS);
+                strokeWidth = getThickness(item) * STROKE_MULTIPLIER;
+                // Circle center: upper-right in screen space.
+                // In Preview (y increases downward), "up" = negative y direction.
+                cx = x + loopRadius;
+                cy = y - loopRadius;
             }
         }
     }
