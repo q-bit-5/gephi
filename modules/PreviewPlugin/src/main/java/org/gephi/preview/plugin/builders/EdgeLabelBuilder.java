@@ -43,23 +43,16 @@
 package org.gephi.preview.plugin.builders;
 
 import java.awt.Color;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
-import org.gephi.graph.api.Column;
-import org.gephi.graph.api.Edge;
-import org.gephi.graph.api.EdgeIterable;
 import org.gephi.graph.api.Graph;
 import org.gephi.graph.api.GraphView;
 import org.gephi.graph.api.TextProperties;
 import org.gephi.preview.api.Item;
 import org.gephi.preview.plugin.items.EdgeLabelItem;
-import org.gephi.preview.plugin.items.NodeLabelItem;
 import org.gephi.preview.spi.ItemBuilder;
 import org.gephi.project.api.Workspace;
 import org.gephi.visualization.api.VisualizationModel;
 import org.gephi.visualization.api.VisualizationController;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -87,13 +80,9 @@ public class EdgeLabelBuilder extends AbstractLabelBuilder implements ItemBuilde
                     labelItem.setData(EdgeLabelItem.LABEL, label);
 
                     if (label != null && !label.isEmpty()) {
-                        labelItem.setData(EdgeLabelItem.COLOR, new Color((int) (textData.getR() * 255),
-                            (int) (textData.getG() * 255),
-                            (int) (textData.getB() * 255),
-                            (int) (textData.getAlpha() * 255)));
+                        labelItem.setData(EdgeLabelItem.COLOR, textData.getColor());
                         labelItem.setData(EdgeLabelItem.SIZE, textData.getSize());
                         labelItem.setData(EdgeLabelItem.VISIBLE, textData.isVisible());
-                        labelItem.setData(EdgeLabelItem.LABEL, label);
                         return labelItem;
                     }
                 }
