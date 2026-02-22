@@ -240,6 +240,11 @@ public class PreviewProperty {
      */
     public static final String EDGE_LABEL_SCALE = "edge.label.scale";
     /**
+     * When <code>True</code>, uses the edge label <code>Font</code>, and otherwise uses the font from the
+     * Visualization API.
+     */
+    public static final String EDGE_LABEL_CUSTOM_FONT = "edge.label.customFont";
+    /**
      * Edge Label <code>Font</code> property defining edge label's font.
      */
     public static final String EDGE_LABEL_FONT = "edge.label.font";
