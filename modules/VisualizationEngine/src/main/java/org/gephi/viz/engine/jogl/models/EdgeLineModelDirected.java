@@ -179,13 +179,17 @@ public class EdgeLineModelDirected {
     private void prepareProgramData(GL2ES2 gl, float[] mvpFloats, float scale, float minWeight, float maxWeight,
                                     float nodeScale, float edgeRescaleMin, float edgeRescaleMax) {
         gl.glUniformMatrix4fv(program.getUniformLocation(UNIFORM_NAME_MODEL_VIEW_PROJECTION), 1, false, mvpFloats, 0);
-        gl.glUniform1f(program.getUniformLocation(UNIFORM_NAME_EDGE_SCALE_MIN), edgeRescaleMin * scale);
-        gl.glUniform1f(program.getUniformLocation(UNIFORM_NAME_EDGE_SCALE_MAX), edgeRescaleMax * scale);
-        gl.glUniform1f(program.getUniformLocation(UNIFORM_NAME_MIN_WEIGHT), minWeight);
         gl.glUniform1f(program.getUniformLocation(UNIFORM_NAME_NODE_SCALE), nodeScale);
         if (NumberUtils.equalsEpsilon(minWeight, maxWeight, 1e-3f)) {
+            // All weights equal: rescaling is vacuous, fall back to raw weight × edgeScale
+            gl.glUniform1f(program.getUniformLocation(UNIFORM_NAME_EDGE_SCALE_MIN), scale);
+            gl.glUniform1f(program.getUniformLocation(UNIFORM_NAME_EDGE_SCALE_MAX), scale);
+            gl.glUniform1f(program.getUniformLocation(UNIFORM_NAME_MIN_WEIGHT), minWeight);
             gl.glUniform1f(program.getUniformLocation(UNIFORM_NAME_WEIGHT_DIFFERENCE_DIVISOR), 1);
         } else {
+            gl.glUniform1f(program.getUniformLocation(UNIFORM_NAME_EDGE_SCALE_MIN), edgeRescaleMin * scale);
+            gl.glUniform1f(program.getUniformLocation(UNIFORM_NAME_EDGE_SCALE_MAX), edgeRescaleMax * scale);
+            gl.glUniform1f(program.getUniformLocation(UNIFORM_NAME_MIN_WEIGHT), minWeight);
             gl.glUniform1f(program.getUniformLocation(UNIFORM_NAME_WEIGHT_DIFFERENCE_DIVISOR), maxWeight - minWeight);
         }
     }
@@ -196,17 +200,21 @@ public class EdgeLineModelDirected {
                                                          float globalTime, float selectionTime) {
         gl.glUniformMatrix4fv(programWithSelectionSelected.getUniformLocation(UNIFORM_NAME_MODEL_VIEW_PROJECTION), 1,
             false, mvpFloats, 0);
-        gl.glUniform1f(programWithSelectionSelected.getUniformLocation(UNIFORM_NAME_EDGE_SCALE_MIN),
-            edgeRescaleMin * scale);
-        gl.glUniform1f(programWithSelectionSelected.getUniformLocation(UNIFORM_NAME_EDGE_SCALE_MAX),
-            edgeRescaleMax * scale);
-        gl.glUniform1f(programWithSelectionSelected.getUniformLocation(UNIFORM_NAME_MIN_WEIGHT), minWeight);
         gl.glUniform1f(programWithSelectionSelected.getUniformLocation(UNIFORM_NAME_NODE_SCALE), nodeScale);
         gl.glUniform1f(programWithSelectionSelected.getUniformLocation(UNIFORM_NAME_GLOBAL_TIME), globalTime);
         gl.glUniform1f(programWithSelectionSelected.getUniformLocation(UNIFORM_NAME_SELECTION_TIME), selectionTime);
         if (NumberUtils.equalsEpsilon(minWeight, maxWeight, 1e-3f)) {
+            // All weights equal: rescaling is vacuous, fall back to raw weight × edgeScale
+            gl.glUniform1f(programWithSelectionSelected.getUniformLocation(UNIFORM_NAME_EDGE_SCALE_MIN), scale);
+            gl.glUniform1f(programWithSelectionSelected.getUniformLocation(UNIFORM_NAME_EDGE_SCALE_MAX), scale);
+            gl.glUniform1f(programWithSelectionSelected.getUniformLocation(UNIFORM_NAME_MIN_WEIGHT), minWeight);
             gl.glUniform1f(programWithSelectionSelected.getUniformLocation(UNIFORM_NAME_WEIGHT_DIFFERENCE_DIVISOR), 1);
         } else {
+            gl.glUniform1f(programWithSelectionSelected.getUniformLocation(UNIFORM_NAME_EDGE_SCALE_MIN),
+                edgeRescaleMin * scale);
+            gl.glUniform1f(programWithSelectionSelected.getUniformLocation(UNIFORM_NAME_EDGE_SCALE_MAX),
+                edgeRescaleMax * scale);
+            gl.glUniform1f(programWithSelectionSelected.getUniformLocation(UNIFORM_NAME_MIN_WEIGHT), minWeight);
             gl.glUniform1f(programWithSelectionSelected.getUniformLocation(UNIFORM_NAME_WEIGHT_DIFFERENCE_DIVISOR),
                 maxWeight - minWeight);
         }
@@ -223,18 +231,22 @@ public class EdgeLineModelDirected {
             backgroundColorFloats, 0);
         gl.glUniform1f(programWithSelectionUnselected.getUniformLocation(UNIFORM_NAME_COLOR_LIGHTEN_FACTOR),
             colorLightenFactor);
-        gl.glUniform1f(programWithSelectionUnselected.getUniformLocation(UNIFORM_NAME_EDGE_SCALE_MIN),
-            edgeRescaleMin * scale);
-        gl.glUniform1f(programWithSelectionUnselected.getUniformLocation(UNIFORM_NAME_EDGE_SCALE_MAX),
-            edgeRescaleMax * scale);
-        gl.glUniform1f(programWithSelectionUnselected.getUniformLocation(UNIFORM_NAME_MIN_WEIGHT), minWeight);
         gl.glUniform1f(programWithSelectionUnselected.getUniformLocation(UNIFORM_NAME_NODE_SCALE), nodeScale);
         gl.glUniform1f(programWithSelectionUnselected.getUniformLocation(UNIFORM_NAME_GLOBAL_TIME), globalTime);
         gl.glUniform1f(programWithSelectionUnselected.getUniformLocation(UNIFORM_NAME_SELECTION_TIME), selectionTime);
         if (NumberUtils.equalsEpsilon(minWeight, maxWeight, 1e-3f)) {
+            // All weights equal: rescaling is vacuous, fall back to raw weight × edgeScale
+            gl.glUniform1f(programWithSelectionUnselected.getUniformLocation(UNIFORM_NAME_EDGE_SCALE_MIN), scale);
+            gl.glUniform1f(programWithSelectionUnselected.getUniformLocation(UNIFORM_NAME_EDGE_SCALE_MAX), scale);
+            gl.glUniform1f(programWithSelectionUnselected.getUniformLocation(UNIFORM_NAME_MIN_WEIGHT), minWeight);
             gl.glUniform1f(programWithSelectionUnselected.getUniformLocation(UNIFORM_NAME_WEIGHT_DIFFERENCE_DIVISOR),
                 1);
         } else {
+            gl.glUniform1f(programWithSelectionUnselected.getUniformLocation(UNIFORM_NAME_EDGE_SCALE_MIN),
+                edgeRescaleMin * scale);
+            gl.glUniform1f(programWithSelectionUnselected.getUniformLocation(UNIFORM_NAME_EDGE_SCALE_MAX),
+                edgeRescaleMax * scale);
+            gl.glUniform1f(programWithSelectionUnselected.getUniformLocation(UNIFORM_NAME_MIN_WEIGHT), minWeight);
             gl.glUniform1f(programWithSelectionUnselected.getUniformLocation(UNIFORM_NAME_WEIGHT_DIFFERENCE_DIVISOR),
                 maxWeight - minWeight);
         }
