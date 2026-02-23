@@ -98,6 +98,10 @@ public class ArrowRenderer implements Renderer {
         final RenderTarget target,
         final PreviewProperties properties) {
         final Helper h = new Helper(item, properties);
+        // Do not draw an arrow when nodes are at the same position (zero-length edge)
+        if (h.length == 0f) {
+            return;
+        }
         final Color color = EdgeRenderer.getColor(item, properties);
 
         if (target instanceof G2DTarget) {
@@ -207,6 +211,7 @@ public class ArrowRenderer implements Renderer {
 
         public final Item sourceItem;
         public final Item targetItem;
+        public final float length;
         public final Vector p1;
         public final Vector p2;
         public final Vector p3;
@@ -235,7 +240,12 @@ public class ArrowRenderer implements Renderer {
 
             Vector direction = new Vector(x2, y2);
             direction.sub(new Vector(x1, y1));
-            final float length = direction.mag();
+            length = direction.mag();
+            if (length == 0f) {
+                // Nodes overlap; p1/p2/p3 are unused (render() returns early).
+                p1 = p2 = p3 = new Vector(x1, y1);
+                return;
+            }
             direction.normalize();
 
             if (properties.getBooleanValue(PreviewProperty.EDGE_CURVED)) {

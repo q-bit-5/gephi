@@ -503,11 +503,14 @@ public class EdgeRenderer implements Renderer {
                 if (targetRadius != null && targetRadius < 0) {
                     Vector direction = new Vector(_x2, _y2);
                     direction.sub(new Vector(_x1, _y1));
-                    direction.normalize();
-                    direction.mult(targetRadius);
-                    direction.add(new Vector(_x2, _y2));
-                    _x2 = direction.x;
-                    _y2 = direction.y;
+                    // Guard: skip offset when nodes overlap to avoid NaN from normalize()
+                    if (direction.mag() > 0) {
+                        direction.normalize();
+                        direction.mult(targetRadius);
+                        direction.add(new Vector(_x2, _y2));
+                        _x2 = direction.x;
+                        _y2 = direction.y;
+                    }
                 }
 
                 //Source radius
@@ -516,11 +519,14 @@ public class EdgeRenderer implements Renderer {
                 if (sourceRadius != null && sourceRadius < 0) {
                     Vector direction = new Vector(_x1, _y1);
                     direction.sub(new Vector(_x2, _y2));
-                    direction.normalize();
-                    direction.mult(sourceRadius);
-                    direction.add(new Vector(_x1, _y1));
-                    _x1 = direction.x;
-                    _y1 = direction.y;
+                    // Guard: skip offset when nodes overlap to avoid NaN from normalize()
+                    if (direction.mag() > 0) {
+                        direction.normalize();
+                        direction.mult(sourceRadius);
+                        direction.add(new Vector(_x1, _y1));
+                        _x1 = direction.x;
+                        _y1 = direction.y;
+                    }
                 }
 
                 x1 = _x1;
