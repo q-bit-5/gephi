@@ -57,7 +57,7 @@ public class EdgeBuilder implements ItemBuilder {
 
     @Override
     public Item[] getItems(Graph graph) {
-        return graph.getEdges().parallelStream().map(
+        return graph.getEdges().stream().map(
             e -> {
                 EdgeItem item = new EdgeItem(e);
                 item.setData(EdgeItem.WEIGHT, e.getWeight(graph.getView()));
