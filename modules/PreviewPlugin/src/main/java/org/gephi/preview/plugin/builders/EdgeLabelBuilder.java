@@ -71,7 +71,7 @@ public class EdgeLabelBuilder extends AbstractLabelBuilder implements ItemBuilde
         VisualizationModel vizModel = vizController != null ? vizController.getModel(workspace) : null;
         GraphView graphView = graph.getView();
 
-        return graph.getEdges().parallelStream().map(
+        return graph.getEdges().stream().map(
             e -> {
                 TextProperties textData = e.getTextProperties();
                 if (textData != null && textData.isVisible()) {

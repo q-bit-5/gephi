@@ -71,7 +71,7 @@ public class NodeLabelBuilder extends AbstractLabelBuilder implements ItemBuilde
         VisualizationModel vizModel = vizController != null ? vizController.getModel(workspace) : null;
         GraphView graphView = graph.getView();
 
-        return graph.getNodes().parallelStream().map(
+        return graph.getNodes().stream().map(
             n -> {
                 TextProperties textData = n.getTextProperties();
                 if (textData != null && textData.isVisible()) {

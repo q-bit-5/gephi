@@ -52,6 +52,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -247,10 +248,12 @@ public class PreviewModelImpl implements PreviewModel, Model {
             })
             .collect(Collectors.groupingBy(
                 Entry::getKey,
+                LinkedHashMap::new,
                 Collectors.toMap(
                     e -> e.getValue().getSource(),
                     Entry::getValue,
-                    this::mergeItems
+                    this::mergeItems,
+                    LinkedHashMap::new
                 )
             )));
     }
