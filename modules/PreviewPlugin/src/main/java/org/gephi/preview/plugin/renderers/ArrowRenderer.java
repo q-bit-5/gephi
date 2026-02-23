@@ -165,9 +165,7 @@ public class ArrowRenderer implements Renderer {
         final float minY = Math.min(Math.min(h.p1.y, h.p2.y), h.p3.y);
         final float maxX = Math.max(Math.max(h.p1.x, h.p2.x), h.p3.x);
         final float maxY = Math.max(Math.max(h.p1.y, h.p2.y), h.p3.y);
-        return properties.getBooleanValue(PreviewProperty.EDGE_CURVED)
-            ? new CanvasSize()
-            : new CanvasSize(minX, minY, maxX - minX, maxY - minY);
+        return new CanvasSize(minX, minY, maxX - minX, maxY - minY);
     }
 
     @Override

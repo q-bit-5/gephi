@@ -268,8 +268,8 @@ public class PreviewModelImpl implements PreviewModel, Model {
     protected void updateCanvasSize(Renderer[] renderers) {
         float x1 = Float.MAX_VALUE;
         float y1 = Float.MAX_VALUE;
-        float x2 = Float.MIN_VALUE;
-        float y2 = Float.MIN_VALUE;
+        float x2 = -Float.MAX_VALUE;
+        float y2 = -Float.MAX_VALUE;
         PreviewProperties properties = getProperties();
         for (Renderer r : renderers) {
             for (String type : getItemTypes()) {
