@@ -48,6 +48,7 @@ import java.awt.Graphics2D;
 import java.awt.geom.Arc2D;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
+import java.awt.geom.Rectangle2D;
 import java.io.IOException;
 import java.util.Locale;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
@@ -611,15 +612,20 @@ public class EdgeRenderer implements Renderer {
             final PreviewProperties properties
         ) {
             final Helper h = new Helper(item, properties);
-            final float minX
-                = Math.min(h.x1, h.x2);
-            final float minY
-                = Math.min(h.y1, h.y2);
-            final float maxX
-                = Math.max(h.x1, h.x2);
-            final float maxY
-                = Math.max(h.y1, h.y2);
-            return new CanvasSize(minX, minY, maxX - minX, maxY - minY);
+            if (h.asweep == 0) {
+                // Edge not rendered (too short/swallowed by nodes); fall back to endpoint bbox
+                final float minX = Math.min(h.x1, h.x2);
+                final float minY = Math.min(h.y1, h.y2);
+                return new CanvasSize(minX, minY, Math.abs(h.x2 - h.x1), Math.abs(h.y2 - h.y1));
+            }
+            // The arc can bow significantly beyond its endpoints (e.g. for near-vertical edges).
+            // Use Arc2D.getBounds2D() which computes the exact tight bounding box of the arc,
+            // accounting for any cardinal-angle extrema the sweep passes through.
+            final Rectangle2D bounds = new Arc2D.Double(
+                h.bbx, h.bby, h.bbw, h.bbh, h.astart, h.asweep, Arc2D.OPEN).getBounds2D();
+            return new CanvasSize(
+                (float) bounds.getX(), (float) bounds.getY(),
+                (float) bounds.getWidth(), (float) bounds.getHeight());
         }
 
         private static class Helper {
