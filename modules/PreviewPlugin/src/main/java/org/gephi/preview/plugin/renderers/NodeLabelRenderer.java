@@ -196,10 +196,18 @@ public class NodeLabelRenderer implements Renderer {
                 Float x = item.getData(NODE_X);
                 Float y = item.getData(NODE_Y);
                 if (x != null && y != null) {
-                    if (x < minX) { minX = x; }
-                    if (x > maxX) { maxX = x; }
-                    if (y < minY) { minY = y; }
-                    if (y > maxY) { maxY = y; }
+                    if (x < minX) {
+                        minX = x;
+                    }
+                    if (x > maxX) {
+                        maxX = x;
+                    }
+                    if (y < minY) {
+                        minY = y;
+                    }
+                    if (y > maxY) {
+                        maxY = y;
+                    }
                 }
             }
 
@@ -220,8 +228,12 @@ public class NodeLabelRenderer implements Renderer {
                 Arrays.sort(sortedItems, (a, b) -> {
                     Float fsA = a.getData(FONT_SIZE_FLOAT);
                     Float fsB = b.getData(FONT_SIZE_FLOAT);
-                    if (fsA == null) { fsA = 0f; }
-                    if (fsB == null) { fsB = 0f; }
+                    if (fsA == null) {
+                        fsA = 0f;
+                    }
+                    if (fsB == null) {
+                        fsB = 0f;
+                    }
                     return Float.compare(fsB, fsA);
                 });
 
@@ -604,7 +616,8 @@ public class NodeLabelRenderer implements Renderer {
             PreviewProperty.createProperty(this, PreviewProperty.NODE_LABEL_OUTLINE_SIZE, Float.class,
                 NbBundle.getMessage(NodeLabelRenderer.class, "NodeLabelRenderer.property.outlineSize.displayName"),
                 NbBundle.getMessage(NodeLabelRenderer.class, "NodeLabelRenderer.property.outlineSize.description"),
-                PreviewProperty.CATEGORY_NODE_LABELS, PreviewProperty.SHOW_NODE_LABELS).setMinMax(0f, null).setValue(defaultOutlineSize),
+                PreviewProperty.CATEGORY_NODE_LABELS, PreviewProperty.SHOW_NODE_LABELS).setMinMax(0f, null).setValue(
+                defaultOutlineSize),
             PreviewProperty.createProperty(this, PreviewProperty.NODE_LABEL_OUTLINE_COLOR, DependantColor.class,
                 NbBundle.getMessage(NodeLabelRenderer.class, "NodeLabelRenderer.property.outlineColor.displayName"),
                 NbBundle.getMessage(NodeLabelRenderer.class, "NodeLabelRenderer.property.outlineColor.description"),
@@ -612,7 +625,8 @@ public class NodeLabelRenderer implements Renderer {
             PreviewProperty.createProperty(this, PreviewProperty.NODE_LABEL_OUTLINE_OPACITY, Float.class,
                 NbBundle.getMessage(NodeLabelRenderer.class, "NodeLabelRenderer.property.outlineOpacity.displayName"),
                 NbBundle.getMessage(NodeLabelRenderer.class, "NodeLabelRenderer.property.outlineOpacity.description"),
-                PreviewProperty.CATEGORY_NODE_LABELS, PreviewProperty.SHOW_NODE_LABELS).setMinMax(0f, 100f).setValue(defaultOutlineOpacity),
+                PreviewProperty.CATEGORY_NODE_LABELS, PreviewProperty.SHOW_NODE_LABELS).setMinMax(0f, 100f).setValue(
+                defaultOutlineOpacity),
             PreviewProperty.createProperty(this, PreviewProperty.NODE_LABEL_SHOW_BOX, Boolean.class,
                 NbBundle.getMessage(NodeLabelRenderer.class, "NodeLabelRenderer.property.box.displayName"),
                 NbBundle.getMessage(NodeLabelRenderer.class, "NodeLabelRenderer.property.box.description"),

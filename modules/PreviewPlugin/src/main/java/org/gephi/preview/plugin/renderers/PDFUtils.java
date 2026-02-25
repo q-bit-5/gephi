@@ -19,8 +19,9 @@ public class PDFUtils {
         stream.curveTo(x + r * b, y - r, x + r, y - r * b, x + r, y);
     }
 
-    public static void drawArc(PDPageContentStream stream, final float x1, final float y1, final float x2, final float y2,
-                        final float startAng, final float extent) throws IOException {
+    public static void drawArc(PDPageContentStream stream, final float x1, final float y1, final float x2,
+                               final float y2,
+                               final float startAng, final float extent) throws IOException {
         List<float[]> ar = bezierArc(x1, y1, x2, y2, startAng, extent);
         if (ar.isEmpty()) {
             return;

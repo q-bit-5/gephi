@@ -270,7 +270,8 @@ public class NodeRenderer implements Renderer {
             PreviewProperty.createProperty(this, PreviewProperty.NODE_BORDER_WIDTH, Float.class,
                 NbBundle.getMessage(NodeRenderer.class, "NodeRenderer.property.borderWidth.displayName"),
                 NbBundle.getMessage(NodeRenderer.class, "NodeRenderer.property.borderWidth.description"),
-                PreviewProperty.CATEGORY_NODES, PreviewProperty.NODE_BORDER_FIXED).setMinMax(0f, null).setValue(defaultBorderWidth),
+                PreviewProperty.CATEGORY_NODES, PreviewProperty.NODE_BORDER_FIXED).setMinMax(0f, null).setValue(
+                defaultBorderWidth),
             PreviewProperty.createProperty(this, PreviewProperty.NODE_BORDER_COLOR, DependantColor.class,
                 NbBundle.getMessage(NodeRenderer.class, "NodeRenderer.property.borderColor.displayName"),
                 NbBundle.getMessage(NodeRenderer.class, "NodeRenderer.property.borderColor.description"),

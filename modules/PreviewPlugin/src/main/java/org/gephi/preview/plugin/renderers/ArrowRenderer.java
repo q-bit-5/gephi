@@ -178,7 +178,8 @@ public class ArrowRenderer implements Renderer {
             PreviewProperty.createProperty(this, PreviewProperty.ARROW_SIZE, Float.class,
                 NbBundle.getMessage(EdgeRenderer.class, "ArrowRenderer.property.size.displayName"),
                 NbBundle.getMessage(EdgeRenderer.class, "ArrowRenderer.property.size.description"),
-                PreviewProperty.CATEGORY_EDGE_ARROWS, PreviewProperty.SHOW_EDGES).setMinMax(0f, null).setValue(defaultArrowSize)};
+                PreviewProperty.CATEGORY_EDGE_ARROWS, PreviewProperty.SHOW_EDGES).setMinMax(0f, null).setValue(
+                defaultArrowSize)};
     }
 
     private boolean showArrows(PreviewProperties properties) {
@@ -255,7 +256,7 @@ public class ArrowRenderer implements Renderer {
                 double curvature = properties.getDoubleValue(ARC_CURVENESS);
                 double r = length / curvature;
                 final Float targetRadius = item.getData(TARGET_RADIUS);
-                double rt = Math.max(0.,-targetRadius);
+                double rt = Math.max(0., -targetRadius);
 
                 if (r >= rt / 2) {
                     double h = Math.sqrt(Math.pow(r, 2) - Math.pow(length / 2, 2));

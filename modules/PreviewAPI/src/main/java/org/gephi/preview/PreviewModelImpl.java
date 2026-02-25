@@ -42,12 +42,10 @@
 
 package org.gephi.preview;
 
-import java.awt.Color;
 import java.beans.PropertyEditorManager;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -500,7 +498,7 @@ public class PreviewModelImpl implements PreviewModel, Model {
                             managedRenderersList.add(new ManagedRenderer(availableRenderers.get(rendererClass),
                                 Boolean.parseBoolean(reader.getAttributeValue(null, "enabled"))));
                         }
-                    } else if("globalcanvassize".equalsIgnoreCase(name)) {
+                    } else if ("globalcanvassize".equalsIgnoreCase(name)) {
                         this.globalCanvasSize = Boolean.parseBoolean(reader.getAttributeValue(null, "value"));
                     }
                     break;
