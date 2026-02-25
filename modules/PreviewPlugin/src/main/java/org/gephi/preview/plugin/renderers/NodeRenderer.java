@@ -128,12 +128,6 @@ public class NodeRenderer implements Renderer {
         int alpha = properties.getBooleanValue(PreviewProperty.NODE_PER_NODE_OPACITY) ?
             color.getAlpha() :
             (int) ((properties.getFloatValue(PreviewProperty.NODE_OPACITY) / 100f) * 255f);
-        if (alpha < 0) {
-            alpha = 0;
-        }
-        if (alpha > 255) {
-            alpha = 255;
-        }
 
         //Graphics
         Graphics2D graphics = target.getGraphics();
@@ -276,7 +270,7 @@ public class NodeRenderer implements Renderer {
             PreviewProperty.createProperty(this, PreviewProperty.NODE_BORDER_WIDTH, Float.class,
                 NbBundle.getMessage(NodeRenderer.class, "NodeRenderer.property.borderWidth.displayName"),
                 NbBundle.getMessage(NodeRenderer.class, "NodeRenderer.property.borderWidth.description"),
-                PreviewProperty.CATEGORY_NODES, PreviewProperty.NODE_BORDER_FIXED).setValue(defaultBorderWidth),
+                PreviewProperty.CATEGORY_NODES, PreviewProperty.NODE_BORDER_FIXED).setMinMax(0f, null).setValue(defaultBorderWidth),
             PreviewProperty.createProperty(this, PreviewProperty.NODE_BORDER_COLOR, DependantColor.class,
                 NbBundle.getMessage(NodeRenderer.class, "NodeRenderer.property.borderColor.displayName"),
                 NbBundle.getMessage(NodeRenderer.class, "NodeRenderer.property.borderColor.description"),
@@ -284,7 +278,7 @@ public class NodeRenderer implements Renderer {
             PreviewProperty.createProperty(this, PreviewProperty.NODE_OPACITY, Float.class,
                 NbBundle.getMessage(NodeRenderer.class, "NodeRenderer.property.opacity.displayName"),
                 NbBundle.getMessage(NodeRenderer.class, "NodeRenderer.property.opacity.description"),
-                PreviewProperty.CATEGORY_NODES).setValue(defaultOpacity),
+                PreviewProperty.CATEGORY_NODES).setMinMax(0f, 100f).setValue(defaultOpacity),
             PreviewProperty.createProperty(this, PreviewProperty.NODE_PER_NODE_OPACITY, Boolean.class,
                 NbBundle.getMessage(NodeRenderer.class, "NodeRenderer.property.perNodeOpacity.displayName"),
                 NbBundle.getMessage(NodeRenderer.class, "NodeRenderer.property.perNodeOpacity.description"),

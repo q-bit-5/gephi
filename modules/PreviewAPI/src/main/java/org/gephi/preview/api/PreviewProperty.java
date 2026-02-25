@@ -330,6 +330,8 @@ public class PreviewProperty {
     final Class type;
     Object value;
     String[] dependencies = new String[0];
+    Number minValue;
+    Number maxValue;
 
     PreviewProperty(Object source, String name, Class type, String displayName, String description, String category) {
         this.source = source;
@@ -443,13 +445,70 @@ public class PreviewProperty {
 
     /**
      * Sets this property value and return it. The value can be <code>null</code>.
+     * If min/max bounds have been set via {@link #setMinMax(Number, Number)}, numeric values
+     * are clamped to those bounds before being stored.
      *
      * @param value the value to be set
      * @return this property instance
      */
     public PreviewProperty setValue(Object value) {
+        if (value instanceof Number && (minValue != null || maxValue != null)) {
+            double v = ((Number) value).doubleValue();
+            if (minValue != null) {
+                v = Math.max(v, minValue.doubleValue());
+            }
+            if (maxValue != null) {
+                v = Math.min(v, maxValue.doubleValue());
+            }
+            if (value instanceof Integer) {
+                value = (int) v;
+            } else if (value instanceof Float) {
+                value = (float) v;
+            } else if (value instanceof Double) {
+                value = v;
+            } else if (value instanceof Long) {
+                value = (long) v;
+            }
+        }
         this.value = value;
         return this;
+    }
+
+    /**
+     * Sets optional minimum and maximum bounds for this property's numeric value.
+     * <p>
+     * When either bound is non-null, any numeric value passed to {@link #setValue(Object)}
+     * is clamped to the range {@code [min, max]} before being stored. Pass <code>null</code>
+     * for either bound to leave that side unbounded.
+     *
+     * @param min the inclusive lower bound, or <code>null</code> for no lower bound
+     * @param max the inclusive upper bound, or <code>null</code> for no upper bound
+     * @return this property instance
+     */
+    public PreviewProperty setMinMax(Number min, Number max) {
+        this.minValue = min;
+        this.maxValue = max;
+        return this;
+    }
+
+    /**
+     * Returns the minimum allowed value for this property, or <code>null</code> if no lower
+     * bound has been set.
+     *
+     * @return the minimum value or <code>null</code>
+     */
+    public Number getMinValue() {
+        return minValue;
+    }
+
+    /**
+     * Returns the maximum allowed value for this property, or <code>null</code> if no upper
+     * bound has been set.
+     *
+     * @return the maximum value or <code>null</code>
+     */
+    public Number getMaxValue() {
+        return maxValue;
     }
 
     /**

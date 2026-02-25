@@ -304,12 +304,6 @@ public class EdgeLabelRenderer implements Renderer {
         Float outlineSize = properties.getFloatValue(PreviewProperty.EDGE_LABEL_OUTLINE_SIZE);
         outlineSize = outlineSize * (fontSize / 32f);
         int outlineAlpha = (int) ((properties.getFloatValue(PreviewProperty.EDGE_LABEL_OUTLINE_OPACITY) / 100f) * 255f);
-        if (outlineAlpha < 0) {
-            outlineAlpha = 0;
-        }
-        if (outlineAlpha > 255) {
-            outlineAlpha = 255;
-        }
         Color outlineColor = outlineDependantColor.getColor(edgeColor);
         outlineColor = new Color(outlineColor.getRed(), outlineColor.getGreen(), outlineColor.getBlue(), outlineAlpha);
 
@@ -525,7 +519,7 @@ public class EdgeLabelRenderer implements Renderer {
             PreviewProperty.createProperty(this, PreviewProperty.EDGE_LABEL_OUTLINE_SIZE, Float.class,
                 NbBundle.getMessage(EdgeLabelRenderer.class, "EdgeLabelRenderer.property.outlineSize.displayName"),
                 NbBundle.getMessage(EdgeLabelRenderer.class, "EdgeLabelRenderer.property.outlineSize.description"),
-                PreviewProperty.CATEGORY_EDGE_LABELS, PreviewProperty.SHOW_EDGE_LABELS).setValue(defaultOutlineSize),
+                PreviewProperty.CATEGORY_EDGE_LABELS, PreviewProperty.SHOW_EDGE_LABELS).setMinMax(0f, null).setValue(defaultOutlineSize),
             PreviewProperty.createProperty(this, PreviewProperty.EDGE_LABEL_OUTLINE_COLOR, DependantColor.class,
                 NbBundle.getMessage(EdgeLabelRenderer.class, "EdgeLabelRenderer.property.outlineColor.displayName"),
                 NbBundle.getMessage(EdgeLabelRenderer.class, "EdgeLabelRenderer.property.outlineColor.description"),
@@ -533,7 +527,7 @@ public class EdgeLabelRenderer implements Renderer {
             PreviewProperty.createProperty(this, PreviewProperty.EDGE_LABEL_OUTLINE_OPACITY, Float.class,
                 NbBundle.getMessage(EdgeLabelRenderer.class, "EdgeLabelRenderer.property.outlineOpacity.displayName"),
                 NbBundle.getMessage(EdgeLabelRenderer.class, "EdgeLabelRenderer.property.outlineOpacity.description"),
-                PreviewProperty.CATEGORY_EDGE_LABELS, PreviewProperty.SHOW_EDGE_LABELS).setValue(
+                PreviewProperty.CATEGORY_EDGE_LABELS, PreviewProperty.SHOW_EDGE_LABELS).setMinMax(0f, 100f).setValue(
                 defaultOutlineOpacity),};
     }
 

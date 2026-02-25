@@ -188,9 +188,6 @@ public class NodeLabelRenderer implements Renderer {
         //Grid-based label overlap avoidance (mirrors NodeLabelUpdater algorithm)
         if (properties.getBooleanValue(PreviewProperty.NODE_LABEL_AVOID_OVERLAP) && nodeLabelsItems.length > 1) {
             int gridSize = properties.getIntValue(PreviewProperty.NODE_LABEL_OVERLAP_GRID_SIZE);
-            if (gridSize <= 0) {
-                gridSize = defaultOverlapGridSize;
-            }
 
             //Compute graph bounds from node positions
             float minX = Float.MAX_VALUE, minY = Float.MAX_VALUE;
@@ -318,12 +315,6 @@ public class NodeLabelRenderer implements Renderer {
         float outlineSize = properties.getFloatValue(PreviewProperty.NODE_LABEL_OUTLINE_SIZE);
         outlineSize = outlineSize * (fontSize / 32f);
         int outlineAlpha = (int) ((properties.getFloatValue(PreviewProperty.NODE_LABEL_OUTLINE_OPACITY) / 100f) * 255f);
-        if (outlineAlpha < 0) {
-            outlineAlpha = 0;
-        }
-        if (outlineAlpha > 255) {
-            outlineAlpha = 255;
-        }
         Color outlineColor = outlineDependantColor.getColor(nodeColor);
         outlineColor = new Color(outlineColor.getRed(), outlineColor.getGreen(), outlineColor.getBlue(), outlineAlpha);
 
@@ -333,12 +324,6 @@ public class NodeLabelRenderer implements Renderer {
         DependantColor boxDependantColor = properties.getValue(PreviewProperty.NODE_LABEL_BOX_COLOR);
         Color boxColor = boxDependantColor.getColor(nodeColor);
         int boxAlpha = (int) ((properties.getFloatValue(PreviewProperty.NODE_LABEL_BOX_OPACITY) / 100f) * 255f);
-        if (boxAlpha < 0) {
-            boxAlpha = 0;
-        }
-        if (boxAlpha > 255) {
-            boxAlpha = 255;
-        }
         boxColor = new Color(boxColor.getRed(), boxColor.getGreen(), boxColor.getBlue(), boxAlpha);
 
         if (target instanceof G2DTarget) {
@@ -611,7 +596,7 @@ public class NodeLabelRenderer implements Renderer {
                 NbBundle.getMessage(NodeLabelRenderer.class, "NodeLabelRenderer.property.overlapGridSize.displayName"),
                 NbBundle.getMessage(NodeLabelRenderer.class, "NodeLabelRenderer.property.overlapGridSize.description"),
                 PreviewProperty.CATEGORY_NODE_LABELS, PreviewProperty.SHOW_NODE_LABELS,
-                PreviewProperty.NODE_LABEL_AVOID_OVERLAP).setValue(defaultOverlapGridSize),
+                PreviewProperty.NODE_LABEL_AVOID_OVERLAP).setMinMax(1, null).setValue(defaultOverlapGridSize),
             PreviewProperty.createProperty(this, PreviewProperty.NODE_LABEL_MAX_CHAR, Integer.class,
                 NbBundle.getMessage(NodeLabelRenderer.class, "NodeLabelRenderer.property.maxchar.displayName"),
                 NbBundle.getMessage(NodeLabelRenderer.class, "NodeLabelRenderer.property.maxchar.description"),
@@ -619,7 +604,7 @@ public class NodeLabelRenderer implements Renderer {
             PreviewProperty.createProperty(this, PreviewProperty.NODE_LABEL_OUTLINE_SIZE, Float.class,
                 NbBundle.getMessage(NodeLabelRenderer.class, "NodeLabelRenderer.property.outlineSize.displayName"),
                 NbBundle.getMessage(NodeLabelRenderer.class, "NodeLabelRenderer.property.outlineSize.description"),
-                PreviewProperty.CATEGORY_NODE_LABELS, PreviewProperty.SHOW_NODE_LABELS).setValue(defaultOutlineSize),
+                PreviewProperty.CATEGORY_NODE_LABELS, PreviewProperty.SHOW_NODE_LABELS).setMinMax(0f, null).setValue(defaultOutlineSize),
             PreviewProperty.createProperty(this, PreviewProperty.NODE_LABEL_OUTLINE_COLOR, DependantColor.class,
                 NbBundle.getMessage(NodeLabelRenderer.class, "NodeLabelRenderer.property.outlineColor.displayName"),
                 NbBundle.getMessage(NodeLabelRenderer.class, "NodeLabelRenderer.property.outlineColor.description"),
@@ -627,7 +612,7 @@ public class NodeLabelRenderer implements Renderer {
             PreviewProperty.createProperty(this, PreviewProperty.NODE_LABEL_OUTLINE_OPACITY, Float.class,
                 NbBundle.getMessage(NodeLabelRenderer.class, "NodeLabelRenderer.property.outlineOpacity.displayName"),
                 NbBundle.getMessage(NodeLabelRenderer.class, "NodeLabelRenderer.property.outlineOpacity.description"),
-                PreviewProperty.CATEGORY_NODE_LABELS, PreviewProperty.SHOW_NODE_LABELS).setValue(defaultOutlineOpacity),
+                PreviewProperty.CATEGORY_NODE_LABELS, PreviewProperty.SHOW_NODE_LABELS).setMinMax(0f, 100f).setValue(defaultOutlineOpacity),
             PreviewProperty.createProperty(this, PreviewProperty.NODE_LABEL_SHOW_BOX, Boolean.class,
                 NbBundle.getMessage(NodeLabelRenderer.class, "NodeLabelRenderer.property.box.displayName"),
                 NbBundle.getMessage(NodeLabelRenderer.class, "NodeLabelRenderer.property.box.description"),
@@ -641,7 +626,7 @@ public class NodeLabelRenderer implements Renderer {
                 NbBundle.getMessage(NodeLabelRenderer.class, "NodeLabelRenderer.property.box.opacity.displayName"),
                 NbBundle.getMessage(NodeLabelRenderer.class, "NodeLabelRenderer.property.box.opacity.description"),
                 PreviewProperty.CATEGORY_NODE_LABELS, PreviewProperty.NODE_LABEL_SHOW_BOX,
-                PreviewProperty.SHOW_NODE_LABELS).setValue(defaultBoxOpacity)};
+                PreviewProperty.SHOW_NODE_LABELS).setMinMax(0f, 100f).setValue(defaultBoxOpacity)};
     }
 
     private boolean showNodeLabels(PreviewProperties properties) {
