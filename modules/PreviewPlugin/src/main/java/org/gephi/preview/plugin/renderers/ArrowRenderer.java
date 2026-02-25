@@ -178,7 +178,7 @@ public class ArrowRenderer implements Renderer {
             PreviewProperty.createProperty(this, PreviewProperty.ARROW_SIZE, Float.class,
                 NbBundle.getMessage(EdgeRenderer.class, "ArrowRenderer.property.size.displayName"),
                 NbBundle.getMessage(EdgeRenderer.class, "ArrowRenderer.property.size.description"),
-                PreviewProperty.CATEGORY_EDGE_ARROWS, PreviewProperty.SHOW_EDGES).setValue(defaultArrowSize)};
+                PreviewProperty.CATEGORY_EDGE_ARROWS, PreviewProperty.SHOW_EDGES).setMinMax(0f, null).setValue(defaultArrowSize)};
     }
 
     private boolean showArrows(PreviewProperties properties) {

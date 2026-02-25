@@ -53,6 +53,7 @@
             <li>Node scale (defined in Visualization API) is now taken in account to determine final node size. It defaults to 1.0 otherwise. Same applies to the edge scale, taken in account in edge thickness formula.</li>
             <li>Similar to Overview, it's now possible to turn off using edge weights via the <code>EDGE_USE_WEIGHT</code> property.</li>
             <li>New <code>NODE_LABEL_CUSTOM_FONT</code> and <code>EDGE_LABEL_CUSTOM_FONT</code> boolean properties were added. When false, the font used by Visualization API is used. The label sizing formula has been revisited to match settings from Overview.</li>
+            <li><code>PreviewProperty</code> now supports optional numeric bounds via a new <code>setMinMax(Number min, Number max)</code> method. When set, values passed to <code>setValue()</code> are clamped to the declared range. Built-in properties such as sizes, opacities and the label grid size are now constrained accordingly.</li>
         </ul>
         <h3>0.10.0</h3>
         <h4>Project API</h4>
