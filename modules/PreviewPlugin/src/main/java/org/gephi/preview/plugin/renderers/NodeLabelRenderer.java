@@ -53,6 +53,7 @@ import java.awt.font.GlyphVector;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
@@ -95,6 +96,8 @@ public class NodeLabelRenderer implements Renderer {
     public static final String NODE_X = "node.x";
     public static final String NODE_Y = "node.y";
     public static final String FONT_SIZE = "node.label.fontSize";
+    public static final String FONT_SIZE_FLOAT = "node.label.fontSizeFloat";
+    public static final String HIDDEN = "node.label.hidden";
     //Default values
     protected final boolean defaultShowLabels = false;
     protected final boolean defaultCustomFont = false;
@@ -110,17 +113,19 @@ public class NodeLabelRenderer implements Renderer {
     protected final boolean defaultShowBox = false;
     protected final DependantColor defaultBoxColor = new DependantColor(DependantColor.Mode.PARENT);
     protected final int defaultBoxOpacity = 100;
+    protected final boolean defaultAvoidOverlap = true;
+    protected final int defaultOverlapGridSize = 10;
     //Font cache
     protected final Map<Integer, Font> fontCache = new HashMap<>();
     protected final FontRenderContext frc = new FontRenderContext(new AffineTransform(), true, true);
 
     @Override
     public void preProcess(PreviewModel previewModel) {
+        final Item[] nodeLabelsItems = previewModel.getItems(Item.NODE_LABEL);
+
         PreviewProperties properties = previewModel.getProperties();
         if (properties.getBooleanValue(PreviewProperty.NODE_LABEL_SHORTEN)) {
             //Shorten labels
-            Item[] nodeLabelsItems = previewModel.getItems(Item.NODE_LABEL);
-
             int maxChars = properties.getIntValue(PreviewProperty.NODE_LABEL_MAX_CHAR);
             for (Item item : nodeLabelsItems) {
                 String label = item.getData(NodeLabelItem.LABEL);
@@ -132,13 +137,16 @@ public class NodeLabelRenderer implements Renderer {
         }
 
         //Put parent color, size and position
-        for (Item item : previewModel.getItems(Item.NODE_LABEL)) {
+        for (Item item : nodeLabelsItems) {
             Node node = (Node) item.getSource();
             Item nodeItem = previewModel.getItem(Item.NODE, node);
             item.setData(NODE_COLOR, nodeItem.getData(NodeItem.COLOR));
             item.setData(NODE_SIZE, SizeUtils.getNodeSize(nodeItem, properties) / 2f);
             item.setData(NODE_X, nodeItem.getData(NodeItem.X));
             item.setData(NODE_Y, nodeItem.getData(NodeItem.Y));
+
+            // Initialize label as visible (not hidden by overlap avoidance)
+            item.setData(HIDDEN, false);
         }
 
         // Get Viz model
@@ -158,7 +166,7 @@ public class NodeLabelRenderer implements Renderer {
 
         //Calculate font size and cache fonts
         final float baseFontSize = font.getSize() * properties.getFloatValue(PreviewProperty.NODE_LABEL_SCALE);
-        for (Item item : previewModel.getItems(Item.NODE_LABEL)) {
+        for (Item item : nodeLabelsItems) {
             float nodeSize = item.getData(NODE_SIZE);
             float fontSize = baseFontSize;
             if (properties.getBooleanValue(PreviewProperty.NODE_LABEL_PROPORTIONAL_SIZE)) {
@@ -171,14 +179,124 @@ public class NodeLabelRenderer implements Renderer {
                 Float labelSize = item.getData(NodeLabelItem.SIZE);
                 fontSize *= (float) Math.sqrt(labelSize);
             }
+            item.setData(FONT_SIZE_FLOAT, fontSize);
             Font labelFont = font.deriveFont(fontSize);
             fontCache.put(labelFont.getSize(), labelFont);
             item.setData(FONT_SIZE, labelFont.getSize());
+        }
+
+        //Grid-based label overlap avoidance (mirrors NodeLabelUpdater algorithm)
+        if (properties.getBooleanValue(PreviewProperty.NODE_LABEL_AVOID_OVERLAP) && nodeLabelsItems.length > 1) {
+            int gridSize = properties.getIntValue(PreviewProperty.NODE_LABEL_OVERLAP_GRID_SIZE);
+            if (gridSize <= 0) {
+                gridSize = defaultOverlapGridSize;
+            }
+
+            //Compute graph bounds from node positions
+            float minX = Float.MAX_VALUE, minY = Float.MAX_VALUE;
+            float maxX = -Float.MAX_VALUE, maxY = -Float.MAX_VALUE;
+            for (Item item : nodeLabelsItems) {
+                Float x = item.getData(NODE_X);
+                Float y = item.getData(NODE_Y);
+                if (x != null && y != null) {
+                    if (x < minX) { minX = x; }
+                    if (x > maxX) { maxX = x; }
+                    if (y < minY) { minY = y; }
+                    if (y > maxY) { maxY = y; }
+                }
+            }
+
+            float gridMinX = minX - gridSize;
+            float gridMinY = minY - gridSize;
+            float gridWidth = maxX + gridSize - gridMinX;
+            float gridHeight = maxY + gridSize - gridMinY;
+
+            if (gridWidth > 0 && gridHeight > 0) {
+                int gridCols = (int) Math.ceil(gridWidth / gridSize);
+                int gridRows = (int) Math.ceil(gridHeight / gridSize);
+                Map<Integer, Boolean> gridOccupancy = new HashMap<>(); // cell index → occupied
+
+                // Sort by descending float font size so larger (higher-priority) labels are placed first.
+                // This uses the pre-rounding float value, preserving distinctions that would be lost
+                // after deriveFont rounds to an integer size.
+                Item[] sortedItems = Arrays.copyOf(nodeLabelsItems, nodeLabelsItems.length);
+                Arrays.sort(sortedItems, (a, b) -> {
+                    Float fsA = a.getData(FONT_SIZE_FLOAT);
+                    Float fsB = b.getData(FONT_SIZE_FLOAT);
+                    if (fsA == null) { fsA = 0f; }
+                    if (fsB == null) { fsB = 0f; }
+                    return Float.compare(fsB, fsA);
+                });
+
+                for (Item item : sortedItems) {
+                    String label = item.getData(NodeLabelItem.LABEL);
+                    if (label == null || label.trim().isEmpty()) {
+                        continue;
+                    }
+
+                    Float x = item.getData(NODE_X);
+                    Float y = item.getData(NODE_Y);
+                    Integer fontSize = item.getData(FONT_SIZE);
+                    if (x == null || y == null || fontSize == null) {
+                        continue;
+                    }
+
+                    Font itemFont = fontCache.get(fontSize);
+                    if (itemFont == null) {
+                        continue;
+                    }
+
+                    Rectangle2D bounds = itemFont.getStringBounds(label, frc);
+                    float width = (float) bounds.getWidth();
+                    float height = (float) bounds.getHeight();
+                    if (width <= 0 || height <= 0) {
+                        continue;
+                    }
+
+                    float labelMinX = x - width / 2f;
+                    float labelMaxX = x + width / 2f;
+                    float labelMinY = y - height / 2f;
+                    float labelMaxY = y + height / 2f;
+
+                    int minCol = Math.max(0, (int) ((labelMinX - gridMinX) / gridSize));
+                    int maxCol = Math.min(gridCols - 1, (int) ((labelMaxX - gridMinX) / gridSize));
+                    int minRow = Math.max(0, (int) ((labelMinY - gridMinY) / gridSize));
+                    int maxRow = Math.min(gridRows - 1, (int) ((labelMaxY - gridMinY) / gridSize));
+
+                    // Since items are processed largest-first, any occupied cell means a higher-priority
+                    // label has already claimed it — hide the current one unconditionally.
+                    boolean shouldRender = true;
+                    outer:
+                    for (int row = minRow; row <= maxRow; row++) {
+                        for (int col = minCol; col <= maxCol; col++) {
+                            if (gridOccupancy.containsKey(row * gridCols + col)) {
+                                shouldRender = false;
+                                break outer;
+                            }
+                        }
+                    }
+
+                    if (shouldRender) {
+                        for (int row = minRow; row <= maxRow; row++) {
+                            for (int col = minCol; col <= maxCol; col++) {
+                                gridOccupancy.put(row * gridCols + col, Boolean.TRUE);
+                            }
+                        }
+                    } else {
+                        item.setData(HIDDEN, true);
+                    }
+                }
+            }
         }
     }
 
     @Override
     public void render(Item item, RenderTarget target, PreviewProperties properties) {
+        //Skip labels hidden by overlap avoidance
+        if (Boolean.TRUE.equals((Boolean) item.getData(HIDDEN))) {
+            return;
+        }
+
         Node node = (Node) item.getSource();
         //Label
         Color nodeColor = item.getData(NODE_COLOR);
@@ -485,6 +603,15 @@ public class NodeLabelRenderer implements Renderer {
                 NbBundle.getMessage(NodeLabelRenderer.class, "NodeLabelRenderer.property.shorten.displayName"),
                 NbBundle.getMessage(NodeLabelRenderer.class, "NodeLabelRenderer.property.shorten.description"),
                 PreviewProperty.CATEGORY_NODE_LABELS, PreviewProperty.SHOW_NODE_LABELS).setValue(defaultShorten),
+            PreviewProperty.createProperty(this, PreviewProperty.NODE_LABEL_AVOID_OVERLAP, Boolean.class,
+                NbBundle.getMessage(NodeLabelRenderer.class, "NodeLabelRenderer.property.avoidOverlap.displayName"),
+                NbBundle.getMessage(NodeLabelRenderer.class, "NodeLabelRenderer.property.avoidOverlap.description"),
+                PreviewProperty.CATEGORY_NODE_LABELS, PreviewProperty.SHOW_NODE_LABELS).setValue(defaultAvoidOverlap),
+            PreviewProperty.createProperty(this, PreviewProperty.NODE_LABEL_OVERLAP_GRID_SIZE, Integer.class,
+                NbBundle.getMessage(NodeLabelRenderer.class, "NodeLabelRenderer.property.overlapGridSize.displayName"),
+                NbBundle.getMessage(NodeLabelRenderer.class, "NodeLabelRenderer.property.overlapGridSize.description"),
+                PreviewProperty.CATEGORY_NODE_LABELS, PreviewProperty.SHOW_NODE_LABELS,
+                PreviewProperty.NODE_LABEL_AVOID_OVERLAP).setValue(defaultOverlapGridSize),
             PreviewProperty.createProperty(this, PreviewProperty.NODE_LABEL_MAX_CHAR, Integer.class,
                 NbBundle.getMessage(NodeLabelRenderer.class, "NodeLabelRenderer.property.maxchar.displayName"),
                 NbBundle.getMessage(NodeLabelRenderer.class, "NodeLabelRenderer.property.maxchar.description"),
@@ -514,7 +641,7 @@ public class NodeLabelRenderer implements Renderer {
                 NbBundle.getMessage(NodeLabelRenderer.class, "NodeLabelRenderer.property.box.opacity.displayName"),
                 NbBundle.getMessage(NodeLabelRenderer.class, "NodeLabelRenderer.property.box.opacity.description"),
                 PreviewProperty.CATEGORY_NODE_LABELS, PreviewProperty.NODE_LABEL_SHOW_BOX,
-                PreviewProperty.SHOW_NODE_LABELS).setValue(defaultBoxOpacity),};
+                PreviewProperty.SHOW_NODE_LABELS).setValue(defaultBoxOpacity)};
     }
 
     private boolean showNodeLabels(PreviewProperties properties) {
