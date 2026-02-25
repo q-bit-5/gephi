@@ -172,10 +172,10 @@ public class EdgeLabelRenderer implements Renderer {
                 // Arc radius
                 double r = length / properties.getDoubleValue(EdgeRenderer.ARC_CURVENESS);
                 // Arc bounding box
-                Double _xa = 0.5*(x1-x2);
-                Double _ya = 0.5*(y1-y2);
-                Double _x0 = x2+_xa;
-                Double _y0 = y2+_ya;
+                Double _xa = 0.5 * (x1 - x2);
+                Double _ya = 0.5 * (y1 - y2);
+                Double _x0 = x2 + _xa;
+                Double _y0 = y2 + _ya;
                 Double _a = Math.sqrt(Math.pow(_xa, 2) + Math.pow(_ya, 2));
                 Double _b = 0.;
                 if (_a < r) {
@@ -183,10 +183,10 @@ public class EdgeLabelRenderer implements Renderer {
                 }
                 Double xc = _x0 + (_b * _ya) / _a;
                 Double yc = _y0 - (_b * _xa / _a);
-                Double angle1 = Math.atan2(y1-yc, x1-xc);
-                Double angle2 = Math.atan2(y2-yc, x2-xc);
-                while (angle2<angle1) {
-                    angle2 += 2*Math.PI;
+                Double angle1 = Math.atan2(y1 - yc, x1 - xc);
+                Double angle2 = Math.atan2(y2 - yc, x2 - xc);
+                while (angle2 < angle1) {
+                    angle2 += 2 * Math.PI;
                 }
                 double arcAngle = Math.abs(angle2 - angle1);
                 while (arcAngle >= Math.PI) {
@@ -207,9 +207,9 @@ public class EdgeLabelRenderer implements Renderer {
                     angle1 -= sourceOffset;
                 }
                 // Label coordinates
-                final Double lAngle = (angle1+angle2)/2;
-                final Float x = length != 0 ? (float)(xc + r*Math.cos(lAngle)) : x1;
-                final Float y = length != 0 ? (float)(yc + r*Math.sin(lAngle)) : y1;
+                final Double lAngle = (angle1 + angle2) / 2;
+                final Float x = length != 0 ? (float) (xc + r * Math.cos(lAngle)) : x1;
+                final Float y = length != 0 ? (float) (yc + r * Math.sin(lAngle)) : y1;
                 item.setData(LABEL_X, x);
                 item.setData(LABEL_Y, y);
 
@@ -328,7 +328,8 @@ public class EdgeLabelRenderer implements Renderer {
         return new CanvasSize();
     }
 
-    public void renderG2D(G2DTarget target, String label, int fontSize, float x, float y, Color color, float outlineSize,
+    public void renderG2D(G2DTarget target, String label, int fontSize, float x, float y, Color color,
+                          float outlineSize,
                           Color outlineColor) {
         Graphics2D graphics = target.getGraphics();
 
@@ -380,7 +381,8 @@ public class EdgeLabelRenderer implements Renderer {
         return 2 * Math.atan2(rt / 2, x);
     }
 
-    public void renderSVG(SVGTarget target, Edge edge, String label, int fontSize, float x, float y, Color color, float outlineSize,
+    public void renderSVG(SVGTarget target, Edge edge, String label, int fontSize, float x, float y, Color color,
+                          float outlineSize,
                           Color outlineColor) {
         Text labelText = target.createTextNode(label);
         Font font = fontCache.get(fontSize);
@@ -435,7 +437,8 @@ public class EdgeLabelRenderer implements Renderer {
         target.getTopElement(SVGTarget.TOP_EDGE_LABELS).appendChild(labelElem);
     }
 
-    public void renderPDF(PDFTarget target, String label, int fontSize, float x, float y, Color color, float outlineSize,
+    public void renderPDF(PDFTarget target, String label, int fontSize, float x, float y, Color color,
+                          float outlineSize,
                           Color outlineColor) {
         PDPageContentStream contentStream = target.getContentStream();
 
@@ -519,7 +522,8 @@ public class EdgeLabelRenderer implements Renderer {
             PreviewProperty.createProperty(this, PreviewProperty.EDGE_LABEL_OUTLINE_SIZE, Float.class,
                 NbBundle.getMessage(EdgeLabelRenderer.class, "EdgeLabelRenderer.property.outlineSize.displayName"),
                 NbBundle.getMessage(EdgeLabelRenderer.class, "EdgeLabelRenderer.property.outlineSize.description"),
-                PreviewProperty.CATEGORY_EDGE_LABELS, PreviewProperty.SHOW_EDGE_LABELS).setMinMax(0f, null).setValue(defaultOutlineSize),
+                PreviewProperty.CATEGORY_EDGE_LABELS, PreviewProperty.SHOW_EDGE_LABELS).setMinMax(0f, null).setValue(
+                defaultOutlineSize),
             PreviewProperty.createProperty(this, PreviewProperty.EDGE_LABEL_OUTLINE_COLOR, DependantColor.class,
                 NbBundle.getMessage(EdgeLabelRenderer.class, "EdgeLabelRenderer.property.outlineColor.displayName"),
                 NbBundle.getMessage(EdgeLabelRenderer.class, "EdgeLabelRenderer.property.outlineColor.description"),

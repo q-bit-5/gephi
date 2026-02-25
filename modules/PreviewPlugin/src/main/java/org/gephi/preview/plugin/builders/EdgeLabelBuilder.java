@@ -42,7 +42,6 @@
 
 package org.gephi.preview.plugin.builders;
 
-import java.awt.Color;
 import java.util.Objects;
 import org.gephi.graph.api.Graph;
 import org.gephi.graph.api.GraphView;
@@ -51,8 +50,8 @@ import org.gephi.preview.api.Item;
 import org.gephi.preview.plugin.items.EdgeLabelItem;
 import org.gephi.preview.spi.ItemBuilder;
 import org.gephi.project.api.Workspace;
-import org.gephi.visualization.api.VisualizationModel;
 import org.gephi.visualization.api.VisualizationController;
+import org.gephi.visualization.api.VisualizationModel;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
 

@@ -13,7 +13,7 @@ public class SizeUtils {
     /**
      * Get the node size to render, taking into account the node size and the node scale factor.
      *
-     * @param item the node item
+     * @param item       the node item
      * @param properties the preview properties
      * @return the node size to render
      */
@@ -27,7 +27,7 @@ public class SizeUtils {
      * Get the node border width to render, taking into account the node size and the node border width factor.
      *
      * @param properties the preview properties
-     * @param nodeSize the node size to render
+     * @param nodeSize   the node size to render
      * @return the node border width to render
      */
     public static float getBorderWidth(PreviewProperties properties, float nodeSize) {

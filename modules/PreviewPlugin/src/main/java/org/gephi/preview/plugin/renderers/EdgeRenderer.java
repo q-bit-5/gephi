@@ -318,7 +318,8 @@ public class EdgeRenderer implements Renderer {
             PreviewProperty.createProperty(this, PreviewProperty.EDGE_THICKNESS, Float.class,
                 NbBundle.getMessage(EdgeRenderer.class, "EdgeRenderer.property.thickness.displayName"),
                 NbBundle.getMessage(EdgeRenderer.class, "EdgeRenderer.property.thickness.description"),
-                PreviewProperty.CATEGORY_EDGES, PreviewProperty.SHOW_EDGES).setMinMax(0f, null).setValue(defaultThickness),
+                PreviewProperty.CATEGORY_EDGES, PreviewProperty.SHOW_EDGES).setMinMax(0f, null).setValue(
+                defaultThickness),
             PreviewProperty.createProperty(this, PreviewProperty.EDGE_USE_WEIGHT, Boolean.class,
                 NbBundle.getMessage(EdgeRenderer.class, "EdgeRenderer.property.useWeight.displayName"),
                 NbBundle.getMessage(EdgeRenderer.class, "EdgeRenderer.property.useWeight.description"),
@@ -345,7 +346,8 @@ public class EdgeRenderer implements Renderer {
             PreviewProperty.createProperty(this, PreviewProperty.EDGE_OPACITY, Float.class,
                 NbBundle.getMessage(EdgeRenderer.class, "EdgeRenderer.property.opacity.displayName"),
                 NbBundle.getMessage(EdgeRenderer.class, "EdgeRenderer.property.opacity.description"),
-                PreviewProperty.CATEGORY_EDGES, PreviewProperty.SHOW_EDGES).setMinMax(0f, 100f).setValue(defaultOpacity),
+                PreviewProperty.CATEGORY_EDGES, PreviewProperty.SHOW_EDGES).setMinMax(0f, 100f).setValue(
+                defaultOpacity),
             PreviewProperty.createProperty(this, PreviewProperty.EDGE_CURVED, Boolean.class,
                 NbBundle.getMessage(EdgeRenderer.class, "EdgeRenderer.property.curvedEdges.displayName"),
                 NbBundle.getMessage(EdgeRenderer.class, "EdgeRenderer.property.curvedEdges.description"),
@@ -353,7 +355,8 @@ public class EdgeRenderer implements Renderer {
             PreviewProperty.createProperty(this, PreviewProperty.EDGE_RADIUS, Float.class,
                 NbBundle.getMessage(EdgeRenderer.class, "EdgeRenderer.property.radius.displayName"),
                 NbBundle.getMessage(EdgeRenderer.class, "EdgeRenderer.property.radius.description"),
-                PreviewProperty.CATEGORY_EDGES, PreviewProperty.SHOW_EDGES).setMinMax(0f, null).setValue(defaultRadius),};
+                PreviewProperty.CATEGORY_EDGES, PreviewProperty.SHOW_EDGES).setMinMax(0f, null).setValue(
+                defaultRadius),};
     }
 
     @Override
