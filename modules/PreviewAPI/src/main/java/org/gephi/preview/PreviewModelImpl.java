@@ -224,7 +224,7 @@ public class PreviewModelImpl implements PreviewModel, Model {
     }
 
     protected void buildAndLoadItems(Renderer[] renderers, Graph graph) {
-        itemMaps.putAll(Lookup.getDefault()
+        Map<String, Map<Object, Item>> groupedItems = Lookup.getDefault()
             .lookupAll(ItemBuilder.class)
             .parallelStream()
             .filter(b -> isItemBuilderNeeded(b, getProperties(), renderers))
@@ -232,7 +232,7 @@ public class PreviewModelImpl implements PreviewModel, Model {
                 try {
                     Item[] items = b.getItems(graph);
                     if (items == null || items.length == 0) {
-                        return Stream.empty();
+                        return Stream.<Entry<String, Item>>empty();
                     }
 
                     return Arrays.stream(items)
@@ -247,13 +247,14 @@ public class PreviewModelImpl implements PreviewModel, Model {
             .collect(Collectors.groupingBy(
                 Entry::getKey,
                 LinkedHashMap::new,
-                Collectors.toMap(
+                Collectors.<Entry<String, Item>, Object, Item, Map<Object, Item>>toMap(
                     e -> e.getValue().getSource(),
                     Entry::getValue,
                     this::mergeItems,
                     LinkedHashMap::new
                 )
-            )));
+            ));
+        itemMaps.putAll(groupedItems);
     }
 
     private boolean isItemBuilderNeeded(ItemBuilder itemBuilder, PreviewProperties properties, Renderer[] renderers) {
