@@ -98,6 +98,8 @@ public class DefaultPreset extends PreviewPreset {
         properties.put(PreviewProperty.NODE_LABEL_PROPORTIONAL_SIZE, true);
         properties.put(PreviewProperty.NODE_LABEL_SHORTEN, false);
         properties.put(PreviewProperty.NODE_LABEL_SHOW_BOX, false);
+        properties.put(PreviewProperty.NODE_LABEL_AVOID_OVERLAP, Boolean.TRUE);
+        properties.put(PreviewProperty.NODE_LABEL_OVERLAP_GRID_SIZE, 10);
 
         properties.put(PreviewProperty.SHOW_EDGES, Boolean.TRUE);
         properties.put(PreviewProperty.SHOW_EDGE_LABELS, Boolean.FALSE);

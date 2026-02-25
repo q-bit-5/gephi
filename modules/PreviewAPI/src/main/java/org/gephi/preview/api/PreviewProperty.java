@@ -205,6 +205,17 @@ public class PreviewProperty {
      */
     public static final String NODE_LABEL_COLOR = "node.label.color";
     /**
+     * Node Label <code>Boolean</code> property defining whether to avoid label overlaps.
+     * When true, a grid-based algorithm hides labels that overlap with labels of larger nodes.
+     */
+    public static final String NODE_LABEL_AVOID_OVERLAP = "node.label.avoidOverlap";
+    /**
+     * Node Label <code>Integer</code> property defining the grid cell size (in graph coordinate units)
+     * used by the label overlap avoidance algorithm. Larger values create coarser cells and are faster
+     * but less precise; smaller values give finer resolution.
+     */
+    public static final String NODE_LABEL_OVERLAP_GRID_SIZE = "node.label.overlapGridSize";
+    /**
      * Node Label <code>Boolean</code> property defining whether the label is shortened.
      */
     public static final String NODE_LABEL_SHORTEN = "node.label.shorten";
