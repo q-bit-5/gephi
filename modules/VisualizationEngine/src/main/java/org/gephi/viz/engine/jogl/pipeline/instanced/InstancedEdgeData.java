@@ -5,7 +5,7 @@ import com.jogamp.opengl.GL3ES3;
 import com.jogamp.opengl.util.GLBuffers;
 import java.nio.FloatBuffer;
 import org.gephi.graph.api.Edge;
-import org.gephi.viz.engine.jogl.models.edgeline.directed.EdgeLineModelDirected;
+import org.gephi.viz.engine.jogl.models.edgeline.directed.CommonEdgeLineDirected;
 import org.gephi.viz.engine.jogl.models.edgeline.undirected.CommonEdgeLineUndirected;
 import org.gephi.viz.engine.jogl.pipeline.common.AbstractEdgeData;
 import org.gephi.viz.engine.jogl.pipeline.common.EdgeWorldData;
@@ -75,7 +75,7 @@ public class InstancedEdgeData extends AbstractEdgeData {
                               float[] mvpFloats) {
         final int instanceCount = setupShaderProgramForRenderingLayerDirected(gl, layer, data, mvpFloats);
 
-        GLFunctions.drawInstanced(gl, 0, EdgeLineModelDirected.VERTEX_COUNT, instanceCount);
+        GLFunctions.drawInstanced(gl, 0, CommonEdgeLineDirected.VERTEX_COUNT, instanceCount);
         GLFunctions.stopUsingProgram(gl);
         unsetupDirectedVertexArrayAttributes(gl);
     }

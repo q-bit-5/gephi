@@ -26,7 +26,9 @@ import org.gephi.viz.engine.jogl.models.EdgeCircleSelfLoopSelectionSelected;
 import org.gephi.viz.engine.jogl.models.EdgeCircleSelfLoopSelectionUnselected;
 import org.gephi.viz.engine.jogl.models.edgeline.CommonEdgeLineModel;
 import org.gephi.viz.engine.jogl.models.edgeline.directed.CommonEdgeLineDirected;
-import org.gephi.viz.engine.jogl.models.edgeline.directed.EdgeLineModelDirected;
+import org.gephi.viz.engine.jogl.models.edgeline.directed.EdgeLineDirectedModelNoSelection;
+import org.gephi.viz.engine.jogl.models.edgeline.directed.EdgeLineDirectedModelSelectionSelected;
+import org.gephi.viz.engine.jogl.models.edgeline.directed.EdgeLineDirectedModelSelectionUnselected;
 import org.gephi.viz.engine.jogl.models.edgeline.undirected.CommonEdgeLineUndirected;
 import org.gephi.viz.engine.jogl.models.edgeline.undirected.EdgeLineUndirectedModelNoSelection;
 import org.gephi.viz.engine.jogl.models.edgeline.undirected.EdgeLineUndirectedModelSelectionSelected;
@@ -59,7 +61,13 @@ public abstract class AbstractEdgeData extends AbstractSelectionData {
     protected final EdgeLineUndirectedModelSelectionUnselected lineUndirectedModelSelectionUnselected =
         new EdgeLineUndirectedModelSelectionUnselected();
 
-    protected final EdgeLineModelDirected lineModelDirected = new EdgeLineModelDirected();
+    protected final EdgeLineDirectedModelNoSelection lineDirectedModelNoSelection =
+        new EdgeLineDirectedModelNoSelection();
+    protected final EdgeLineDirectedModelSelectionSelected lineDirectedModelSelectionSelected =
+        new EdgeLineDirectedModelSelectionSelected();
+    protected final EdgeLineDirectedModelSelectionUnselected lineDirectedModelSelectionUnselected =
+        new EdgeLineDirectedModelSelectionUnselected();
+
     protected final EdgeCircleSelfLoopNoSelection edgeCircleSelfLoopNoSelection = new EdgeCircleSelfLoopNoSelection();
     protected final EdgeCircleSelfLoopSelectionSelected edgeCircleSelfLoopSelectionSelected =
         new EdgeCircleSelfLoopSelectionSelected();
@@ -94,9 +102,9 @@ public abstract class AbstractEdgeData extends AbstractSelectionData {
 
     protected static final int ATTRIBS_STRIDE = CommonEdgeLineModel.TOTAL_ATTRIBUTES_FLOATS;
 
-    protected static final int VERTEX_COUNT_DIRECTED = EdgeLineModelDirected.VERTEX_COUNT;
+
     protected static final int VERTEX_COUNT_MAX =
-        Math.max(VERTEX_COUNT_DIRECTED, CommonEdgeLineUndirected.VERTEX_COUNT);
+        Math.max(CommonEdgeLineDirected.VERTEX_COUNT, CommonEdgeLineUndirected.VERTEX_COUNT);
 
     protected final boolean instanced;
     protected final boolean usesSecondaryBuffer;
@@ -132,11 +140,14 @@ public abstract class AbstractEdgeData extends AbstractSelectionData {
         edgeCircleSelfLoopNoSelection.initGLPrograms(gl);
         edgeCircleSelfLoopSelectionUnselected.initGLPrograms(gl);
         edgeCircleSelfLoopSelectionSelected.initGLPrograms(gl);
-        lineModelDirected.initGLPrograms(gl);
 
-        lineUndirectedModelNoSelection.initGLPrograms(gl);
-        lineUndirectedModelSelectionSelected.initGLPrograms(gl);
-        lineUndirectedModelSelectionUnselected.initGLPrograms(gl);
+        lineDirectedModelNoSelection.initProgram(gl);
+        lineDirectedModelSelectionSelected.initProgram(gl);
+        lineDirectedModelSelectionUnselected.initProgram(gl);
+
+        lineUndirectedModelNoSelection.initProgram(gl);
+        lineUndirectedModelSelectionSelected.initProgram(gl);
+        lineUndirectedModelSelectionUnselected.initProgram(gl);
 
         initBuffers(gl);
     }
@@ -369,7 +380,7 @@ public abstract class AbstractEdgeData extends AbstractSelectionData {
         final int instanceCount;
         if (renderingUnselectedEdges) {
             instanceCount = directedInstanceCounter.unselectedCountToDraw;
-            lineModelDirected.useProgramWithSelectionUnselected(
+            lineDirectedModelSelectionUnselected.useProgram(
                 gl,
                 mvpFloats,
                 edgeScale,
@@ -391,7 +402,7 @@ public abstract class AbstractEdgeData extends AbstractSelectionData {
             }
         } else {
             instanceCount = directedInstanceCounter.selectedCountToDraw;
-            lineModelDirected.useProgram(
+            lineDirectedModelNoSelection.useProgram(
                 gl,
                 mvpFloats,
                 edgeScale,
@@ -404,7 +415,7 @@ public abstract class AbstractEdgeData extends AbstractSelectionData {
 
             if (someSelection) {
                 if (someSelection && edgeSelectionColor) {
-                    lineModelDirected.useProgram(
+                    lineDirectedModelNoSelection.useProgram(
                         gl,
                         mvpFloats,
                         edgeScale,
@@ -416,7 +427,7 @@ public abstract class AbstractEdgeData extends AbstractSelectionData {
 
                     );
                 } else {
-                    lineModelDirected.useProgramWithSelectionSelected(
+                    lineDirectedModelSelectionSelected.useProgram(
                         gl,
                         mvpFloats,
                         edgeScale,
@@ -431,7 +442,7 @@ public abstract class AbstractEdgeData extends AbstractSelectionData {
                     );
                 }
             } else {
-                lineModelDirected.useProgram(
+                lineDirectedModelNoSelection.useProgram(
                     gl,
                     mvpFloats,
                     edgeScale,
@@ -1395,7 +1406,11 @@ public abstract class AbstractEdgeData extends AbstractSelectionData {
         lineUndirectedModelSelectionUnselected.destroy(gl.getGL2ES2());
         lineUndirectedModelNoSelection.destroy(gl.getGL2ES2());
 
-        lineModelDirected.destroy(gl.getGL2ES2());
+        lineDirectedModelNoSelection.destroy(gl.getGL2ES2());
+        lineDirectedModelSelectionSelected.destroy(gl.getGL2ES2());
+        lineDirectedModelSelectionUnselected.destroy(gl.getGL2ES2());
+
+
         edgeCircleSelfLoopNoSelection.destroy(gl.getGL2ES2());
         edgeCircleSelfLoopSelectionSelected.destroy(gl.getGL2ES2());
         edgeCircleSelfLoopSelectionUnselected.destroy(gl.getGL2ES2());

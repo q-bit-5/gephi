@@ -43,16 +43,12 @@ public class EdgeLineUndirectedModelSelectionUnselected {
         return VERTEX_COUNT;
     }
 
-    public void initGLPrograms(GL2ES2 gl) {
-        initProgram(gl);
-    }
-
     private static final String SHADERS_ROOT = Constants.SHADERS_ROOT + "edge";
 
     private static final String SHADERS_EDGE_LINE_SOURCE_VS = "edge-line-undirected_with_selection_unselected";
     private static final String SHADERS_EDGE_LINE_SOURCE_FS = "edge-line-undirected";
 
-    private void initProgram(GL2ES2 gl) {
+    public void initProgram(GL2ES2 gl) {
         program = new GLShaderProgram(SHADERS_ROOT, SHADERS_EDGE_LINE_SOURCE_VS,
             SHADERS_EDGE_LINE_SOURCE_FS)
             .addUniformName(UNIFORM_NAME_MODEL_VIEW_PROJECTION)
