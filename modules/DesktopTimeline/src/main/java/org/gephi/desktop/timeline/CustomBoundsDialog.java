@@ -47,6 +47,8 @@ import java.awt.event.ActionListener;
 import java.text.NumberFormat;
 import java.util.Locale;
 import javax.swing.JTextField;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import org.gephi.graph.api.AttributeUtils;
 import org.gephi.graph.api.TimeFormat;
 import org.gephi.timeline.api.TimelineController;
@@ -192,6 +194,30 @@ public class CustomBoundsDialog extends javax.swing.JPanel {
             new FormatValidator(), new TimeValidator(endTextField, false));
         group.add(endTextField, StringValidators.REQUIRE_NON_EMPTY_STRING,
             new FormatValidator(), new TimeValidator(startTextField, true));
+
+        // Trigger re-validation of all fields when any field changes, so that
+        // cross-field constraints (e.g. start < end) are properly re-evaluated
+        // even when only the paired field was edited.
+        DocumentListener revalidateListener = new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                group.performValidation();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                group.performValidation();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                group.performValidation();
+            }
+        };
+        minTextField.getDocument().addDocumentListener(revalidateListener);
+        maxTextField.getDocument().addDocumentListener(revalidateListener);
+        startTextField.getDocument().addDocumentListener(revalidateListener);
+        endTextField.getDocument().addDocumentListener(revalidateListener);
     }
 
     /**
