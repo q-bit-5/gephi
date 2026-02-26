@@ -24,8 +24,13 @@ import org.gephi.viz.engine.jogl.JOGLRenderingTarget;
 import org.gephi.viz.engine.jogl.models.EdgeCircleSelfLoopNoSelection;
 import org.gephi.viz.engine.jogl.models.EdgeCircleSelfLoopSelectionSelected;
 import org.gephi.viz.engine.jogl.models.EdgeCircleSelfLoopSelectionUnselected;
-import org.gephi.viz.engine.jogl.models.EdgeLineModelDirected;
-import org.gephi.viz.engine.jogl.models.EdgeLineModelUndirected;
+import org.gephi.viz.engine.jogl.models.edgeline.CommonEdgeLineModel;
+import org.gephi.viz.engine.jogl.models.edgeline.directed.CommonEdgeLineDirected;
+import org.gephi.viz.engine.jogl.models.edgeline.directed.EdgeLineModelDirected;
+import org.gephi.viz.engine.jogl.models.edgeline.undirected.CommonEdgeLineUndirected;
+import org.gephi.viz.engine.jogl.models.edgeline.undirected.EdgeLineUndirectedModelNoSelection;
+import org.gephi.viz.engine.jogl.models.edgeline.undirected.EdgeLineUndirectedModelSelectionSelected;
+import org.gephi.viz.engine.jogl.models.edgeline.undirected.EdgeLineUndirectedModelSelectionUnselected;
 import org.gephi.viz.engine.jogl.models.mesh.EdgeLineMeshGenerator;
 import org.gephi.viz.engine.jogl.models.mesh.NodeDiskVertexMeshGenerator;
 import org.gephi.viz.engine.jogl.util.ManagedDirectBuffer;
@@ -47,7 +52,13 @@ import org.gephi.viz.engine.util.structure.NodesCallback;
  */
 public abstract class AbstractEdgeData extends AbstractSelectionData {
 
-    protected final EdgeLineModelUndirected lineModelUndirected = new EdgeLineModelUndirected();
+    protected final EdgeLineUndirectedModelNoSelection lineUndirectedModelNoSelection =
+        new EdgeLineUndirectedModelNoSelection();
+    protected final EdgeLineUndirectedModelSelectionSelected lineUndirectedModelSelectionSelected =
+        new EdgeLineUndirectedModelSelectionSelected();
+    protected final EdgeLineUndirectedModelSelectionUnselected lineUndirectedModelSelectionUnselected =
+        new EdgeLineUndirectedModelSelectionUnselected();
+
     protected final EdgeLineModelDirected lineModelDirected = new EdgeLineModelDirected();
     protected final EdgeCircleSelfLoopNoSelection edgeCircleSelfLoopNoSelection = new EdgeCircleSelfLoopNoSelection();
     protected final EdgeCircleSelfLoopSelectionSelected edgeCircleSelfLoopSelectionSelected =
@@ -81,14 +92,11 @@ public abstract class AbstractEdgeData extends AbstractSelectionData {
     protected final EdgesCallback edgesCallback;
     protected final NodesCallback nodesCallback;
 
-    protected static final int ATTRIBS_STRIDE = Math.max(
-        EdgeLineModelUndirected.TOTAL_ATTRIBUTES_FLOATS,
-        EdgeLineModelDirected.TOTAL_ATTRIBUTES_FLOATS
-    );
+    protected static final int ATTRIBS_STRIDE = CommonEdgeLineModel.TOTAL_ATTRIBUTES_FLOATS;
 
-    protected static final int VERTEX_COUNT_UNDIRECTED = EdgeLineModelUndirected.VERTEX_COUNT;
     protected static final int VERTEX_COUNT_DIRECTED = EdgeLineModelDirected.VERTEX_COUNT;
-    protected static final int VERTEX_COUNT_MAX = Math.max(VERTEX_COUNT_DIRECTED, VERTEX_COUNT_UNDIRECTED);
+    protected static final int VERTEX_COUNT_MAX =
+        Math.max(VERTEX_COUNT_DIRECTED, CommonEdgeLineUndirected.VERTEX_COUNT);
 
     protected final boolean instanced;
     protected final boolean usesSecondaryBuffer;
@@ -125,7 +133,10 @@ public abstract class AbstractEdgeData extends AbstractSelectionData {
         edgeCircleSelfLoopSelectionUnselected.initGLPrograms(gl);
         edgeCircleSelfLoopSelectionSelected.initGLPrograms(gl);
         lineModelDirected.initGLPrograms(gl);
-        lineModelUndirected.initGLPrograms(gl);
+
+        lineUndirectedModelNoSelection.initGLPrograms(gl);
+        lineUndirectedModelSelectionSelected.initGLPrograms(gl);
+        lineUndirectedModelSelectionUnselected.initGLPrograms(gl);
 
         initBuffers(gl);
     }
@@ -135,7 +146,8 @@ public abstract class AbstractEdgeData extends AbstractSelectionData {
         attributesBuffer = new ManagedDirectBuffer(GL_FLOAT, ATTRIBS_STRIDE * BATCH_EDGES_SIZE);
 
         selfLoopAttributesBufferBatch = new float[ATTRIBS_STRIDE_SELFLOOP * BATCH_SELFLOOP_EDGES_SIZE];
-        selfLoopAttributesBuffer = new ManagedDirectBuffer(GL_FLOAT, ATTRIBS_STRIDE_SELFLOOP * BATCH_SELFLOOP_EDGES_SIZE);
+        selfLoopAttributesBuffer =
+            new ManagedDirectBuffer(GL_FLOAT, ATTRIBS_STRIDE_SELFLOOP * BATCH_SELFLOOP_EDGES_SIZE);
     }
 
     protected int setupShaderProgramForRenderingLayerSelfLoop(
@@ -255,7 +267,7 @@ public abstract class AbstractEdgeData extends AbstractSelectionData {
         if (renderingUnselectedEdges) {
             instanceCount = undirectedInstanceCounter.unselectedCountToDraw;
 
-            lineModelUndirected.useProgramWithSelectionUnselected(
+            lineUndirectedModelSelectionUnselected.useProgram(
                 gl,
                 mvpFloats,
                 edgeScale,
@@ -277,7 +289,7 @@ public abstract class AbstractEdgeData extends AbstractSelectionData {
             }
         } else {
             instanceCount = undirectedInstanceCounter.selectedCountToDraw;
-            lineModelUndirected.useProgram(
+            lineUndirectedModelNoSelection.useProgram(
                 gl,
                 mvpFloats,
                 edgeScale,
@@ -290,7 +302,7 @@ public abstract class AbstractEdgeData extends AbstractSelectionData {
 
             if (someSelection) {
                 if (edgeSelectionColor) {
-                    lineModelUndirected.useProgram(
+                    lineUndirectedModelNoSelection.useProgram(
                         gl,
                         mvpFloats,
                         edgeScale,
@@ -301,7 +313,7 @@ public abstract class AbstractEdgeData extends AbstractSelectionData {
                         nodeScale
                     );
                 } else {
-                    lineModelUndirected.useProgramWithSelectionSelected(
+                    lineUndirectedModelSelectionSelected.useProgram(
                         gl,
                         mvpFloats,
                         edgeScale,
@@ -315,7 +327,7 @@ public abstract class AbstractEdgeData extends AbstractSelectionData {
                     );
                 }
             } else {
-                lineModelUndirected.useProgram(
+                lineUndirectedModelNoSelection.useProgram(
                     gl,
                     mvpFloats,
                     edgeScale,
@@ -1379,7 +1391,10 @@ public abstract class AbstractEdgeData extends AbstractSelectionData {
         }
 
         // Destroy shader programs
-        lineModelUndirected.destroy(gl.getGL2ES2());
+        lineUndirectedModelSelectionSelected.destroy(gl.getGL2ES2());
+        lineUndirectedModelSelectionUnselected.destroy(gl.getGL2ES2());
+        lineUndirectedModelNoSelection.destroy(gl.getGL2ES2());
+
         lineModelDirected.destroy(gl.getGL2ES2());
         edgeCircleSelfLoopNoSelection.destroy(gl.getGL2ES2());
         edgeCircleSelfLoopSelectionSelected.destroy(gl.getGL2ES2());
@@ -1478,7 +1493,7 @@ public abstract class AbstractEdgeData extends AbstractSelectionData {
         protected void configure(GL2ES2 gl) {
             vertexGLBufferUndirected.bind(gl);
             {
-                gl.glVertexAttribPointer(SHADER_VERT_LOCATION, EdgeLineModelUndirected.VERTEX_FLOATS, GL_FLOAT, false,
+                gl.glVertexAttribPointer(SHADER_VERT_LOCATION, CommonEdgeLineUndirected.VERTEX_FLOATS, GL_FLOAT, false,
                     0, 0);
             }
             vertexGLBufferUndirected.unbind(gl);
@@ -1487,27 +1502,27 @@ public abstract class AbstractEdgeData extends AbstractSelectionData {
             {
                 final int stride = ATTRIBS_STRIDE * Float.BYTES;
                 int offset = 0;
-                gl.glVertexAttribPointer(SHADER_POSITION_LOCATION, EdgeLineModelUndirected.POSITION_SOURCE_FLOATS,
+                gl.glVertexAttribPointer(SHADER_POSITION_LOCATION, CommonEdgeLineUndirected.POSITION_SOURCE_FLOATS,
                     GL_FLOAT, false, stride, offset);
-                offset += EdgeLineModelUndirected.POSITION_SOURCE_FLOATS * Float.BYTES;
+                offset += CommonEdgeLineUndirected.POSITION_SOURCE_FLOATS * Float.BYTES;
 
                 gl.glVertexAttribPointer(SHADER_POSITION_TARGET_LOCATION,
-                    EdgeLineModelUndirected.POSITION_TARGET_LOCATION, GL_FLOAT, false, stride, offset);
-                offset += EdgeLineModelUndirected.POSITION_TARGET_LOCATION * Float.BYTES;
+                    CommonEdgeLineUndirected.POSITION_TARGET_FLOATS, GL_FLOAT, false, stride, offset);
+                offset += CommonEdgeLineUndirected.POSITION_TARGET_FLOATS * Float.BYTES;
 
-                gl.glVertexAttribPointer(SHADER_SIZE_LOCATION, EdgeLineModelUndirected.SIZE_FLOATS, GL_FLOAT, false,
+                gl.glVertexAttribPointer(SHADER_SIZE_LOCATION, CommonEdgeLineUndirected.SIZE_FLOATS, GL_FLOAT, false,
                     stride, offset);
-                offset += EdgeLineModelUndirected.SIZE_FLOATS * Float.BYTES;
+                offset += CommonEdgeLineUndirected.SIZE_FLOATS * Float.BYTES;
 
-                gl.glVertexAttribPointer(SHADER_COLOR_LOCATION, EdgeLineModelUndirected.COLOR_FLOATS * Float.BYTES,
+                gl.glVertexAttribPointer(SHADER_COLOR_LOCATION, CommonEdgeLineUndirected.COLOR_FLOATS * Float.BYTES,
                     GL_UNSIGNED_BYTE, false, stride, offset);
-                offset += EdgeLineModelUndirected.COLOR_FLOATS * Float.BYTES;
+                offset += CommonEdgeLineUndirected.COLOR_FLOATS * Float.BYTES;
 
-                gl.glVertexAttribPointer(SHADER_SOURCE_SIZE_LOCATION, EdgeLineModelDirected.SOURCE_SIZE_FLOATS,
+                gl.glVertexAttribPointer(SHADER_SOURCE_SIZE_LOCATION, CommonEdgeLineUndirected.SOURCE_SIZE_FLOATS,
                     GL_FLOAT, false, stride, offset);
-                offset += EdgeLineModelDirected.SOURCE_SIZE_FLOATS * Float.BYTES;
+                offset += CommonEdgeLineUndirected.SOURCE_SIZE_FLOATS * Float.BYTES;
 
-                gl.glVertexAttribPointer(SHADER_TARGET_SIZE_LOCATION, EdgeLineModelDirected.TARGET_SIZE_FLOATS,
+                gl.glVertexAttribPointer(SHADER_TARGET_SIZE_LOCATION, CommonEdgeLineUndirected.TARGET_SIZE_FLOATS,
                     GL_FLOAT, false, stride, offset);
             }
             attributesBuffer.unbind(gl);
@@ -1558,7 +1573,8 @@ public abstract class AbstractEdgeData extends AbstractSelectionData {
         protected void configure(GL2ES2 gl) {
             vertexGLBufferDirected.bind(gl);
             {
-                gl.glVertexAttribPointer(SHADER_VERT_LOCATION, EdgeLineModelDirected.VERTEX_FLOATS, GL_FLOAT, false, 0,
+
+                gl.glVertexAttribPointer(SHADER_VERT_LOCATION, CommonEdgeLineDirected.VERTEX_FLOATS, GL_FLOAT, false, 0,
                     0);
             }
             vertexGLBufferDirected.unbind(gl);
@@ -1567,27 +1583,27 @@ public abstract class AbstractEdgeData extends AbstractSelectionData {
             {
                 int stride = ATTRIBS_STRIDE * Float.BYTES;
                 int offset = 0;
-                gl.glVertexAttribPointer(SHADER_POSITION_LOCATION, EdgeLineModelDirected.POSITION_SOURCE_FLOATS,
+                gl.glVertexAttribPointer(SHADER_POSITION_LOCATION, CommonEdgeLineDirected.POSITION_SOURCE_FLOATS,
                     GL_FLOAT, false, stride, offset);
-                offset += EdgeLineModelDirected.POSITION_SOURCE_FLOATS * Float.BYTES;
+                offset += CommonEdgeLineDirected.POSITION_SOURCE_FLOATS * Float.BYTES;
 
-                gl.glVertexAttribPointer(SHADER_POSITION_TARGET_LOCATION, EdgeLineModelDirected.POSITION_TARGET_FLOATS,
+                gl.glVertexAttribPointer(SHADER_POSITION_TARGET_LOCATION, CommonEdgeLineDirected.POSITION_TARGET_FLOATS,
                     GL_FLOAT, false, stride, offset);
-                offset += EdgeLineModelDirected.POSITION_TARGET_FLOATS * Float.BYTES;
+                offset += CommonEdgeLineDirected.POSITION_TARGET_FLOATS * Float.BYTES;
 
-                gl.glVertexAttribPointer(SHADER_SIZE_LOCATION, EdgeLineModelDirected.SIZE_FLOATS, GL_FLOAT, false,
+                gl.glVertexAttribPointer(SHADER_SIZE_LOCATION, CommonEdgeLineDirected.SIZE_FLOATS, GL_FLOAT, false,
                     stride, offset);
-                offset += EdgeLineModelDirected.SIZE_FLOATS * Float.BYTES;
+                offset += CommonEdgeLineDirected.SIZE_FLOATS * Float.BYTES;
 
-                gl.glVertexAttribPointer(SHADER_COLOR_LOCATION, EdgeLineModelDirected.COLOR_FLOATS * Float.BYTES,
+                gl.glVertexAttribPointer(SHADER_COLOR_LOCATION, CommonEdgeLineDirected.COLOR_FLOATS * Float.BYTES,
                     GL_UNSIGNED_BYTE, false, stride, offset);
-                offset += EdgeLineModelDirected.COLOR_FLOATS * Float.BYTES;
+                offset += CommonEdgeLineDirected.COLOR_FLOATS * Float.BYTES;
 
-                gl.glVertexAttribPointer(SHADER_SOURCE_SIZE_LOCATION, EdgeLineModelDirected.SOURCE_SIZE_FLOATS,
+                gl.glVertexAttribPointer(SHADER_SOURCE_SIZE_LOCATION, CommonEdgeLineDirected.SOURCE_SIZE_FLOATS,
                     GL_FLOAT, false, stride, offset);
-                offset += EdgeLineModelDirected.SOURCE_SIZE_FLOATS * Float.BYTES;
+                offset += CommonEdgeLineDirected.SOURCE_SIZE_FLOATS * Float.BYTES;
 
-                gl.glVertexAttribPointer(SHADER_TARGET_SIZE_LOCATION, EdgeLineModelDirected.TARGET_SIZE_FLOATS,
+                gl.glVertexAttribPointer(SHADER_TARGET_SIZE_LOCATION, CommonEdgeLineDirected.TARGET_SIZE_FLOATS,
                     GL_FLOAT, false, stride, offset);
             }
             attributesBuffer.unbind(gl);
