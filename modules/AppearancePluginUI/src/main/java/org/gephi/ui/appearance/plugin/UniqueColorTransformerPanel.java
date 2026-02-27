@@ -48,6 +48,7 @@ import java.util.prefs.Preferences;
 import net.java.dev.colorchooser.ColorChooser;
 import org.gephi.appearance.api.SimpleFunction;
 import org.gephi.appearance.plugin.AbstractUniqueColorTransformer;
+import org.gephi.utils.ColorUtils;
 import org.openide.util.NbPreferences;
 
 /**
@@ -84,7 +85,7 @@ public class UniqueColorTransformerPanel extends javax.swing.JPanel {
 
         Color prefColor = transformer.getColor();
         if (prefColorByteArray != null) {
-            prefColor = (Color) TransformerPanelUtils.deserialize(prefColorByteArray);
+            prefColor = ColorUtils.deserializeColor(prefColorByteArray);
         }
         colorChooser.setColor(prefColor);
         colorLabel.setText(getHex(prefColor));
@@ -96,7 +97,7 @@ public class UniqueColorTransformerPanel extends javax.swing.JPanel {
                     transformer.setColor(color);
                     colorLabel.setText(getHex(color));
                     preferences.putByteArray(getUniqueColorPreferenceKey(function),
-                        TransformerPanelUtils.serialize(color));
+                        ColorUtils.serializeColor(color));
                 }
             }
         });
