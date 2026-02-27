@@ -57,6 +57,7 @@ import org.gephi.appearance.plugin.RankingElementColorTransformer;
 import org.gephi.ui.components.PaletteIcon;
 import org.gephi.ui.components.gradientslider.GradientSlider;
 import org.gephi.ui.components.gradientslider.MultiThumbSlider;
+import org.gephi.utils.ColorUtils;
 import org.gephi.utils.PaletteUtils;
 import org.gephi.utils.PaletteUtils.Palette;
 import org.openide.util.ImageUtilities;
@@ -122,10 +123,10 @@ public class RankingColorTransformerPanel extends javax.swing.JPanel {
         byte[] colorsStartBytes = preferences.getByteArray(getColorsStartPreferenceKey(function), null);
 
         if (positionsStartBytes != null) {
-            positionsStart = (float[]) TransformerPanelUtils.deserialize(positionsStartBytes);
+            positionsStart = ColorUtils.deserializeFloats(positionsStartBytes);
         }
         if (colorsStartBytes != null) {
-            colorsStart = (Color[]) TransformerPanelUtils.deserialize(colorsStartBytes);
+            colorsStart = ColorUtils.deserializeColors(colorsStartBytes);
         }
         //Gradient
         gradientSlider.setValues(positionsStart, colorsStart);
@@ -144,9 +145,9 @@ public class RankingColorTransformerPanel extends javax.swing.JPanel {
                     colorTransformer.setColors(Arrays.copyOf(colors, colors.length));
                     colorTransformer.setColorPositions(Arrays.copyOf(positions, positions.length));
 
-                    byte[] colorsBytes = TransformerPanelUtils.serialize(Arrays.copyOf(colors, colors.length));
+                    byte[] colorsBytes = ColorUtils.serializeColors(Arrays.copyOf(colors, colors.length));
                     byte[] colorPositionsBytes =
-                        TransformerPanelUtils.serialize(Arrays.copyOf(positions, positions.length));
+                        ColorUtils.serializeFloats(Arrays.copyOf(positions, positions.length));
 
                     preferences.putByteArray(getColorsStartPreferenceKey(function), colorsBytes);
                     preferences.putByteArray(getPositionsStartPreferenceKey(function), colorPositionsBytes);
