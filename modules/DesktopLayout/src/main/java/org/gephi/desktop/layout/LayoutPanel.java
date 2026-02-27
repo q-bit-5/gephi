@@ -83,6 +83,8 @@ import org.openide.util.NbPreferences;
 
 public class LayoutPanel extends javax.swing.JPanel implements PropertyChangeListener {
 
+    public static final String DEFAULT_LAYOUT_PREF = "LayoutPanel.defaultLayout";
+
     private final String NO_SELECTION;
     private LayoutModel model;
     private final LayoutController controller;
@@ -267,10 +269,25 @@ public class LayoutPanel extends javax.swing.JPanel implements PropertyChangeLis
         this.model = layoutModel;
         if (model != null) {
             model.addPropertyChangeListener(this);
+            if (model.getSelectedLayout() == null) {
+                applyDefaultLayout();
+            }
         }
 
         refreshEnable();
         refreshModel();
+    }
+
+    private void applyDefaultLayout() {
+        String defaultBuilderClass = NbPreferences.forModule(LayoutPanel.class).get(DEFAULT_LAYOUT_PREF, "");
+        if (!defaultBuilderClass.isEmpty()) {
+            for (LayoutBuilder builder : Lookup.getDefault().lookupAll(LayoutBuilder.class)) {
+                if (builder.getClass().getName().equals(defaultBuilderClass)) {
+                    controller.setLayout(builder.buildLayout());
+                    break;
+                }
+            }
+        }
     }
 
     @Override
@@ -559,7 +576,7 @@ public class LayoutPanel extends javax.swing.JPanel implements PropertyChangeLis
         return richTooltip;
     }
 
-    private static class LayoutBuilderWrapper {
+    public static class LayoutBuilderWrapper {
 
         private final LayoutBuilder layoutBuilder;
 
