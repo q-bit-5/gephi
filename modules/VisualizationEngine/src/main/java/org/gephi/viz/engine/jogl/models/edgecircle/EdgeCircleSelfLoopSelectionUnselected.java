@@ -1,4 +1,4 @@
-package org.gephi.viz.engine.jogl.models;
+package org.gephi.viz.engine.jogl.models.edgecircle;
 
 import static org.gephi.viz.engine.util.gl.Constants.ATTRIB_NAME_COLOR;
 import static org.gephi.viz.engine.util.gl.Constants.ATTRIB_NAME_POSITION;
@@ -30,10 +30,11 @@ public class EdgeCircleSelfLoopSelectionUnselected {
     private GLShaderProgram program;
 
     private static final String SHADERS_ROOT = Constants.SHADERS_ROOT + "edge";
-    private static final String SHADERS_NODE_CIRCLE_SOURCE = "selfloop_unselected";
+    private static final String SHADERS_NODE_CIRCLE_SOURCE_VS = "selfloop_unselected";
+    private static final String SHADERS_NODE_CIRCLE_SOURCE_FS = "selfloop_unselected";
 
-    public void initGLPrograms(GL2ES2 gl) {
-        program = new GLShaderProgram(SHADERS_ROOT, SHADERS_NODE_CIRCLE_SOURCE, SHADERS_NODE_CIRCLE_SOURCE)
+    public void initGLProgram(GL2ES2 gl) {
+        program = new GLShaderProgram(SHADERS_ROOT, SHADERS_NODE_CIRCLE_SOURCE_VS, SHADERS_NODE_CIRCLE_SOURCE_FS)
             .addUniformName(UNIFORM_NAME_BACKGROUND_COLOR)
             .addUniformName(UNIFORM_NAME_MODEL_VIEW_PROJECTION)
             .addUniformName(UNIFORM_NAME_COLOR_LIGHTEN_FACTOR)

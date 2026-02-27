@@ -21,9 +21,10 @@ import org.gephi.graph.api.Rect2D;
 import org.gephi.viz.engine.VizEngine;
 import org.gephi.viz.engine.VizEngineModel;
 import org.gephi.viz.engine.jogl.JOGLRenderingTarget;
-import org.gephi.viz.engine.jogl.models.EdgeCircleSelfLoopNoSelection;
-import org.gephi.viz.engine.jogl.models.EdgeCircleSelfLoopSelectionSelected;
-import org.gephi.viz.engine.jogl.models.EdgeCircleSelfLoopSelectionUnselected;
+import org.gephi.viz.engine.jogl.models.edgecircle.CommonEdgeCircleSelfLoop;
+import org.gephi.viz.engine.jogl.models.edgecircle.EdgeCircleSelfLoopNoSelection;
+import org.gephi.viz.engine.jogl.models.edgecircle.EdgeCircleSelfLoopSelectionSelected;
+import org.gephi.viz.engine.jogl.models.edgecircle.EdgeCircleSelfLoopSelectionUnselected;
 import org.gephi.viz.engine.jogl.models.edgeline.CommonEdgeLineModel;
 import org.gephi.viz.engine.jogl.models.edgeline.directed.CommonEdgeLineDirected;
 import org.gephi.viz.engine.jogl.models.edgeline.directed.EdgeLineDirectedModelNoSelection;
@@ -92,7 +93,7 @@ public abstract class AbstractEdgeData extends AbstractSelectionData {
     protected GLBuffer attributesGLBufferUndirectedSecondary;
 
 
-    final public static int ATTRIBS_STRIDE_SELFLOOP = EdgeCircleSelfLoopNoSelection.TOTAL_ATTRIBUTES_FLOATS;
+    final public static int ATTRIBS_STRIDE_SELFLOOP = CommonEdgeCircleSelfLoop.TOTAL_ATTRIBUTES_FLOATS;
     protected GLBuffer vertexGLBufferSelfLoop;
     protected GLBuffer attributesGLBufferSelfLoop;
     protected GLBuffer attributesGLBufferSelfLoopSecondary;
@@ -137,9 +138,9 @@ public abstract class AbstractEdgeData extends AbstractSelectionData {
     }
 
     public void init(GL2ES2 gl) {
-        edgeCircleSelfLoopNoSelection.initGLPrograms(gl);
-        edgeCircleSelfLoopSelectionUnselected.initGLPrograms(gl);
-        edgeCircleSelfLoopSelectionSelected.initGLPrograms(gl);
+        edgeCircleSelfLoopNoSelection.initGLProgram(gl);
+        edgeCircleSelfLoopSelectionUnselected.initGLProgram(gl);
+        edgeCircleSelfLoopSelectionSelected.initGLProgram(gl);
 
         lineDirectedModelNoSelection.initProgram(gl);
         lineDirectedModelSelectionSelected.initProgram(gl);
@@ -1432,7 +1433,7 @@ public abstract class AbstractEdgeData extends AbstractSelectionData {
         protected void configure(GL2ES2 gl) {
             vertexGLBufferSelfLoop.bind(gl);
             {
-                gl.glVertexAttribPointer(SHADER_VERT_LOCATION, EdgeCircleSelfLoopNoSelection.VERTEX_FLOATS, GL_FLOAT,
+                gl.glVertexAttribPointer(SHADER_VERT_LOCATION, CommonEdgeCircleSelfLoop.VERTEX_FLOATS, GL_FLOAT,
                     false,
                     0, 0);
             }
@@ -1442,24 +1443,24 @@ public abstract class AbstractEdgeData extends AbstractSelectionData {
             {
                 int stride = ATTRIBS_STRIDE_SELFLOOP * Float.BYTES;
                 int offset = 0;
-                gl.glVertexAttribPointer(SHADER_POSITION_LOCATION, EdgeCircleSelfLoopNoSelection.POSITION_FLOATS,
+                gl.glVertexAttribPointer(SHADER_POSITION_LOCATION, CommonEdgeCircleSelfLoop.POSITION_FLOATS,
                     GL_FLOAT, false,
                     stride, offset);
-                offset += EdgeCircleSelfLoopNoSelection.POSITION_FLOATS * Float.BYTES;
+                offset += CommonEdgeCircleSelfLoop.POSITION_FLOATS * Float.BYTES;
 
                 gl.glVertexAttribPointer(SHADER_COLOR_LOCATION,
-                    EdgeCircleSelfLoopNoSelection.COLOR_FLOATS * Float.BYTES,
+                    CommonEdgeCircleSelfLoop.COLOR_FLOATS * Float.BYTES,
                     GL_UNSIGNED_BYTE,
                     false, stride, offset);
-                offset += EdgeCircleSelfLoopNoSelection.COLOR_FLOATS * Float.BYTES;
+                offset += CommonEdgeCircleSelfLoop.COLOR_FLOATS * Float.BYTES;
 
-                gl.glVertexAttribPointer(SHADER_SIZE_LOCATION, EdgeCircleSelfLoopNoSelection.SIZE_FLOATS, GL_FLOAT,
+                gl.glVertexAttribPointer(SHADER_SIZE_LOCATION, CommonEdgeCircleSelfLoop.SIZE_FLOATS, GL_FLOAT,
                     false, stride,
                     offset);
-                offset += EdgeCircleSelfLoopNoSelection.SIZE_FLOATS * Float.BYTES;
+                offset += CommonEdgeCircleSelfLoop.SIZE_FLOATS * Float.BYTES;
 
                 gl.glVertexAttribPointer(SHADER_SELFLOOP_NODE_SIZE_LOCATION,
-                    EdgeCircleSelfLoopNoSelection.NODE_SIZE_FLOATS, GL_FLOAT, false, stride, offset);
+                    CommonEdgeCircleSelfLoop.NODE_SIZE_FLOATS, GL_FLOAT, false, stride, offset);
 
 
             }
