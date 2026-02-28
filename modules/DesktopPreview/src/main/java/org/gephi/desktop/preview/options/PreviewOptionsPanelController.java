@@ -40,7 +40,7 @@ Contributor(s):
 Portions Copyrighted 2011 Gephi Consortium.
  */
 
-package org.gephi.desktop.layout.options;
+package org.gephi.desktop.preview.options;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -50,14 +50,14 @@ import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
 @OptionsPanelController.SubRegistration(location = "Gephi",
-    displayName = "#AdvancedOption_DisplayName_Layout",
-    keywords = "#AdvancedOption_Keywords_Layout",
-    keywordsCategory = "Gephi/Layout",
-    position = 600)
-public final class LayoutOptionsPanelController extends OptionsPanelController {
+    displayName = "#AdvancedOption_DisplayName_Preview",
+    keywords = "#AdvancedOption_Keywords_Preview",
+    keywordsCategory = "Gephi/Preview",
+    position = 700)
+public final class PreviewOptionsPanelController extends OptionsPanelController {
 
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
-    private LayoutOptionsPanel panel;
+    private PreviewOptionsPanel panel;
     private boolean changed;
 
     @Override
@@ -106,9 +106,9 @@ public final class LayoutOptionsPanelController extends OptionsPanelController {
         pcs.removePropertyChangeListener(l);
     }
 
-    private LayoutOptionsPanel getPanel() {
+    private PreviewOptionsPanel getPanel() {
         if (panel == null) {
-            panel = new LayoutOptionsPanel(this);
+            panel = new PreviewOptionsPanel(this);
         }
         return panel;
     }
