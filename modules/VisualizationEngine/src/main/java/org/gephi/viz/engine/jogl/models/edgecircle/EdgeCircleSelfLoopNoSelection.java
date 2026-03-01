@@ -1,4 +1,4 @@
-package org.gephi.viz.engine.jogl.models;
+package org.gephi.viz.engine.jogl.models.edgecircle;
 
 import static org.gephi.viz.engine.util.gl.Constants.ATTRIB_NAME_COLOR;
 import static org.gephi.viz.engine.util.gl.Constants.ATTRIB_NAME_POSITION;
@@ -23,31 +23,16 @@ import org.gephi.viz.engine.util.NumberUtils;
 import org.gephi.viz.engine.util.gl.Constants;
 
 public class EdgeCircleSelfLoopNoSelection {
-    // Attributes 5
-    // Index
-    // 0: posX
-    // 1: posY
-    // 2: color
-    // 3: size
-    // 4: nodeSize
-    public static final int VERTEX_FLOATS = 2;
-    public static final int POSITION_FLOATS = 2;
-    public static final int COLOR_FLOATS = 1;
-    public static final int SIZE_FLOATS = 1;
-    public static final int NODE_SIZE_FLOATS = 1;
 
-    public static final int TOTAL_ATTRIBUTES_FLOATS
-        = POSITION_FLOATS
-        + COLOR_FLOATS
-        + SIZE_FLOATS
-        + NODE_SIZE_FLOATS;
     private GLShaderProgram program;
 
     private static final String SHADERS_ROOT = Constants.SHADERS_ROOT + "edge";
-    private static final String SHADERS_NODE_CIRCLE_SOURCE = "selfloop";
 
-    public void initGLPrograms(GL2ES2 gl) {
-        program = new GLShaderProgram(SHADERS_ROOT, SHADERS_NODE_CIRCLE_SOURCE, SHADERS_NODE_CIRCLE_SOURCE)
+    private static final String SHADERS_NODE_CIRCLE_SOURCE_VS = "selfloop";
+    private static final String SHADERS_NODE_CIRCLE_SOURCE_FS = "selfloop";
+
+    public void initGLProgram(GL2ES2 gl) {
+        program = new GLShaderProgram(SHADERS_ROOT, SHADERS_NODE_CIRCLE_SOURCE_VS, SHADERS_NODE_CIRCLE_SOURCE_FS)
             .addUniformName(UNIFORM_NAME_MODEL_VIEW_PROJECTION)
             .addUniformName(UNIFORM_NAME_EDGE_SCALE_MIN)
             .addUniformName(UNIFORM_NAME_EDGE_SCALE_MAX)
