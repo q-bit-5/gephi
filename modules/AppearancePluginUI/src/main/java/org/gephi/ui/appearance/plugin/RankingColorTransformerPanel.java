@@ -151,7 +151,6 @@ public class RankingColorTransformerPanel extends javax.swing.JPanel {
 
                     preferences.putByteArray(getColorsStartPreferenceKey(function), colorsBytes);
                     preferences.putByteArray(getPositionsStartPreferenceKey(function), colorPositionsBytes);
-                    addRecentPalette();
                 }
 //                prepareGradientTooltip();
             }
@@ -232,9 +231,10 @@ public class RankingColorTransformerPanel extends javax.swing.JPanel {
         return popupMenu;
     }
 
-    private void addRecentPalette() {
-        RankingElementColorTransformer.LinearGradient gradient = colorTransformer.getLinearGradient();
-        recentPalettes.add(gradient);
+    void saveCurrentGradientAsRecent() {
+        if (colorTransformer != null) {
+            recentPalettes.add(colorTransformer.getLinearGradient());
+        }
     }
 
     private Color[] invert(Color[] source) {
