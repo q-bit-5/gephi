@@ -55,6 +55,7 @@ import org.gephi.desktop.appearance.AppearanceUIController;
 import org.gephi.graph.api.Estimator;
 import org.gephi.ui.appearance.plugin.UniqueElementColorTransformerUI;
 import org.gephi.ui.appearance.plugin.category.DefaultCategory;
+import org.gephi.visualization.VizConfig;
 import org.gephi.visualization.api.EdgeColorMode;
 import org.gephi.visualization.api.VisualizationModel;
 import org.gephi.visualization.api.VisualizationController;
@@ -158,8 +159,12 @@ public class EdgeSettingsPanel extends javax.swing.JPanel implements Visualizati
             ae -> vizController.setEdgeBothSelectionColor(edgeBothSelectionColorChooser.getColor()));
         edgeOutSelectionColorChooser.addActionListener(
             ae -> vizController.setEdgeOutSelectionColor(edgeOutSelectionColorChooser.getColor()));
+        // Override generated minimum; logarithmic slider [0, 100] → [EDGE_SCALE_MIN, EDGE_SCALE_MAX],
+        // centred (slider=50) at the default value (geometric mean of MIN and MAX).
+        scaleSlider.setMinimum(0);
         scaleSlider.addChangeListener(e -> {
-            vizController.setEdgeScale(scaleSlider.getValue() / 10f + 0.1f);
+            float scale = VizConfig.EDGE_SCALE_MIN * (float) Math.pow((double) VizConfig.EDGE_SCALE_MAX / VizConfig.EDGE_SCALE_MIN, scaleSlider.getValue() / 100.0);
+            vizController.setEdgeScale(scale);
         });
         useEdgeWeightCheckbox.addItemListener(e -> {
             vizController.setUseEdgeWeight(useEdgeWeightCheckbox.isSelected());
@@ -263,8 +268,9 @@ public class EdgeSettingsPanel extends javax.swing.JPanel implements Visualizati
         if (!edgeOutSelectionColorChooser.getColor().equals(out)) {
             edgeOutSelectionColorChooser.setColor(out);
         }
-        if (scaleSlider.getValue() / 10f + 0.1f != vizModel.getEdgeScale()) {
-            scaleSlider.setValue((int) ((vizModel.getEdgeScale() - 0.1f) * 10));
+        int targetSlider = (int) Math.round(Math.log((double) vizModel.getEdgeScale() / VizConfig.EDGE_SCALE_MIN) / Math.log((double) VizConfig.EDGE_SCALE_MAX / VizConfig.EDGE_SCALE_MIN) * 100);
+        if (scaleSlider.getValue() != targetSlider) {
+            scaleSlider.setValue(targetSlider);
         }
         if (useEdgeWeightCheckbox.isSelected() != vizModel.isUseEdgeWeight()) {
             useEdgeWeightCheckbox.setSelected(vizModel.isUseEdgeWeight());

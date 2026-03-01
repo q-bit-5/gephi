@@ -5,6 +5,7 @@ import java.beans.PropertyChangeEvent;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JSlider;
+import org.gephi.visualization.VizConfig;
 import org.gephi.visualization.VizModel;
 import org.gephi.visualization.api.VisualizationModel;
 import org.gephi.visualization.api.VisualizationController;
@@ -25,12 +26,13 @@ public class NodeGroup implements CollapseGroup, VisualizationPropertyChangeList
         // Label
         titleLabel = new JLabel(NbBundle.getMessage(NodeGroup.class, "VizToolbar.Nodes.groupLabel"));
 
-        // NodeScale slider
-        nodeScaleSlider = new JSlider(1, 100, 1);
+        // NodeScale slider - logarithmic [0, 100] → [NODE_SCALE_MIN, NODE_SCALE_MAX],
+        // centred (slider=50) at the default value (geometric mean of MIN and MAX).
+        nodeScaleSlider = new JSlider(0, 100, 0);
         nodeScaleSlider.setToolTipText(NbBundle.getMessage(NodeGroup.class, "VizToolbar.Nodes.nodeScale"));
         nodeScaleSlider.addChangeListener(e -> {
-            float value = nodeScaleSlider.getValue() / 10f + 0.1f;
-            vizController.setNodeScale(value);
+            float scale = VizConfig.NODE_SCALE_MIN * (float) Math.pow((double) VizConfig.NODE_SCALE_MAX / VizConfig.NODE_SCALE_MIN, nodeScaleSlider.getValue() / 100.0);
+            vizController.setNodeScale(scale);
         });
         nodeScaleSlider.setPreferredSize(new Dimension(100, 20));
         nodeScaleSlider.setMaximumSize(new Dimension(100, 20));
@@ -43,7 +45,7 @@ public class NodeGroup implements CollapseGroup, VisualizationPropertyChangeList
         titleLabel.setEnabled(true);
 
         nodeScaleSlider.setEnabled(true);
-        nodeScaleSlider.setValue((int) ((vizModel.getNodeScale() - 0.1f) * 10));
+        nodeScaleSlider.setValue((int) Math.round(Math.log((double) vizModel.getNodeScale() / VizConfig.NODE_SCALE_MIN) / Math.log((double) VizConfig.NODE_SCALE_MAX / VizConfig.NODE_SCALE_MIN) * 100));
 
         vizController.addPropertyChangeListener(this);
     }
@@ -64,8 +66,9 @@ public class NodeGroup implements CollapseGroup, VisualizationPropertyChangeList
     @Override
     public void propertyChange(VisualizationModel model, PropertyChangeEvent evt) {
         if ("nodeScale".equals(evt.getPropertyName())) {
-            if (model.getNodeScale() != (nodeScaleSlider.getValue() / 10f + 0.1f)) {
-                nodeScaleSlider.setValue((int) ((model.getNodeScale() - 0.1f) * 10));
+            int targetSlider = (int) Math.round(Math.log((double) model.getNodeScale() / VizConfig.NODE_SCALE_MIN) / Math.log((double) VizConfig.NODE_SCALE_MAX / VizConfig.NODE_SCALE_MIN) * 100);
+            if (nodeScaleSlider.getValue() != targetSlider) {
+                nodeScaleSlider.setValue(targetSlider);
             }
         }
     }
