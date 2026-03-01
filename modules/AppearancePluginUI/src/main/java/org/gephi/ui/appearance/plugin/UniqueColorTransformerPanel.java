@@ -44,12 +44,9 @@ package org.gephi.ui.appearance.plugin;
 
 import java.awt.Color;
 import java.beans.PropertyChangeListener;
-import java.util.prefs.Preferences;
 import net.java.dev.colorchooser.ColorChooser;
 import org.gephi.appearance.api.SimpleFunction;
 import org.gephi.appearance.plugin.AbstractUniqueColorTransformer;
-import org.gephi.utils.ColorUtils;
-import org.openide.util.NbPreferences;
 
 /**
  * @author mbastian
@@ -62,10 +59,6 @@ public class UniqueColorTransformerPanel extends javax.swing.JPanel {
     private javax.swing.JLabel colorLabel;
 
     // End of variables declaration//GEN-END:variables
-    static String getUniqueColorPreferenceKey(SimpleFunction function) {
-        return function.getId() + "_unique_color";
-    }
-
     private PropertyChangeListener colorPropertyChangeListener = null;
 
     public UniqueColorTransformerPanel() {
@@ -76,28 +69,19 @@ public class UniqueColorTransformerPanel extends javax.swing.JPanel {
 
     public void setup(SimpleFunction function) {
         transformer = function.getTransformer();
-        Preferences preferences = NbPreferences.forModule(transformer.getClass());
 
         if (colorPropertyChangeListener != null) {
             colorChooser.removePropertyChangeListener(colorPropertyChangeListener);
         }
-        byte[] prefColorByteArray = preferences.getByteArray(getUniqueColorPreferenceKey(function), null);
 
-        Color prefColor = transformer.getColor();
-        if (prefColorByteArray != null) {
-            prefColor = ColorUtils.deserializeColor(prefColorByteArray);
-        }
-        colorChooser.setColor(prefColor);
-        colorLabel.setText(getHex(prefColor));
-        transformer.setColor(prefColor);
+        colorChooser.setColor(transformer.getColor());
+        colorLabel.setText(getHex(transformer.getColor()));
         colorPropertyChangeListener = (evt -> {
             if (evt.getPropertyName().equals(ColorChooser.PROP_COLOR)) {
-                Color color = colorChooser.getColor();
-                if (!transformer.getColor().equals(color)) {
-                    transformer.setColor(color);
-                    colorLabel.setText(getHex(color));
-                    preferences.putByteArray(getUniqueColorPreferenceKey(function),
-                        ColorUtils.serializeColor(color));
+                Color newColor = colorChooser.getColor();
+                if (!transformer.getColor().equals(newColor)) {
+                    transformer.setColor(newColor);
+                    colorLabel.setText(getHex(newColor));
                 }
             }
         });

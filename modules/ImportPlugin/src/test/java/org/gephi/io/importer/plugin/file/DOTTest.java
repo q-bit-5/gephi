@@ -102,4 +102,13 @@ public class DOTTest {
         Assert.assertEquals("Edge A to B", edges[0].getLabel());
         Assert.assertEquals("Edge B to C", edges[1].getLabel());
     }
+
+    @Test
+    public void testHashLineComment() {
+        Container container = Utils.importFile(new ImporterDOT(), "dot/hashcomment.dot");
+        NodeDraft[] nodes = Utils.toNodesArray(container);
+        Utils.assertSameIds(nodes, "n1", "n2");
+        EdgeDraft[] edges = Utils.toEdgesArray(container);
+        Utils.assertSameEdges(edges, "n1 -> n2");
+    }
 }

@@ -48,7 +48,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
 import java.util.Arrays;
-import java.util.prefs.Preferences;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
@@ -57,12 +56,10 @@ import org.gephi.appearance.plugin.RankingElementColorTransformer;
 import org.gephi.ui.components.PaletteIcon;
 import org.gephi.ui.components.gradientslider.GradientSlider;
 import org.gephi.ui.components.gradientslider.MultiThumbSlider;
-import org.gephi.utils.ColorUtils;
 import org.gephi.utils.PaletteUtils;
 import org.gephi.utils.PaletteUtils.Palette;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.NbPreferences;
 
 /**
  * @author Mathieu Bastian
@@ -79,14 +76,6 @@ public class RankingColorTransformerPanel extends javax.swing.JPanel {
     private javax.swing.JLabel labelColor;
 
     // End of variables declaration//GEN-END:variables
-    static String getPositionsStartPreferenceKey(RankingFunction function) {
-        return function.getId() + "_positions_start";
-    }
-
-    static String getColorsStartPreferenceKey(RankingFunction function) {
-        return function.getId() + "_colors_start";
-    }
-
     private PropertyChangeListener listener = null;
 
     public RankingColorTransformerPanel() {
@@ -113,21 +102,10 @@ public class RankingColorTransformerPanel extends javax.swing.JPanel {
         if (listener != null) {
             gradientSlider.removePropertyChangeListener(listener);
         }
-        Preferences preferences = NbPreferences.forModule(colorTransformer.getClass());
-
 
         float[] positionsStart = colorTransformer.getColorPositions();
         Color[] colorsStart = colorTransformer.getColors();
 
-        byte[] positionsStartBytes = preferences.getByteArray(getPositionsStartPreferenceKey(function), null);
-        byte[] colorsStartBytes = preferences.getByteArray(getColorsStartPreferenceKey(function), null);
-
-        if (positionsStartBytes != null) {
-            positionsStart = ColorUtils.deserializeFloats(positionsStartBytes);
-        }
-        if (colorsStartBytes != null) {
-            colorsStart = ColorUtils.deserializeColors(colorsStartBytes);
-        }
         //Gradient
         gradientSlider.setValues(positionsStart, colorsStart);
 
@@ -144,13 +122,6 @@ public class RankingColorTransformerPanel extends javax.swing.JPanel {
                     !Arrays.deepEquals(colors, colorTransformer.getColors())) {
                     colorTransformer.setColors(Arrays.copyOf(colors, colors.length));
                     colorTransformer.setColorPositions(Arrays.copyOf(positions, positions.length));
-
-                    byte[] colorsBytes = ColorUtils.serializeColors(Arrays.copyOf(colors, colors.length));
-                    byte[] colorPositionsBytes =
-                        ColorUtils.serializeFloats(Arrays.copyOf(positions, positions.length));
-
-                    preferences.putByteArray(getColorsStartPreferenceKey(function), colorsBytes);
-                    preferences.putByteArray(getPositionsStartPreferenceKey(function), colorPositionsBytes);
                 }
 //                prepareGradientTooltip();
             }
