@@ -111,4 +111,33 @@ public class DOTTest {
         EdgeDraft[] edges = Utils.toEdgesArray(container);
         Utils.assertSameEdges(edges, "n1 -> n2");
     }
+
+    @Test
+    public void testNoSpacesDirected() {
+        Container container = Utils.importFile(new ImporterDOT(), "dot/nospaces.dot");
+        Assert.assertEquals(EdgeDirectionDefault.DIRECTED, container.getUnloader().getEdgeDefault());
+        NodeDraft[] nodes = Utils.toNodesArray(container);
+        Utils.assertSameIds(nodes, "n1", "n2", "n3", "n4");
+        EdgeDraft[] edges = Utils.toEdgesArray(container);
+        Utils.assertSameEdges(edges, "n1 -> n2", "n2 -> n3", "n3 -> n4");
+    }
+
+    @Test
+    public void testNoSpacesUndirected() {
+        Container container = Utils.importFile(new ImporterDOT(), "dot/nospaces_undirected.dot");
+        Assert.assertEquals(EdgeDirectionDefault.UNDIRECTED, container.getUnloader().getEdgeDefault());
+        NodeDraft[] nodes = Utils.toNodesArray(container);
+        Utils.assertSameIds(nodes, "n1", "n2", "n3", "n4");
+        EdgeDraft[] edges = Utils.toEdgesArray(container);
+        Assert.assertEquals(3, edges.length);
+    }
+
+    @Test
+    public void testNoSpacesMixed() {
+        Container container = Utils.importFile(new ImporterDOT(), "dot/nospaces_mixed.dot");
+        NodeDraft[] nodes = Utils.toNodesArray(container);
+        Utils.assertSameIds(nodes, "n1", "n2", "n3", "n4", "n5", "n6");
+        EdgeDraft[] edges = Utils.toEdgesArray(container);
+        Utils.assertSameEdges(edges, "n1 -> n2", "n3 -> n4", "n5 -> n6");
+    }
 }
