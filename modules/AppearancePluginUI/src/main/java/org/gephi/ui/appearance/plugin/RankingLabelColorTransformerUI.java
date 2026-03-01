@@ -46,7 +46,6 @@ import javax.swing.AbstractButton;
 import javax.swing.Icon;
 import javax.swing.JPanel;
 import org.gephi.appearance.api.Function;
-import org.gephi.appearance.api.RankingFunction;
 import org.gephi.appearance.plugin.RankingLabelColorTransformer;
 import org.gephi.appearance.spi.RankingTransformer;
 import org.gephi.appearance.spi.TransformerCategory;
