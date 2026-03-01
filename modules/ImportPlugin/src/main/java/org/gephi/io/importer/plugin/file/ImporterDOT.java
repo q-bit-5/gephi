@@ -165,11 +165,19 @@ public class ImporterDOT implements FileImporter, LongTask {
         //tk.nextToken();
 
         if (streamTokenizer.sval == null) {
-        } else if (streamTokenizer.sval.equalsIgnoreCase("graph") ||
-            streamTokenizer.sval.equalsIgnoreCase("node")
+        } else if (streamTokenizer.sval.equalsIgnoreCase("node")
             || streamTokenizer.sval.equalsIgnoreCase("edge")
-            || streamTokenizer.sval.equalsIgnoreCase("subgraph")) {
-
+            || streamTokenizer.sval.equalsIgnoreCase("graph")) {
+            // attr_stmt: (node | edge | graph) attr_list — skip the attribute list
+            streamTokenizer.nextToken();
+            if (streamTokenizer.ttype == '[') {
+                skipAttributeList(streamTokenizer);
+            } else {
+                streamTokenizer.pushBack();
+            }
+        } else if (streamTokenizer.sval.equalsIgnoreCase("subgraph")) {
+            // subgraph [ID] '{' stmt_list '}' — skip to the opening brace; contents
+            // are processed by the surrounding stmtList loop and '}' is ignored
             while (streamTokenizer.ttype != '{') {
                 streamTokenizer.nextToken();
                 if (streamTokenizer.ttype == StreamTokenizer.TT_EOF) {
@@ -186,6 +194,13 @@ public class ImporterDOT implements FileImporter, LongTask {
             } else if (streamTokenizer.ttype == '[') {
                 NodeDraft nodeDraft = getOrCreateNode(nodeId);
                 nodeAttributes(streamTokenizer, nodeDraft);
+                // attr_list may chain: node_id [attr1=val1] [attr2=val2]
+                streamTokenizer.nextToken();
+                while (streamTokenizer.ttype == '[') {
+                    nodeAttributes(streamTokenizer, nodeDraft);
+                    streamTokenizer.nextToken();
+                }
+                streamTokenizer.pushBack();
             } else {
                 getOrCreateNode(nodeId);
                 streamTokenizer.pushBack();
@@ -223,6 +238,31 @@ public class ImporterDOT implements FileImporter, LongTask {
             streamTokenizer.pushBack();
         }
         return null;
+    }
+
+    /**
+     * Skips an attr_list starting after the opening '[' has been consumed.
+     * Handles chained attr_lists (e.g. [shape=box][color=red]).
+     */
+    private void skipAttributeList(StreamTokenizerWithMultilineLiterals streamTokenizer) throws IOException {
+        int depth = 1;
+        while (depth > 0) {
+            streamTokenizer.nextToken();
+            if (streamTokenizer.ttype == StreamTokenizer.TT_EOF) {
+                return;
+            } else if (streamTokenizer.ttype == '[') {
+                depth++;
+            } else if (streamTokenizer.ttype == ']') {
+                depth--;
+            }
+        }
+        // attr_list may chain: '[' a_list ']' attr_list
+        streamTokenizer.nextToken();
+        if (streamTokenizer.ttype == '[') {
+            skipAttributeList(streamTokenizer);
+        } else {
+            streamTokenizer.pushBack();
+        }
     }
 
     protected Color parseColor(StreamTokenizerWithMultilineLiterals streamTokenizer) throws Exception {
@@ -392,6 +432,15 @@ public class ImporterDOT implements FileImporter, LongTask {
 
             if (streamTokenizer.ttype == '[') {
                 edgeAttributes(streamTokenizer, edge);
+                // attr_list may chain: edge [attr1=val1] [attr2=val2]
+                streamTokenizer.nextToken();
+                while (streamTokenizer.ttype == '[') {
+                    edgeAttributes(streamTokenizer, edge);
+                    streamTokenizer.nextToken();
+                }
+                if (!isEdgeToken(streamTokenizer)) {
+                    streamTokenizer.pushBack();
+                }
             } else if (!isEdgeToken(streamTokenizer)) {
                 streamTokenizer.pushBack();
             }
