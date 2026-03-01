@@ -45,6 +45,8 @@ package org.gephi.ui.components;
 import java.awt.Cursor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.math.BigDecimal;
@@ -94,17 +96,15 @@ public class JRangeSliderPanel extends javax.swing.JPanel {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (!lowerBoundTextField.getText().equals(lowerBound)) {
-                    lowerBound = lowerBoundTextField.getText();
-                    if (range != null) {
-                        range.setLowerBound(lowerBound);
-                        firePropertyChange(LOWER_BOUND, null, lowerBound);
-                    }
-                } else {
-                    lowerBound = lowerBoundTextField.getText();
-                }
-                refreshBoundTexts();
+                applyLowerBound();
                 JRangeSliderPanel.this.requestFocusInWindow();
+            }
+        });
+        lowerBoundTextField.addFocusListener(new FocusAdapter() {
+
+            @Override
+            public void focusLost(FocusEvent e) {
+                applyLowerBound();
             }
         });
         upperBoundTextField.addMouseListener(new MouseAdapter() {
@@ -118,17 +118,15 @@ public class JRangeSliderPanel extends javax.swing.JPanel {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (!upperBoundTextField.getText().equals(upperBound)) {
-                    upperBound = upperBoundTextField.getText();
-                    if (range != null) {
-                        range.setUpperBound(upperBound);
-                        firePropertyChange(UPPER_BOUND, null, upperBound);
-                    }
-                } else {
-                    upperBound = upperBoundTextField.getText();
-                }
-                refreshBoundTexts();
+                applyUpperBound();
                 JRangeSliderPanel.this.requestFocusInWindow();
+            }
+        });
+        upperBoundTextField.addFocusListener(new FocusAdapter() {
+
+            @Override
+            public void focusLost(FocusEvent e) {
+                applyUpperBound();
             }
         });
 
@@ -145,6 +143,32 @@ public class JRangeSliderPanel extends javax.swing.JPanel {
                 }
             }
         });
+    }
+
+    private void applyLowerBound() {
+        if (!lowerBoundTextField.getText().equals(lowerBound)) {
+            lowerBound = lowerBoundTextField.getText();
+            if (range != null) {
+                range.setLowerBound(lowerBound);
+                firePropertyChange(LOWER_BOUND, null, lowerBound);
+            }
+        } else {
+            lowerBound = lowerBoundTextField.getText();
+        }
+        refreshBoundTexts();
+    }
+
+    private void applyUpperBound() {
+        if (!upperBoundTextField.getText().equals(upperBound)) {
+            upperBound = upperBoundTextField.getText();
+            if (range != null) {
+                range.setUpperBound(upperBound);
+                firePropertyChange(UPPER_BOUND, null, upperBound);
+            }
+        } else {
+            upperBound = upperBoundTextField.getText();
+        }
+        refreshBoundTexts();
     }
 
     private void refreshBoundTexts() {

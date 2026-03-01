@@ -453,7 +453,6 @@ public class FiltersPanel extends javax.swing.JPanel implements ExplorerManager.
         filterButton.setIcon(ImageUtilities.loadImageIcon("DesktopFilters/filter.svg", false)); // NOI18N
         filterButton.setText(
             org.openide.util.NbBundle.getMessage(FiltersPanel.class, "FiltersPanel.filterButton.text")); // NOI18N
-        filterButton.setFocusable(false);
         filterButton.setMargin(new java.awt.Insets(2, 7, 2, 14));
         buttonsPanel.add(filterButton);
 
