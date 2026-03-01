@@ -45,7 +45,7 @@ public class LayoutPresetPersistenceTest {
     @Test
     public void testLoad() {
         ContractLayout layout = BUILDER.buildLayout();
-        layout.setScale(42.0);
+        layout.setScale(42.0f);
         persistence.savePreset("42", layout);
 
         layout.resetPropertiesValues();
@@ -53,5 +53,23 @@ public class LayoutPresetPersistenceTest {
         Assert.assertNotNull(preset);
         persistence.loadPreset(preset, layout);
         Assert.assertEquals(42.0, layout.getScale(), 0.0001);
+    }
+
+    @Test
+    public void testOverwrite() {
+        ContractLayout layout = BUILDER.buildLayout();
+        layout.setScale(42.0f);
+        persistence.savePreset("mypreset", layout);
+
+        layout.setScale(99.0f);
+        persistence.savePreset("mypreset", layout);
+
+        Assert.assertEquals(1, persistence.getPresets(BUILDER.buildLayout()).size());
+
+        ContractLayout loadTarget = BUILDER.buildLayout();
+        Preset preset = persistence.getPreset("mypreset", loadTarget);
+        Assert.assertNotNull(preset);
+        persistence.loadPreset(preset, loadTarget);
+        Assert.assertEquals(99.0, loadTarget.getScale(), 0.0001);
     }
 }
