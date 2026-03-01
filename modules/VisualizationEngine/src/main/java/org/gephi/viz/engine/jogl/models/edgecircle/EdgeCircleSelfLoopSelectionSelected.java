@@ -1,4 +1,4 @@
-package org.gephi.viz.engine.jogl.models;
+package org.gephi.viz.engine.jogl.models.edgecircle;
 
 import static org.gephi.viz.engine.util.gl.Constants.ATTRIB_NAME_COLOR;
 import static org.gephi.viz.engine.util.gl.Constants.ATTRIB_NAME_POSITION;
@@ -26,16 +26,18 @@ import org.gephi.viz.engine.jogl.util.gl.GLShaderProgram;
 import org.gephi.viz.engine.util.NumberUtils;
 import org.gephi.viz.engine.util.gl.Constants;
 
-public class EdgeCircleSelfLoopSelectionUnselected {
+public class EdgeCircleSelfLoopSelectionSelected {
     private GLShaderProgram program;
 
     private static final String SHADERS_ROOT = Constants.SHADERS_ROOT + "edge";
-    private static final String SHADERS_NODE_CIRCLE_SOURCE = "selfloop_unselected";
 
-    public void initGLPrograms(GL2ES2 gl) {
-        program = new GLShaderProgram(SHADERS_ROOT, SHADERS_NODE_CIRCLE_SOURCE, SHADERS_NODE_CIRCLE_SOURCE)
-            .addUniformName(UNIFORM_NAME_BACKGROUND_COLOR)
+    private static final String SHADERS_NODE_CIRCLE_SOURCE_VS = "selfloop_selected";
+    private static final String SHADERS_NODE_CIRCLE_SOURCE_FS = "selfloop_selected";
+
+    public void initGLProgram(GL2ES2 gl) {
+        program = new GLShaderProgram(SHADERS_ROOT, SHADERS_NODE_CIRCLE_SOURCE_VS, SHADERS_NODE_CIRCLE_SOURCE_FS)
             .addUniformName(UNIFORM_NAME_MODEL_VIEW_PROJECTION)
+            .addUniformName(UNIFORM_NAME_BACKGROUND_COLOR)
             .addUniformName(UNIFORM_NAME_COLOR_LIGHTEN_FACTOR)
             .addUniformName(UNIFORM_NAME_GLOBAL_TIME)
             .addUniformName(UNIFORM_NAME_SELECTION_TIME)
@@ -56,6 +58,7 @@ public class EdgeCircleSelfLoopSelectionUnselected {
                            float globalTime, float selectionTime, float edgeScale, float minWeight, float maxWeight,
                            float edgeRescaleMin, float edgeRescaleMax, float nodeScale) {
         program.use(gl);
+
         gl.glUniformMatrix4fv(program.getUniformLocation(UNIFORM_NAME_MODEL_VIEW_PROJECTION), 1, false, mvpFloats, 0);
         gl.glUniform1f(program.getUniformLocation(UNIFORM_NAME_COLOR_LIGHTEN_FACTOR), colorLightenFactor);
         gl.glUniform4fv(program.getUniformLocation(UNIFORM_NAME_BACKGROUND_COLOR), 1, backgroundColorFloats, 0);

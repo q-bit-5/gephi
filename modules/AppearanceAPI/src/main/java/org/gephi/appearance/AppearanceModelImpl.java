@@ -378,7 +378,7 @@ public class AppearanceModelImpl implements AppearanceModel, Model {
         return res;
     }
 
-    private void initAttributeRankingsAndPartitions() {
+    protected void initAttributeRankingsAndPartitions() {
         for (Column column : graphModel.getNodeTable()) {
             if (!column.isProperty()) {
                 if (column.isNumber()) {

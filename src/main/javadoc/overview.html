@@ -56,6 +56,10 @@
             <li><code>PreviewProperty</code> now supports optional numeric bounds via a new <code>setMinMax(Number min, Number max)</code> method. When set, values passed to <code>setValue()</code> are clamped to the declared range. Built-in properties such as sizes, opacities and the label grid size are now constrained accordingly.</li>
             <li>The new <code>NODE_LABEL_AVOID_OVERLAP</code> boolean property controls whether the node label overlap avoidance algorithm runs or not. Larger labels always take precedence. An additional <code>NODE_LABEL_OVERLAP_GRID_SIZE</code> property controls the algorithm grid size. The smaller, the closer labels will be from each other.</li>
         </ul>
+        <h4>Appearance API</h4>
+        <ul>
+            <li>Added <code>onApply(Function function)</code> method to <code>TransformerUI</code> interface to allow transformers to react to apply events.</li>
+        </ul>
         <h3>0.10.0</h3>
         <h4>Project API</h4>
         <ul>
