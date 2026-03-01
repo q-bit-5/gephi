@@ -165,6 +165,10 @@ public class AppearanceUIController {
         if (model != null && function != null) {
             model.saveTransformerProperties();
             appearanceController.transform(function);
+            TransformerUI selectedUI = model.getSelectedTransformerUI();
+            if (selectedUI != null) {
+                selectedUI.onApply(function);
+            }
         }
     }
 
