@@ -97,16 +97,14 @@ public class AppearanceModelPersistenceProvider implements WorkspaceXMLPersisten
         writer.writeStartElement("rankings");
         writer.writeAttribute("for", elementClass);
         for (RankingImpl ranking : rankings) {
-            if (ranking.getInterpolator() != RankingImpl.DEFAULT_INTERPOLATOR) {
-                writer.writeStartElement("ranking");
-                writer.writeAttribute("class", ranking.getClass().getSimpleName());
-                if (ranking instanceof AttributeRankingImpl) {
-                    Column col = ranking.getColumn();
-                    writer.writeAttribute("column", col != null ? col.getId() : "");
-                }
-                writeInterpolator(writer, ranking.getInterpolator());
-                writer.writeEndElement();
+            writer.writeStartElement("ranking");
+            writer.writeAttribute("class", ranking.getClass().getSimpleName());
+            if (ranking instanceof AttributeRankingImpl) {
+                Column col = ranking.getColumn();
+                writer.writeAttribute("column", col != null ? col.getId() : "");
             }
+            writeInterpolator(writer, ranking.getInterpolator());
+            writer.writeEndElement();
         }
         writer.writeEndElement();
     }

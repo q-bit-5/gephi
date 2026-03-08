@@ -45,6 +45,8 @@ package org.gephi.desktop.appearance.options;
 import java.awt.Color;
 import java.util.Arrays;
 import java.util.stream.Collectors;
+import org.gephi.appearance.api.AppearanceModel;
+import org.gephi.appearance.api.Interpolator;
 import org.openide.util.NbPreferences;
 
 /**
@@ -70,12 +72,42 @@ public final class AppearancePreferences {
     public static final float DEFAULT_LABEL_RANKING_SIZE_MIN = 1f;
     public static final float DEFAULT_LABEL_RANKING_SIZE_MAX = 4f;
 
+    // Default appearance settings keys
+    public static final String RANKING_LOCAL_SCALE = "Appearance.rankingLocalScale";
+    public static final String PARTITION_LOCAL_SCALE = "Appearance.partitionLocalScale";
+    public static final String TRANSFORM_NULL_VALUES = "Appearance.transformNullValues";
+
+    // Default appearance settings defaults
+    public static final boolean DEFAULT_RANKING_LOCAL_SCALE = false;
+    public static final boolean DEFAULT_PARTITION_LOCAL_SCALE = false;
+    public static final boolean DEFAULT_TRANSFORM_NULL_VALUES = false;
+
+    // Interpolator key
+    public static final String DEFAULT_INTERPOLATOR = "Appearance.defaultInterpolator";
+
     // Color defaults — match RankingElementColorTransformer's hardcoded initial gradient
     public static final Color[] DEFAULT_ELEMENT_RANKING_COLORS =
         {new Color(0xEDF8FB), new Color(0x66C2A4), new Color(0x006D2C)};
     public static final float[] DEFAULT_COLOR_POSITIONS = {0f, 0.5f, 1f};
 
     private AppearancePreferences() {
+    }
+
+    // ---- Default appearance settings accessors ----
+
+    public static boolean isRankingLocalScale() {
+        return NbPreferences.forModule(AppearanceModel.class)
+            .getBoolean(RANKING_LOCAL_SCALE, DEFAULT_RANKING_LOCAL_SCALE);
+    }
+
+    public static boolean isPartitionLocalScale() {
+        return NbPreferences.forModule(AppearanceModel.class)
+            .getBoolean(PARTITION_LOCAL_SCALE, DEFAULT_PARTITION_LOCAL_SCALE);
+    }
+
+    public static boolean isTransformNullValues() {
+        return NbPreferences.forModule(AppearanceModel.class)
+            .getBoolean(TRANSFORM_NULL_VALUES, DEFAULT_TRANSFORM_NULL_VALUES);
     }
 
     // ---- Size accessors ----
@@ -122,6 +154,13 @@ public final class AppearancePreferences {
         String s =
             NbPreferences.forModule(AppearancePreferences.class).get(LABEL_RANKING_COLOR_POSITIONS, null);
         return decodePositions(s, DEFAULT_COLOR_POSITIONS);
+    }
+
+    // ---- Interpolator accessors ----
+
+    public static Interpolator getDefaultInterpolator() {
+        String s = NbPreferences.forModule(Interpolator.class).get(DEFAULT_INTERPOLATOR, null);
+        return Interpolator.fromString(s);
     }
 
     // ---- Encoding helpers ----
