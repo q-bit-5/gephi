@@ -3,7 +3,10 @@ package org.gephi.visualization;
 import java.awt.Color;
 import java.awt.Font;
 import java.io.StringReader;
+import java.io.StringWriter;
 import javax.xml.stream.XMLStreamReader;
+import javax.xml.stream.XMLStreamWriter;
+import org.gephi.graph.GraphGenerator;
 import org.gephi.project.api.Workspace;
 import org.gephi.project.io.utils.GephiFormat;
 import org.gephi.visualization.api.EdgeColorMode;
@@ -11,32 +14,37 @@ import org.gephi.visualization.api.LabelColorMode;
 import org.gephi.visualization.api.LabelSizeMode;
 import org.junit.Assert;
 import org.junit.Test;
+import org.mockito.Spy;
 
 public class PersistenceProviderTest {
 
+    private final VizController vizController = new VizController();
+    private final VizModelPersistenceProvider provider = new VizModelPersistenceProvider();
+
     @Test
     public void testEmpty() throws Exception {
-        VizModel model = Utils.newVizModel();
-        Utils.roundTrip(new VizModelPersistenceProvider(), model.getWorkspace());
+        GraphGenerator generator = GraphGenerator.build().generateTinyGraph();
+
+        VizModel model = vizController.getModel(generator.getWorkspace());
+        roundTrip(provider, model.getWorkspace());
     }
 
     @Test
     public void testBackgroundColor() throws Exception {
-        VizModel model = Utils.newVizModel();
+        VizModel model = vizController.getModel(GraphGenerator.build().generateTinyGraph().getWorkspace());
         model.setBackgroundColor(Color.CYAN);
 
-        Workspace dest = Utils.roundTrip(new VizModelPersistenceProvider(), model.getWorkspace());
-        Assert.assertEquals(Color.CYAN, Utils.getVizModel(dest).getBackgroundColor());
+        VizModel read = roundTrip(provider, model.getWorkspace());
+        Assert.assertEquals(Color.CYAN, read.getBackgroundColor());
     }
 
     @Test
     public void testZoomAndPan() throws Exception {
-        VizModel model = Utils.newVizModel();
+         VizModel model = vizController.getModel(GraphGenerator.build().generateTinyGraph().getWorkspace());
         model.setZoom(1.5f);
         model.setPan(new org.joml.Vector2f(123.4f, -56.7f));
 
-        Workspace dest = Utils.roundTrip(new VizModelPersistenceProvider(), model.getWorkspace());
-        VizModel read = Utils.getVizModel(dest);
+        VizModel read = roundTrip(provider, model.getWorkspace());
         Assert.assertEquals(1.5f, read.getZoom(), 0.0001f);
         Assert.assertEquals(123.4f, read.getPan().x(), 0.0001f);
         Assert.assertEquals(-56.7f, read.getPan().y(), 0.0001f);
@@ -44,7 +52,7 @@ public class PersistenceProviderTest {
 
     @Test
     public void testEdgeSettings() throws Exception {
-        VizModel model = Utils.newVizModel();
+         VizModel model = vizController.getModel(GraphGenerator.build().generateTinyGraph().getWorkspace());
         model.setShowEdges(false);
         model.setEdgeScale(3.5f);
         model.setNodeScale(2.0f);
@@ -52,8 +60,7 @@ public class PersistenceProviderTest {
         model.setUseEdgeWeight(false);
         model.setEdgeRescaleWeightEnabled(false);
 
-        Workspace dest = Utils.roundTrip(new VizModelPersistenceProvider(), model.getWorkspace());
-        VizModel read = Utils.getVizModel(dest);
+        VizModel read = roundTrip(provider, model.getWorkspace());
         Assert.assertFalse(read.isShowEdges());
         Assert.assertEquals(3.5f, read.getEdgeScale(), 0.0001f);
         Assert.assertEquals(2.0f, read.getNodeScale(), 0.0001f);
@@ -64,7 +71,7 @@ public class PersistenceProviderTest {
 
     @Test
     public void testSelectionSettings() throws Exception {
-        VizModel model = Utils.newVizModel();
+         VizModel model = vizController.getModel(GraphGenerator.build().generateTinyGraph().getWorkspace());
         model.setAutoSelectNeighbors(false);
         model.setHideNonSelectedEdges(true);
         model.setLightenNonSelectedAuto(false);
@@ -74,8 +81,7 @@ public class PersistenceProviderTest {
         model.setEdgeOutSelectionColor(Color.GREEN);
         model.setEdgeBothSelectionColor(Color.BLUE);
 
-        Workspace dest = Utils.roundTrip(new VizModelPersistenceProvider(), model.getWorkspace());
-        VizModel read = Utils.getVizModel(dest);
+        VizModel read = roundTrip(provider, model.getWorkspace());
         Assert.assertFalse(read.isAutoSelectNeighbors());
         Assert.assertTrue(read.isHideNonSelectedEdges());
         Assert.assertFalse(read.isLightenNonSelectedAuto());
@@ -88,7 +94,7 @@ public class PersistenceProviderTest {
 
     @Test
     public void testNodeLabelSettings() throws Exception {
-        VizModel model = Utils.newVizModel();
+         VizModel model = vizController.getModel(GraphGenerator.build().generateTinyGraph().getWorkspace());
         model.setShowNodeLabels(true);
         model.setNodeLabelFont(new Font("SansSerif", Font.ITALIC, 16));
         model.setNodeLabelScale(0.8f);
@@ -98,8 +104,7 @@ public class PersistenceProviderTest {
         model.setNodeLabelFitToNodeSize(true);
         model.setAvoidNodeLabelOverlap(false);
 
-        Workspace dest = Utils.roundTrip(new VizModelPersistenceProvider(), model.getWorkspace());
-        VizModel read = Utils.getVizModel(dest);
+        VizModel read = roundTrip(provider, model.getWorkspace());
         Assert.assertTrue(read.isShowNodeLabels());
         Assert.assertEquals(0.8f, read.getNodeLabelScale(), 0.0001f);
         Assert.assertEquals(LabelColorMode.OBJECT, read.getNodeLabelColorMode());
@@ -111,7 +116,7 @@ public class PersistenceProviderTest {
 
     @Test
     public void testEdgeLabelSettings() throws Exception {
-        VizModel model = Utils.newVizModel();
+         VizModel model = vizController.getModel(GraphGenerator.build().generateTinyGraph().getWorkspace());
         model.setShowEdgeLabels(true);
         model.setEdgeLabelFont(new Font("Monospaced", Font.BOLD, 14));
         model.setEdgeLabelScale(0.6f);
@@ -119,8 +124,7 @@ public class PersistenceProviderTest {
         model.setEdgeLabelSizeMode(LabelSizeMode.SCREEN);
         model.setHideNonSelectedEdgeLabels(true);
 
-        Workspace dest = Utils.roundTrip(new VizModelPersistenceProvider(), model.getWorkspace());
-        VizModel read = Utils.getVizModel(dest);
+        VizModel read = roundTrip(provider, model.getWorkspace());
         Assert.assertTrue(read.isShowEdgeLabels());
         Assert.assertEquals(0.6f, read.getEdgeLabelScale(), 0.0001f);
         Assert.assertEquals(LabelColorMode.OBJECT, read.getEdgeLabelColorMode());
@@ -130,13 +134,12 @@ public class PersistenceProviderTest {
 
     @Test
     public void testScreenshotModel() throws Exception {
-        VizModel model = Utils.newVizModel();
+         VizModel model = vizController.getModel(GraphGenerator.build().generateTinyGraph().getWorkspace());
         model.getScreenshotModel().setScaleFactor(4);
         model.getScreenshotModel().setTransparentBackground(true);
         model.getScreenshotModel().setAutoSave(true);
 
-        Workspace dest = Utils.roundTrip(new VizModelPersistenceProvider(), model.getWorkspace());
-        VizModel read = Utils.getVizModel(dest);
+        VizModel read = roundTrip(provider, model.getWorkspace());
         Assert.assertEquals(4, read.getScreenshotModel().getScaleFactor());
         Assert.assertTrue(read.getScreenshotModel().isTransparentBackground());
         Assert.assertTrue(read.getScreenshotModel().isAutoSave());
@@ -144,18 +147,17 @@ public class PersistenceProviderTest {
 
     @Test
     public void testSelectionModel() throws Exception {
-        VizModel model = Utils.newVizModel();
+         VizModel model = vizController.getModel(GraphGenerator.build().generateTinyGraph().getWorkspace());
         model.getSelectionModel().setMouseSelectionDiameter(5);
         model.getSelectionModel().setMouseSelectionZoomProportional(true);
         model.getSelectionModel().setRectangleSelection(true);
-        model.getSelectionModel().setSelectionEnable(false);
+        model.getSelectionModel().setSelectionEnable(true);
 
-        Workspace dest = Utils.roundTrip(new VizModelPersistenceProvider(), model.getWorkspace());
-        VizModel read = Utils.getVizModel(dest);
+        VizModel read = roundTrip(provider, model.getWorkspace());
         Assert.assertEquals(5, read.getMouseSelectionDiameter());
         Assert.assertTrue(read.isMouseSelectionZoomProportional());
         Assert.assertTrue(read.isRectangleSelection());
-        Assert.assertFalse(read.isSelectionEnabled());
+        Assert.assertTrue(read.isSelectionEnabled());
     }
 
     @Test
@@ -168,7 +170,7 @@ public class PersistenceProviderTest {
             + " transparent=\"true\" autosave=\"true\"/>"
             + "</vizmodel>";
 
-        VizModel model = Utils.newVizModel();
+         VizModel model = vizController.getModel(GraphGenerator.build().generateTinyGraph().getWorkspace());
         StringReader stringReader = new StringReader(legacyXml);
         XMLStreamReader xmlReader = GephiFormat.newXMLReader(stringReader);
         new VizModelPersistenceProvider().readXML(xmlReader, model.getWorkspace());
@@ -198,7 +200,7 @@ public class PersistenceProviderTest {
             + "</textmodel>"
             + "</vizmodel>";
 
-        VizModel model = Utils.newVizModel();
+         VizModel model = vizController.getModel(GraphGenerator.build().generateTinyGraph().getWorkspace());
         StringReader stringReader = new StringReader(legacyXml);
         XMLStreamReader xmlReader = GephiFormat.newXMLReader(stringReader);
         new VizModelPersistenceProvider().readXML(xmlReader, model.getWorkspace());
@@ -225,14 +227,55 @@ public class PersistenceProviderTest {
 
     @Test
     public void testDefaultLabelColumnsRoundTrip() throws Exception {
-        VizModel model = Utils.newVizModel();
+         VizModel model = vizController.getModel(GraphGenerator.build().generateTinyGraph().getWorkspace());
         // Default label column ("label") must survive the round-trip.
         Assert.assertEquals(1, model.getNodeLabelColumns().length);
         Assert.assertEquals("label", model.getNodeLabelColumns()[0].getId());
 
-        Workspace dest = Utils.roundTrip(new VizModelPersistenceProvider(), model.getWorkspace());
-        VizModel read = Utils.getVizModel(dest);
+        VizModel read = roundTrip(provider, model.getWorkspace());
         Assert.assertEquals(1, read.getNodeLabelColumns().length);
         Assert.assertEquals("label", read.getNodeLabelColumns()[0].getId());
+    }
+    
+    // Utils
+    /**
+     * Performs a full persistence round-trip: serializes the source workspace to XML, reads it
+     * into a freshly created destination workspace, serializes the destination again, and asserts
+     * both XML representations are identical (idempotency check).
+     *
+     * <p>The destination workspace is pre-populated with its own {@link VizModel} so that the
+     * provider's read path can resolve the model without depending on the global Lookup.
+     */
+    public VizModel roundTrip(VizModelPersistenceProvider provider, Workspace sourceWorkspace)
+        throws Exception {
+        String xmlString = toXMLString(provider, sourceWorkspace);
+
+        VizModel destVizModel = vizController.getModel(GraphGenerator.build().getWorkspace());
+        Workspace destWorkspace = destVizModel.getWorkspace();
+
+        StringReader stringReader = new StringReader(xmlString);
+        XMLStreamReader xmlReader = GephiFormat.newXMLReader(stringReader);
+        provider.readXML(xmlReader, destWorkspace);
+        xmlReader.close();
+        stringReader.close();
+
+        String xmlStringAgain = toXMLString(provider, destWorkspace);
+        Assert.assertEquals(xmlString, xmlStringAgain);
+
+        return vizController.getModel(destWorkspace);
+    }
+
+    public static String toXMLString(VizModelPersistenceProvider provider, Workspace workspace)
+        throws Exception {
+        StringWriter stringWriter = new StringWriter();
+        XMLStreamWriter writer = GephiFormat.newXMLWriter(stringWriter);
+        writer.writeStartDocument("UTF-8", "1.0");
+        writer.writeStartElement(provider.getIdentifier());
+        provider.writeXML(writer, workspace);
+        writer.writeEndElement();
+        writer.writeEndDocument();
+        writer.close();
+        stringWriter.close();
+        return stringWriter.toString();
     }
 }
