@@ -46,7 +46,9 @@ import com.jogamp.newt.event.NEWTEvent;
 import java.awt.Color;
 import java.awt.Font;
 import java.beans.PropertyChangeEvent;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
@@ -61,6 +63,7 @@ import org.gephi.graph.api.GraphView;
 import org.gephi.graph.api.Node;
 import org.gephi.project.api.Workspace;
 import org.gephi.ui.utils.ColorUtils;
+import org.gephi.ui.utils.FontUtils;
 import org.gephi.ui.utils.UIUtils;
 import org.gephi.visualization.api.EdgeColorMode;
 import org.gephi.visualization.api.LabelColorMode;
@@ -307,6 +310,15 @@ public class VizModel implements VisualizationModel {
 
     public Vector2fc getPan() {
         return pan;
+    }
+
+    public void setPan(Vector2f pan) {
+        Vector2fc oldValue = this.pan;
+        if (!pan.equals(oldValue)) {
+            this.pan = pan;
+            getEngine().ifPresent(vizEngine -> vizEngine.setTranslate(pan));
+            firePropertyChange("pan", oldValue, pan);
+        }
     }
 
     @Override
@@ -887,59 +899,135 @@ public class VizModel implements VisualizationModel {
             switch (type) {
                 case XMLStreamReader.START_ELEMENT:
                     String name = reader.getLocalName();
-                    if ("textmodel".equalsIgnoreCase(name)) {
-//                        textModel.readXML(reader, workspace);
-                        //TODO
+                    // Sub-models
+                    if ("screenshotModel".equalsIgnoreCase(name)) {
+                        screenshotModel.readXML(reader);
+                    } else if ("selectionModel".equalsIgnoreCase(name)) {
+                        selectionModel.readXML(reader);
+                    // Legacy: old TextModelImpl persisted under <textmodel> inside <vizmodel>
+                    } else if ("textmodel".equalsIgnoreCase(name)) {
+                        readLegacyTextModel(reader);
+                    // Legacy: old <screenshotMaker> was a self-closing element with inline attributes
+                    } else if ("screenshotMaker".equalsIgnoreCase(name)) {
+                        readLegacyScreenshotMaker(reader);
+                    // Global
                     } else if ("cameraposition".equalsIgnoreCase(name)) {
-                        // TODO FIx
-//                        engine.setTranslate(
-//                                Float.parseFloat(reader.getAttributeValue(null, "x")),
-//                                Float.parseFloat(reader.getAttributeValue(null, "y"))
-//                        );
-                    } else if ("cameratarget".equalsIgnoreCase(name)) {
-                        // No longer necessary
+                        String x = reader.getAttributeValue(null, "x");
+                        String y = reader.getAttributeValue(null, "y");
+                        if (x != null && y != null) {
+                            this.pan = new Vector2f(Float.parseFloat(x), Float.parseFloat(y));
+                        }
+                    } else if ("zoom".equalsIgnoreCase(name)) {
+                        this.zoom = Float.parseFloat(reader.getAttributeValue(null, "value"));
+                    // Edges
                     } else if ("showedges".equalsIgnoreCase(name)) {
                         setShowEdges(Boolean.parseBoolean(reader.getAttributeValue(null, "value")));
-                    } else if ("lightennonselectedauto".equalsIgnoreCase(name)) {
-                        setLightenNonSelectedAuto(Boolean.parseBoolean(reader.getAttributeValue(null, "value")));
+                    } else if ("edgeScale".equalsIgnoreCase(name)) {
+                        setEdgeScale(Float.parseFloat(reader.getAttributeValue(null, "value")));
+                    } else if ("nodeScale".equalsIgnoreCase(name)) {
+                        setNodeScale(Float.parseFloat(reader.getAttributeValue(null, "value")));
+                    } else if ("edgeColorMode".equalsIgnoreCase(name)) {
+                        String v = reader.getAttributeValue(null, "value");
+                        if (v != null) {
+                            try {
+                                setEdgeColorMode(EdgeColorMode.valueOf(v));
+                            } catch (IllegalArgumentException ignored) {
+                            }
+                        }
+                    } else if ("edgeWeightEnabled".equalsIgnoreCase(name)) {
+                        setUseEdgeWeight(Boolean.parseBoolean(reader.getAttributeValue(null, "value")));
+                    } else if ("edgeRescaleWeightEnabled".equalsIgnoreCase(name)) {
+                        setEdgeRescaleWeightEnabled(Boolean.parseBoolean(reader.getAttributeValue(null, "value")));
+                    // Selection
                     } else if ("autoselectneighbor".equalsIgnoreCase(name)) {
                         setAutoSelectNeighbors(Boolean.parseBoolean(reader.getAttributeValue(null, "value")));
                     } else if ("hidenonselectededges".equalsIgnoreCase(name)) {
                         setHideNonSelectedEdges(Boolean.parseBoolean(reader.getAttributeValue(null, "value")));
+                    } else if ("lightennonselectedauto".equalsIgnoreCase(name)) {
+                        setLightenNonSelectedAuto(Boolean.parseBoolean(reader.getAttributeValue(null, "value")));
+                    } else if ("lightenNonSelectedFactor".equalsIgnoreCase(name)) {
+                        setLightenNonSelectedFactor(Float.parseFloat(reader.getAttributeValue(null, "value")));
                     } else if ("edgeSelectionColor".equalsIgnoreCase(name)) {
                         setEdgeSelectionColor(Boolean.parseBoolean(reader.getAttributeValue(null, "value")));
-
+                    // Colors
                     } else if ("backgroundcolor".equalsIgnoreCase(name)) {
                         setBackgroundColor(ColorUtils.decode(reader.getAttributeValue(null, "value")));
                     } else if ("edgeInSelectionColor".equalsIgnoreCase(name)) {
-                        setEdgeInSelectionColor(
-                            ColorUtils.decode(reader.getAttributeValue(null, "value")));
+                        setEdgeInSelectionColor(ColorUtils.decode(reader.getAttributeValue(null, "value")));
                     } else if ("edgeOutSelectionColor".equalsIgnoreCase(name)) {
-                        setEdgeOutSelectionColor(
-                            ColorUtils.decode(reader.getAttributeValue(null, "value")));
+                        setEdgeOutSelectionColor(ColorUtils.decode(reader.getAttributeValue(null, "value")));
                     } else if ("edgeBothSelectionColor".equalsIgnoreCase(name)) {
-                        setEdgeBothSelectionColor(
-                            ColorUtils.decode(reader.getAttributeValue(null, "value")));
-
-                    } else if ("edgeScale".equalsIgnoreCase(name)) {
-                        setEdgeScale(Float.parseFloat(reader.getAttributeValue(null, "value")));
-                    } else if ("screenshotMaker".equalsIgnoreCase(name)) {
-                        // TODO FIx
-//                        ScreenshotControllerImpl screenshotMaker = VizController.getInstance().getScreenshotMaker();
-//                        if (screenshotMaker != null) {
-//                            screenshotMaker.setWidth(Integer.parseInt(reader.getAttributeValue(null, "width")));
-//                            screenshotMaker.setHeight(Integer.parseInt(reader.getAttributeValue(null, "height")));
-//                            screenshotMaker.setTransparentBackground(Boolean.parseBoolean(reader.getAttributeValue(null, "transparent")));
-//                            screenshotMaker.setAutoSave(Boolean.parseBoolean(reader.getAttributeValue(null, "autosave")));
-//                            screenshotMaker.setAntiAliasing(Integer.parseInt(reader.getAttributeValue(null, "antialiasing")));
-//                            String path = reader.getAttributeValue(null, "path");
-//                            if (path != null && !path.isEmpty()) {
-//                                File file = new File(reader.getAttributeValue(null, "path"));
-//                                if (file.exists()) {
-//                                    screenshotMaker.setDefaultDirectory(file);
-//                                }
-//                            }
-//                        }
+                        setEdgeBothSelectionColor(ColorUtils.decode(reader.getAttributeValue(null, "value")));
+                    // Node Labels
+                    } else if ("showNodeLabels".equalsIgnoreCase(name)) {
+                        setShowNodeLabels(Boolean.parseBoolean(reader.getAttributeValue(null, "value")));
+                    } else if ("nodeLabelFont".equalsIgnoreCase(name)) {
+                        String v = reader.getAttributeValue(null, "value");
+                        if (v != null) {
+                            setNodeLabelFont(Font.decode(v));
+                        }
+                    } else if ("nodeLabelScale".equalsIgnoreCase(name)) {
+                        setNodeLabelScale(Float.parseFloat(reader.getAttributeValue(null, "value")));
+                    } else if ("nodeLabelColorMode".equalsIgnoreCase(name)) {
+                        String v = reader.getAttributeValue(null, "value");
+                        if (v != null) {
+                            try {
+                                setNodeLabelColorMode(LabelColorMode.valueOf(v));
+                            } catch (IllegalArgumentException ignored) {
+                            }
+                        }
+                    } else if ("nodeLabelSizeMode".equalsIgnoreCase(name)) {
+                        String v = reader.getAttributeValue(null, "value");
+                        if (v != null) {
+                            try {
+                                setNodeLabelSizeMode(LabelSizeMode.valueOf(v));
+                            } catch (IllegalArgumentException ignored) {
+                            }
+                        }
+                    } else if ("hideNonSelectedNodeLabels".equalsIgnoreCase(name)) {
+                        setHideNonSelectedNodeLabels(Boolean.parseBoolean(reader.getAttributeValue(null, "value")));
+                    } else if ("fitNodeLabelsToNodeSize".equalsIgnoreCase(name)) {
+                        setNodeLabelFitToNodeSize(Boolean.parseBoolean(reader.getAttributeValue(null, "value")));
+                    } else if ("avoidNodeLabelOverlap".equalsIgnoreCase(name)) {
+                        setAvoidNodeLabelOverlap(Boolean.parseBoolean(reader.getAttributeValue(null, "value")));
+                    } else if ("nodeLabelColumns".equalsIgnoreCase(name)) {
+                        Column[] cols = readLabelColumns(reader, "nodeLabelColumns", graphModel.getNodeTable());
+                        if (cols != null) {
+                            setNodeLabelColumns(cols);
+                        }
+                    // Edge Labels
+                    } else if ("showEdgeLabels".equalsIgnoreCase(name)) {
+                        setShowEdgeLabels(Boolean.parseBoolean(reader.getAttributeValue(null, "value")));
+                    } else if ("edgeLabelFont".equalsIgnoreCase(name)) {
+                        String v = reader.getAttributeValue(null, "value");
+                        if (v != null) {
+                            setEdgeLabelFont(Font.decode(v));
+                        }
+                    } else if ("edgeLabelScale".equalsIgnoreCase(name)) {
+                        setEdgeLabelScale(Float.parseFloat(reader.getAttributeValue(null, "value")));
+                    } else if ("edgeLabelColorMode".equalsIgnoreCase(name)) {
+                        String v = reader.getAttributeValue(null, "value");
+                        if (v != null) {
+                            try {
+                                setEdgeLabelColorMode(LabelColorMode.valueOf(v));
+                            } catch (IllegalArgumentException ignored) {
+                            }
+                        }
+                    } else if ("edgeLabelSizeMode".equalsIgnoreCase(name)) {
+                        String v = reader.getAttributeValue(null, "value");
+                        if (v != null) {
+                            try {
+                                setEdgeLabelSizeMode(LabelSizeMode.valueOf(v));
+                            } catch (IllegalArgumentException ignored) {
+                            }
+                        }
+                    } else if ("hideNonSelectedEdgeLabels".equalsIgnoreCase(name)) {
+                        setHideNonSelectedEdgeLabels(Boolean.parseBoolean(reader.getAttributeValue(null, "value")));
+                    } else if ("edgeLabelColumns".equalsIgnoreCase(name)) {
+                        Column[] cols = readLabelColumns(reader, "edgeLabelColumns", graphModel.getEdgeTable());
+                        if (cols != null) {
+                            setEdgeLabelColumns(cols);
+                        }
                     }
                     break;
                 case XMLStreamReader.END_ELEMENT:
@@ -951,30 +1039,196 @@ public class VizModel implements VisualizationModel {
         }
     }
 
+    /**
+     * Reads the legacy {@code <textmodel>} element written by Gephi 0.10 and earlier, mapping its
+     * content onto the equivalent fields of the current model.
+     */
+    private void readLegacyTextModel(XMLStreamReader reader) throws XMLStreamException {
+        List<Column> nodeCols = new ArrayList<>();
+        List<Column> edgeCols = new ArrayList<>();
+        boolean inNodeColumns = false;
+        boolean inEdgeColumns = false;
+        boolean readNodeSizeFactor = false;
+        boolean readEdgeSizeFactor = false;
+        boolean end = false;
+
+        while (reader.hasNext() && !end) {
+            int type = reader.next();
+            switch (type) {
+                case XMLStreamReader.START_ELEMENT:
+                    String name = reader.getLocalName();
+                    if ("shownodelabels".equalsIgnoreCase(name)) {
+                        setShowNodeLabels(Boolean.parseBoolean(reader.getAttributeValue(null, "enable")));
+                    } else if ("showedgelabels".equalsIgnoreCase(name)) {
+                        setShowEdgeLabels(Boolean.parseBoolean(reader.getAttributeValue(null, "enable")));
+                    } else if ("selectedOnly".equalsIgnoreCase(name)) {
+                        // Old "show selected labels only" maps to hiding non-selected labels
+                        boolean selectedOnly = Boolean.parseBoolean(reader.getAttributeValue(null, "value"));
+                        setHideNonSelectedNodeLabels(selectedOnly);
+                        setHideNonSelectedEdgeLabels(selectedOnly);
+                    } else if ("nodefont".equalsIgnoreCase(name)) {
+                        // Old format stored font as separate name/size/style attributes
+                        String fontName = reader.getAttributeValue(null, "name");
+                        int fontSize = Integer.parseInt(reader.getAttributeValue(null, "size"));
+                        int fontStyle = Integer.parseInt(reader.getAttributeValue(null, "style"));
+                        setNodeLabelFont(new Font(fontName, fontStyle, fontSize));
+                    } else if ("edgefont".equalsIgnoreCase(name)) {
+                        String fontName = reader.getAttributeValue(null, "name");
+                        int fontSize = Integer.parseInt(reader.getAttributeValue(null, "size"));
+                        int fontStyle = Integer.parseInt(reader.getAttributeValue(null, "style"));
+                        setEdgeLabelFont(new Font(fontName, fontStyle, fontSize));
+                    } else if ("nodesizefactor".equalsIgnoreCase(name)) {
+                        readNodeSizeFactor = true;
+                    } else if ("edgesizefactor".equalsIgnoreCase(name)) {
+                        readEdgeSizeFactor = true;
+                    } else if ("colormode".equalsIgnoreCase(name)) {
+                        // ObjectColorMode → OBJECT; everything else (TextColorMode, UniqueColorMode) → SELF
+                        String cls = reader.getAttributeValue(null, "class");
+                        LabelColorMode colorMode =
+                            "ObjectColorMode".equals(cls) ? LabelColorMode.OBJECT : LabelColorMode.SELF;
+                        setNodeLabelColorMode(colorMode);
+                        setEdgeLabelColorMode(colorMode);
+                    } else if ("sizemode".equalsIgnoreCase(name)) {
+                        // FixedSizeMode → SCREEN (constant pixels); everything else → ZOOM
+                        String cls = reader.getAttributeValue(null, "class");
+                        LabelSizeMode sizeMode =
+                            "FixedSizeMode".equals(cls) ? LabelSizeMode.SCREEN : LabelSizeMode.ZOOM;
+                        setNodeLabelSizeMode(sizeMode);
+                        setEdgeLabelSizeMode(sizeMode);
+                    } else if ("nodecolumns".equalsIgnoreCase(name)) {
+                        inNodeColumns = true;
+                    } else if ("edgecolumns".equalsIgnoreCase(name)) {
+                        inEdgeColumns = true;
+                    } else if ("column".equalsIgnoreCase(name)) {
+                        String id = reader.getAttributeValue(null, "id");
+                        if (id != null) {
+                            if (inNodeColumns) {
+                                Column col = graphModel.getNodeTable().getColumn(id);
+                                if (col != null) {
+                                    nodeCols.add(col);
+                                }
+                            } else if (inEdgeColumns) {
+                                Column col = graphModel.getEdgeTable().getColumn(id);
+                                if (col != null) {
+                                    edgeCols.add(col);
+                                }
+                            }
+                        }
+                    }
+                    // nodecolor/edgecolor: no equivalent in new model, intentionally skipped
+                    break;
+                case XMLStreamReader.CHARACTERS:
+                    // nodesizefactor and edgesizefactor used text content in old format
+                    if (!reader.isWhiteSpace()) {
+                        if (readNodeSizeFactor) {
+                            setNodeLabelScale(Float.parseFloat(reader.getText()));
+                        } else if (readEdgeSizeFactor) {
+                            setEdgeLabelScale(Float.parseFloat(reader.getText()));
+                        }
+                    }
+                    break;
+                case XMLStreamReader.END_ELEMENT:
+                    readNodeSizeFactor = false;
+                    readEdgeSizeFactor = false;
+                    if ("nodecolumns".equalsIgnoreCase(reader.getLocalName())) {
+                        inNodeColumns = false;
+                    } else if ("edgecolumns".equalsIgnoreCase(reader.getLocalName())) {
+                        inEdgeColumns = false;
+                    } else if ("textmodel".equalsIgnoreCase(reader.getLocalName())) {
+                        end = true;
+                    }
+                    break;
+            }
+        }
+
+        if (!nodeCols.isEmpty()) {
+            setNodeLabelColumns(nodeCols.toArray(new Column[0]));
+        }
+        if (!edgeCols.isEmpty()) {
+            setEdgeLabelColumns(edgeCols.toArray(new Column[0]));
+        }
+    }
+
+    /**
+     * Reads the legacy {@code <screenshotMaker>} element written by Gephi 0.10 and earlier.
+     * The old element was self-closing with all data as inline attributes. The old {@code width},
+     * {@code height} and {@code antialiasing} attributes have no equivalent in the new model and
+     * are intentionally ignored.
+     */
+    private void readLegacyScreenshotMaker(XMLStreamReader reader) {
+        String transparent = reader.getAttributeValue(null, "transparent");
+        if (transparent != null) {
+            screenshotModel.setTransparentBackground(Boolean.parseBoolean(transparent));
+        }
+        String autoSave = reader.getAttributeValue(null, "autosave");
+        if (autoSave != null) {
+            screenshotModel.setAutoSave(Boolean.parseBoolean(autoSave));
+        }
+        String path = reader.getAttributeValue(null, "path");
+        if (path != null && !path.isEmpty()) {
+            screenshotModel.setDefaultDirectory(new java.io.File(path));
+        }
+    }
+
+    private Column[] readLabelColumns(XMLStreamReader reader, String endElement,
+                                      org.gephi.graph.api.Table table) throws XMLStreamException {
+        List<Column> cols = new ArrayList<>();
+        while (reader.hasNext()) {
+            int type = reader.next();
+            if (type == XMLStreamReader.START_ELEMENT && "column".equalsIgnoreCase(reader.getLocalName())) {
+                String id = reader.getAttributeValue(null, "id");
+                if (id != null) {
+                    Column col = table.getColumn(id);
+                    if (col != null) {
+                        cols.add(col);
+                    }
+                }
+            } else if (type == XMLStreamReader.END_ELEMENT &&
+                endElement.equalsIgnoreCase(reader.getLocalName())) {
+                break;
+            }
+        }
+        return cols.isEmpty() ? null : cols.toArray(new Column[0]);
+    }
+
     public void writeXML(XMLStreamWriter writer) throws XMLStreamException {
-        //Fast refresh
-        // TODO: Fix
-        final Vector2fc cameraPosition = null;
-
-        //TextModel
-        //        textModel.writeXML(writer);
-        //TODO
-
-        //Camera
+        // Global
         writer.writeStartElement("cameraposition");
-        writer.writeAttribute("x", Float.toString(cameraPosition.x()));
-        writer.writeAttribute("y", Float.toString(cameraPosition.y()));
-        writer.writeAttribute("z", Float.toString(0));
+        writer.writeAttribute("x", Float.toString(pan.x()));
+        writer.writeAttribute("y", Float.toString(pan.y()));
+        writer.writeAttribute("z", Float.toString(5000f)); // Keep for backward compatibility, not used anymore
         writer.writeEndElement();
 
+        writer.writeStartElement("zoom");
+        writer.writeAttribute("value", String.valueOf(zoom));
+        writer.writeEndElement();
+
+        // Edges
         writer.writeStartElement("showedges");
         writer.writeAttribute("value", String.valueOf(isShowEdges()));
         writer.writeEndElement();
 
-        writer.writeStartElement("lightennonselectedauto");
-        writer.writeAttribute("value", String.valueOf(isLightenNonSelectedAuto()));
+        writer.writeStartElement("edgeScale");
+        writer.writeAttribute("value", String.valueOf(getEdgeScale()));
         writer.writeEndElement();
 
+        writer.writeStartElement("nodeScale");
+        writer.writeAttribute("value", String.valueOf(getNodeScale()));
+        writer.writeEndElement();
+
+        writer.writeStartElement("edgeColorMode");
+        writer.writeAttribute("value", getEdgeColorMode().name());
+        writer.writeEndElement();
+
+        writer.writeStartElement("edgeWeightEnabled");
+        writer.writeAttribute("value", String.valueOf(isUseEdgeWeight()));
+        writer.writeEndElement();
+
+        writer.writeStartElement("edgeRescaleWeightEnabled");
+        writer.writeAttribute("value", String.valueOf(isRescaleEdgeWeight()));
+        writer.writeEndElement();
+
+        // Selection
         writer.writeStartElement("autoselectneighbor");
         writer.writeAttribute("value", String.valueOf(isAutoSelectNeighbors()));
         writer.writeEndElement();
@@ -983,11 +1237,19 @@ public class VizModel implements VisualizationModel {
         writer.writeAttribute("value", String.valueOf(isHideNonSelectedEdges()));
         writer.writeEndElement();
 
+        writer.writeStartElement("lightennonselectedauto");
+        writer.writeAttribute("value", String.valueOf(isLightenNonSelectedAuto()));
+        writer.writeEndElement();
+
+        writer.writeStartElement("lightenNonSelectedFactor");
+        writer.writeAttribute("value", String.valueOf(getLightenNonSelectedFactor()));
+        writer.writeEndElement();
+
         writer.writeStartElement("edgeSelectionColor");
         writer.writeAttribute("value", String.valueOf(isEdgeSelectionColor()));
         writer.writeEndElement();
 
-        //Colors
+        // Colors
         writer.writeStartElement("backgroundcolor");
         writer.writeAttribute("value", ColorUtils.encode(getBackgroundColor()));
         writer.writeEndElement();
@@ -1004,25 +1266,88 @@ public class VizModel implements VisualizationModel {
         writer.writeAttribute("value", ColorUtils.encode(getEdgeBothSelectionColor()));
         writer.writeEndElement();
 
-        //Float
-        writer.writeStartElement("edgeScale");
-        writer.writeAttribute("value", String.valueOf(getEdgeScale()));
+        // Node Labels
+        writer.writeStartElement("showNodeLabels");
+        writer.writeAttribute("value", String.valueOf(isShowNodeLabels()));
         writer.writeEndElement();
 
-        //Screenshot settings
-        // TODO Fix
-//        ScreenshotControllerImpl screenshotMaker = VizController.getInstance().getScreenshotMaker();
-//        if (screenshotMaker != null) {
-//            writer.writeStartElement("screenshotMaker");
-//            writer.writeAttribute("width", String.valueOf(screenshotMaker.getWidth()));
-//            writer.writeAttribute("height", String.valueOf(screenshotMaker.getHeight()));
-//            writer.writeAttribute("antialiasing", String.valueOf(screenshotMaker.getAntiAliasing()));
-//            writer.writeAttribute("transparent", String.valueOf(screenshotMaker.isTransparentBackground()));
-//            writer.writeAttribute("autosave", String.valueOf(screenshotMaker.isAutoSave()));
-//            if (screenshotMaker.getDefaultDirectory() != null) {
-//                writer.writeAttribute("path", screenshotMaker.getDefaultDirectory());
-//            }
-//            writer.writeEndElement();
-//        }
+        writer.writeStartElement("nodeLabelFont");
+        writer.writeAttribute("value", FontUtils.encode(getNodeLabelFont()));
+        writer.writeEndElement();
+
+        writer.writeStartElement("nodeLabelScale");
+        writer.writeAttribute("value", String.valueOf(getNodeLabelScale()));
+        writer.writeEndElement();
+
+        writer.writeStartElement("nodeLabelColorMode");
+        writer.writeAttribute("value", getNodeLabelColorMode().name());
+        writer.writeEndElement();
+
+        writer.writeStartElement("nodeLabelSizeMode");
+        writer.writeAttribute("value", getNodeLabelSizeMode().name());
+        writer.writeEndElement();
+
+        writer.writeStartElement("hideNonSelectedNodeLabels");
+        writer.writeAttribute("value", String.valueOf(isHideNonSelectedNodeLabels()));
+        writer.writeEndElement();
+
+        writer.writeStartElement("fitNodeLabelsToNodeSize");
+        writer.writeAttribute("value", String.valueOf(isNodeLabelFitToNodeSize()));
+        writer.writeEndElement();
+
+        writer.writeStartElement("avoidNodeLabelOverlap");
+        writer.writeAttribute("value", String.valueOf(isAvoidNodeLabelOverlap()));
+        writer.writeEndElement();
+
+        writer.writeStartElement("nodeLabelColumns");
+        for (Column col : getNodeLabelColumns()) {
+            writer.writeStartElement("column");
+            writer.writeAttribute("id", col.getId());
+            writer.writeEndElement();
+        }
+        writer.writeEndElement();
+
+        // Edge Labels
+        writer.writeStartElement("showEdgeLabels");
+        writer.writeAttribute("value", String.valueOf(isShowEdgeLabels()));
+        writer.writeEndElement();
+
+        writer.writeStartElement("edgeLabelFont");
+        writer.writeAttribute("value", FontUtils.encode(getEdgeLabelFont()));
+        writer.writeEndElement();
+
+        writer.writeStartElement("edgeLabelScale");
+        writer.writeAttribute("value", String.valueOf(getEdgeLabelScale()));
+        writer.writeEndElement();
+
+        writer.writeStartElement("edgeLabelColorMode");
+        writer.writeAttribute("value", getEdgeLabelColorMode().name());
+        writer.writeEndElement();
+
+        writer.writeStartElement("edgeLabelSizeMode");
+        writer.writeAttribute("value", getEdgeLabelSizeMode().name());
+        writer.writeEndElement();
+
+        writer.writeStartElement("hideNonSelectedEdgeLabels");
+        writer.writeAttribute("value", String.valueOf(isHideNonSelectedEdgeLabels()));
+        writer.writeEndElement();
+
+        writer.writeStartElement("edgeLabelColumns");
+        for (Column col : getEdgeLabelColumns()) {
+            writer.writeStartElement("column");
+            writer.writeAttribute("id", col.getId());
+            writer.writeEndElement();
+        }
+        writer.writeEndElement();
+
+        // Screenshot model
+        writer.writeStartElement("screenshotModel");
+        screenshotModel.writeXML(writer);
+        writer.writeEndElement();
+
+        // Selection model
+        writer.writeStartElement("selectionModel");
+        selectionModel.writeXML(writer);
+        writer.writeEndElement();
     }
 }
