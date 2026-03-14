@@ -9,6 +9,7 @@ import javax.swing.JToggleButton;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.gephi.ui.components.JPopupButton;
+import org.gephi.visualization.VizConfig;
 import org.gephi.visualization.VizModel;
 import org.gephi.visualization.api.LabelColorMode;
 import org.gephi.visualization.api.LabelSizeMode;
@@ -86,13 +87,14 @@ public class EdgeLabelGroup implements CollapseGroup, VisualizationPropertyChang
         labelSizeModeButton
             .setToolTipText(NbBundle.getMessage(EdgeLabelGroup.class, "VizToolbar.Labels.sizeMode"));
 
-        //Font size
+        //Font size - maps [1, 100] to [EDGE_LABEL_SCALE_MIN, EDGE_LABEL_SCALE_MAX]
         fontSizeSlider = new JSlider(1, 100, 1);
         fontSizeSlider.setToolTipText(NbBundle.getMessage(EdgeLabelGroup.class, "VizToolbar.Labels.fontScale"));
         fontSizeSlider.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
-                vizController.setEdgeLabelScale(fontSizeSlider.getValue() / 100f);
+                float scale = VizConfig.EDGE_LABEL_SCALE_MIN + (VizConfig.EDGE_LABEL_SCALE_MAX - VizConfig.EDGE_LABEL_SCALE_MIN) * (fontSizeSlider.getValue() - 1) / 99f;
+                vizController.setEdgeLabelScale(scale);
             }
         });
         fontSizeSlider.setPreferredSize(new Dimension(100, 20));
@@ -105,7 +107,7 @@ public class EdgeLabelGroup implements CollapseGroup, VisualizationPropertyChang
         showLabelsButton.setSelected(vizModel.isShowEdgeLabels());
         labelColorModeButton.setSelectedItem(vizModel.getEdgeLabelColorMode());
         labelSizeModeButton.setSelectedItem(vizModel.getEdgeLabelSizeMode());
-        fontSizeSlider.setValue((int) (vizModel.getEdgeLabelScale() * 100));
+        fontSizeSlider.setValue(1 + (int) ((vizModel.getEdgeLabelScale() - VizConfig.EDGE_LABEL_SCALE_MIN) / (VizConfig.EDGE_LABEL_SCALE_MAX - VizConfig.EDGE_LABEL_SCALE_MIN) * 99));
         refreshEnable(true);
 
         vizController.addPropertyChangeListener(this);
@@ -142,8 +144,7 @@ public class EdgeLabelGroup implements CollapseGroup, VisualizationPropertyChang
         } else if ("edgeLabelSizeMode".equals(evt.getPropertyName())) {
             labelSizeModeButton.setSelectedItem(model.getEdgeLabelSizeMode());
         } else if ("edgeLabelScale".equals(evt.getPropertyName())) {
-            float scale = (Float) evt.getNewValue();
-            int sliderValue = (int) (scale * 100);
+            int sliderValue = 1 + (int) (((Float) evt.getNewValue() - VizConfig.EDGE_LABEL_SCALE_MIN) / (VizConfig.EDGE_LABEL_SCALE_MAX - VizConfig.EDGE_LABEL_SCALE_MIN) * 99);
             if (fontSizeSlider.getValue() != sliderValue) {
                 fontSizeSlider.setValue(sliderValue);
             }

@@ -151,6 +151,18 @@ public class VizConfig {
     public static final boolean DEFAULT_ENGINE_DISABLE_VAOS = false;
     public static final boolean DEFAULT_ENGINE_DISABLE_VERTEX_ARRAY_DRAWING = false;
     public static final boolean DEFAULT_ENGINE_OPENGL_DEBUG = false;
+    // Scale property bounds (float range displayed by the sliders).
+    // Node/edge scale sliders are logarithmic: the geometric mean of MIN and MAX equals the
+    // respective default value, so the slider is centred there (5× factor in each direction).
+    public static final float NODE_SCALE_MIN = 0.2f;   // DEFAULT_NODE_SCALE / 5
+    public static final float NODE_SCALE_MAX = 5.0f;   // DEFAULT_NODE_SCALE * 5
+    public static final float EDGE_SCALE_MIN = 0.4f;   // DEFAULT_EDGE_SCALE / 5
+    public static final float EDGE_SCALE_MAX = 10.0f;  // DEFAULT_EDGE_SCALE * 5
+    // Label scale sliders are linear; min > 0 prevents invisible labels.
+    public static final float NODE_LABEL_SCALE_MIN = 0.01f;
+    public static final float NODE_LABEL_SCALE_MAX = 1.0f;
+    public static final float EDGE_LABEL_SCALE_MIN = 0.01f;
+    public static final float EDGE_LABEL_SCALE_MAX = 1.0f;
 
     //Default config - loaded in the VizModel
     protected static final Color defaultBackgroundColor = ColorUtils.decode(
@@ -429,4 +441,5 @@ public class VizConfig {
     public static boolean isEngineOpenGLDebug() {
         return engineOpenGLDebug;
     }
+
 }

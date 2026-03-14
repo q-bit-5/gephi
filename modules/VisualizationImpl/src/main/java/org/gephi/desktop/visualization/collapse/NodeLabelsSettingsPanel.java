@@ -56,6 +56,7 @@ import org.gephi.appearance.spi.TransformerCategory;
 import org.gephi.desktop.appearance.AppearanceUIController;
 import org.gephi.ui.appearance.plugin.UniqueLabelColorTransformerUI;
 import org.gephi.ui.appearance.plugin.category.DefaultCategory;
+import org.gephi.visualization.VizConfig;
 import org.gephi.visualization.api.LabelColorMode;
 import org.gephi.visualization.api.LabelSizeMode;
 import org.gephi.visualization.api.VisualizationModel;
@@ -181,7 +182,11 @@ public class NodeLabelsSettingsPanel extends javax.swing.JPanel implements Visua
                 vizController.setNodeLabelFont(font);
             }
         });
-        nodeSizeSlider.addChangeListener(e -> vizController.setNodeLabelScale(nodeSizeSlider.getValue() / 100f));
+        // Slider maps [1, 100] to [NODE_LABEL_SCALE_MIN, NODE_LABEL_SCALE_MAX]
+        nodeSizeSlider.addChangeListener(e -> {
+            float scale = VizConfig.NODE_LABEL_SCALE_MIN + (VizConfig.NODE_LABEL_SCALE_MAX - VizConfig.NODE_LABEL_SCALE_MIN) * (nodeSizeSlider.getValue() - 1) / 99f;
+            vizController.setNodeLabelScale(scale);
+        });
 
         // Attributes
         attributesButton.addActionListener(new ActionListener() {
@@ -265,8 +270,9 @@ public class NodeLabelsSettingsPanel extends javax.swing.JPanel implements Visua
         }
         nodeFontButton.setText(
             vizModel.getNodeLabelFont().getFontName() + ", " + vizModel.getNodeLabelFont().getSize());
-        if (nodeSizeSlider.getValue() / 100f != vizModel.getNodeLabelScale()) {
-            nodeSizeSlider.setValue((int) (vizModel.getNodeLabelScale() * 100f));
+        float sliderScale = VizConfig.NODE_LABEL_SCALE_MIN + (VizConfig.NODE_LABEL_SCALE_MAX - VizConfig.NODE_LABEL_SCALE_MIN) * (nodeSizeSlider.getValue() - 1) / 99f;
+        if (sliderScale != vizModel.getNodeLabelScale()) {
+            nodeSizeSlider.setValue(1 + (int) ((vizModel.getNodeLabelScale() - VizConfig.NODE_LABEL_SCALE_MIN) / (VizConfig.NODE_LABEL_SCALE_MAX - VizConfig.NODE_LABEL_SCALE_MIN) * 99));
         }
         if (hideNonSelectedCheckbox.isSelected() != vizModel.isHideNonSelectedNodeLabels()) {
             hideNonSelectedCheckbox.setSelected(vizModel.isHideNonSelectedNodeLabels());

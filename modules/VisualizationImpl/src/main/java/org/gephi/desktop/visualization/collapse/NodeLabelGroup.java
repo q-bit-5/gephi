@@ -9,6 +9,7 @@ import javax.swing.JToggleButton;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.gephi.ui.components.JPopupButton;
+import org.gephi.visualization.VizConfig;
 import org.gephi.visualization.VizModel;
 import org.gephi.visualization.api.LabelColorMode;
 import org.gephi.visualization.api.LabelSizeMode;
@@ -103,13 +104,14 @@ public class NodeLabelGroup implements CollapseGroup, VisualizationPropertyChang
         avoidOverlapButton.addActionListener(
             e -> vizController.setAvoidNodeLabelOverlap(avoidOverlapButton.isSelected()));
 
-        //Font size
+        //Font size - maps [1, 100] to [NODE_LABEL_SCALE_MIN, NODE_LABEL_SCALE_MAX]
         fontSizeSlider = new JSlider(1, 100, 1);
         fontSizeSlider.setToolTipText(NbBundle.getMessage(NodeLabelGroup.class, "VizToolbar.Labels.fontScale"));
         fontSizeSlider.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
-                vizController.setNodeLabelScale(fontSizeSlider.getValue() / 100f);
+                float scale = VizConfig.NODE_LABEL_SCALE_MIN + (VizConfig.NODE_LABEL_SCALE_MAX - VizConfig.NODE_LABEL_SCALE_MIN) * (fontSizeSlider.getValue() - 1) / 99f;
+                vizController.setNodeLabelScale(scale);
             }
         });
         fontSizeSlider.setPreferredSize(new Dimension(100, 20));
@@ -124,7 +126,7 @@ public class NodeLabelGroup implements CollapseGroup, VisualizationPropertyChang
         labelSizeModeButton.setSelectedItem(vizModel.getNodeLabelSizeMode());
         fitToNodeSizeButton.setSelected(vizModel.isNodeLabelFitToNodeSize());
         avoidOverlapButton.setSelected(vizModel.isAvoidNodeLabelOverlap());
-        fontSizeSlider.setValue((int) (vizModel.getNodeLabelScale() * 100));
+        fontSizeSlider.setValue(1 + (int) ((vizModel.getNodeLabelScale() - VizConfig.NODE_LABEL_SCALE_MIN) / (VizConfig.NODE_LABEL_SCALE_MAX - VizConfig.NODE_LABEL_SCALE_MIN) * 99));
         refreshEnable(true);
 
         vizController.addPropertyChangeListener(this);
@@ -167,8 +169,7 @@ public class NodeLabelGroup implements CollapseGroup, VisualizationPropertyChang
         } else if ("avoidNodeLabelOverlap".equals(evt.getPropertyName())) {
             avoidOverlapButton.setSelected((Boolean) evt.getNewValue());
         } else if ("nodeLabelScale".equals(evt.getPropertyName())) {
-            float scale = (Float) evt.getNewValue();
-            int sliderValue = (int) (scale * 100);
+            int sliderValue = 1 + (int) (((Float) evt.getNewValue() - VizConfig.NODE_LABEL_SCALE_MIN) / (VizConfig.NODE_LABEL_SCALE_MAX - VizConfig.NODE_LABEL_SCALE_MIN) * 99);
             if (fontSizeSlider.getValue() != sliderValue) {
                 fontSizeSlider.setValue(sliderValue);
             }
