@@ -2,7 +2,7 @@ name: release
 
 on:
   push:
-    branches: [ 0.11.0, 0.10.2, java-17 ]
+    branches: [ 0.11.0 ]
 
 jobs:
   build-base:
@@ -24,7 +24,7 @@ jobs:
       - name: Setup Maven
         uses: stCarolas/setup-maven@v5
         with:
-          maven-version: 3.8.7
+          maven-version: 3.9.14
 
       - name: Get NBM Keystore
         run: |
