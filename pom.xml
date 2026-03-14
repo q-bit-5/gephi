@@ -263,7 +263,7 @@
 
         <gephi.maven-checkstyle-plugin.version>3.4.0</gephi.maven-checkstyle-plugin.version>
 
-        <gephi.jsign.version>6.0</gephi.jsign.version>
+        <gephi.jsign.version>7.4</gephi.jsign.version>
 
         <gephi.checkstyle.version>10.17.0</gephi.checkstyle.version>
 
