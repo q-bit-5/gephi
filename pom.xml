@@ -134,7 +134,7 @@
         <netbeans.run.params>${netbeans.run.params.ide}</netbeans.run.params>
         
         <!-- Netbeans Platform version -->
-        <netbeans.version>RELEASE280</netbeans.version>
+        <netbeans.version>RELEASE290</netbeans.version>
         
         <!-- GraphStore version -->
         <graphstore.version>0.8.1</graphstore.version>
@@ -209,7 +209,7 @@
         
         <!--==== Dependency Versions ==================================================================================-->
         
-        <gephi.sentry.version>5.7.3</gephi.sentry.version>
+        <gephi.sentry.version>8.34.1</gephi.sentry.version>
         
         <!--==== Plugin Versions ==================================================================================-->
 
