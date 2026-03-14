@@ -272,28 +272,6 @@ public class VizModel implements VisualizationModel {
         return vizController.getCanvasManager().getEngine().map(VizEngine::getRenderingOptions);
     }
 
-//    private boolean loadEngine() {
-//        VizEngine<JOGLRenderingTarget, NEWTEvent> engine = canvasManager.getEngine().orElse(null);
-//        if (engine == null) {
-//            return false; // Engine still not ready in the workspace
-//        }
-//        this.renderingOptions = engine.getRenderingOptions();
-//
-//        defaultValues();
-//
-//        return true;
-//    }
-//
-//    public synchronized void init(JComponent component) {
-//        if (canvasManager.isInitialized()) {
-//            return;
-//        }
-//
-//        this.renderingOptions = canvasManager.init(component).getRenderingOptions();
-//        defaultValues();
-//    }
-
-
     @Override
     public float getZoom() {
         return zoom;
