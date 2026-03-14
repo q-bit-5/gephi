@@ -52,7 +52,7 @@ public class Constants {
     public static final int RENDERING_ORDER_NODES = 100;
     public static final int RENDERING_ORDER_EDGES = 50;
 
-    public static final String SHADERS_ROOT = "/org/gephi/viz-engine/shaders/";
+    public static final String SHADERS_ROOT = "/org/gephi/viz/engine/shaders/";
 
     // Customizable Constants : Might worth considering having a proper static class
     private static final float NODE_BORDER_SIZE = 0.16f;
