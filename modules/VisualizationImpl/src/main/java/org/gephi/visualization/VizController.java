@@ -89,7 +89,6 @@ public class VizController implements VisualizationController, Controller<VizMod
         vizEventManager = new StandardVizEventManager();
         screenshotController = new ScreenshotControllerImpl(this);
         canvasManager = new VizEngineGraphCanvasManager(this);
-
     }
 
     @Override
