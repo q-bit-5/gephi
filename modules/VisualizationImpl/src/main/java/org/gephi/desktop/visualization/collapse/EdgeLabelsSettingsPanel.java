@@ -56,6 +56,7 @@ import org.gephi.appearance.spi.TransformerCategory;
 import org.gephi.desktop.appearance.AppearanceUIController;
 import org.gephi.ui.appearance.plugin.UniqueLabelColorTransformerUI;
 import org.gephi.ui.appearance.plugin.category.DefaultCategory;
+import org.gephi.visualization.VizConfig;
 import org.gephi.visualization.api.LabelColorMode;
 import org.gephi.visualization.api.LabelSizeMode;
 import org.gephi.visualization.api.VisualizationModel;
@@ -179,7 +180,11 @@ public class EdgeLabelsSettingsPanel extends javax.swing.JPanel implements Visua
                 vizController.setEdgeLabelFont(font);
             }
         });
-        edgeSizeSlider.addChangeListener(e -> vizController.setEdgeLabelScale(edgeSizeSlider.getValue() / 100f));
+        // Slider maps [1, 100] to [EDGE_LABEL_SCALE_MIN, EDGE_LABEL_SCALE_MAX]
+        edgeSizeSlider.addChangeListener(e -> {
+            float scale = VizConfig.EDGE_LABEL_SCALE_MIN + (VizConfig.EDGE_LABEL_SCALE_MAX - VizConfig.EDGE_LABEL_SCALE_MIN) * (edgeSizeSlider.getValue() - 1) / 99f;
+            vizController.setEdgeLabelScale(scale);
+        });
 
         // Attributes
         attributesButton.addActionListener(new ActionListener() {
@@ -247,8 +252,9 @@ public class EdgeLabelsSettingsPanel extends javax.swing.JPanel implements Visua
         }
         edgeFontButton.setText(
             vizModel.getEdgeLabelFont().getFontName() + ", " + vizModel.getEdgeLabelFont().getSize());
-        if (edgeSizeSlider.getValue() / 100f != vizModel.getEdgeLabelScale()) {
-            edgeSizeSlider.setValue((int) (vizModel.getEdgeLabelScale() * 100f));
+        float sliderScale = VizConfig.EDGE_LABEL_SCALE_MIN + (VizConfig.EDGE_LABEL_SCALE_MAX - VizConfig.EDGE_LABEL_SCALE_MIN) * (edgeSizeSlider.getValue() - 1) / 99f;
+        if (sliderScale != vizModel.getEdgeLabelScale()) {
+            edgeSizeSlider.setValue(1 + (int) ((vizModel.getEdgeLabelScale() - VizConfig.EDGE_LABEL_SCALE_MIN) / (VizConfig.EDGE_LABEL_SCALE_MAX - VizConfig.EDGE_LABEL_SCALE_MIN) * 99));
         }
         if (hideNonSelectedCheckbox.isSelected() != vizModel.isHideNonSelectedEdgeLabels()) {
             hideNonSelectedCheckbox.setSelected(vizModel.isHideNonSelectedEdgeLabels());

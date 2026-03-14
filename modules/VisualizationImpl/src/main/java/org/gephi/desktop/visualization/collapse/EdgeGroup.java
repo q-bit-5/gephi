@@ -12,6 +12,7 @@ import javax.swing.JToggleButton;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.gephi.ui.components.JPopupButton;
+import org.gephi.visualization.VizConfig;
 import org.gephi.visualization.VizModel;
 import org.gephi.visualization.api.EdgeColorMode;
 import org.gephi.visualization.api.VisualizationModel;
@@ -64,14 +65,15 @@ public class EdgeGroup implements CollapseGroup, VisualizationPropertyChangeList
         edgeColorModeButton
             .setToolTipText(NbBundle.getMessage(EdgeGroup.class, "VizToolbar.Edges.colorMode"));
 
-        //EdgeScale slider
-        edgeScaleSlider = new JSlider(1, 100, 1);
+        //EdgeScale slider - logarithmic [0, 100] → [EDGE_SCALE_MIN, EDGE_SCALE_MAX],
+        // centred (slider=50) at the default value (geometric mean of MIN and MAX).
+        edgeScaleSlider = new JSlider(0, 100, 0);
         edgeScaleSlider.setToolTipText(NbBundle.getMessage(EdgeGroup.class, "VizToolbar.Edges.edgeScale"));
         edgeScaleSlider.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
-                float value = edgeScaleSlider.getValue() / 10f + 0.1f;
-                vizController.setEdgeScale(value);
+                float scale = VizConfig.EDGE_SCALE_MIN * (float) Math.pow((double) VizConfig.EDGE_SCALE_MAX / VizConfig.EDGE_SCALE_MIN, edgeScaleSlider.getValue() / 100.0);
+                vizController.setEdgeScale(scale);
             }
         });
         edgeScaleSlider.setPreferredSize(new Dimension(100, 20));
@@ -91,7 +93,7 @@ public class EdgeGroup implements CollapseGroup, VisualizationPropertyChangeList
         showEdgeButton.setSelected(vizModel.isShowEdges());
 
         edgeScaleSlider.setEnabled(true);
-        edgeScaleSlider.setValue((int) ((vizModel.getEdgeScale() - 0.1f) * 10));
+        edgeScaleSlider.setValue((int) Math.round(Math.log((double) vizModel.getEdgeScale() / VizConfig.EDGE_SCALE_MIN) / Math.log((double) VizConfig.EDGE_SCALE_MAX / VizConfig.EDGE_SCALE_MIN) * 100));
 
         // Listeners
         vizController.addPropertyChangeListener(this);
@@ -118,8 +120,9 @@ public class EdgeGroup implements CollapseGroup, VisualizationPropertyChangeList
                 showEdgeButton.setSelected(model.isShowEdges());
             }
         } else if (evt.getPropertyName().equals("edgeScale")) {
-            if (model.getEdgeScale() != (edgeScaleSlider.getValue() / 10f + 0.1f)) {
-                edgeScaleSlider.setValue((int) ((model.getEdgeScale() - 0.1f) * 10));
+            int targetSlider = (int) Math.round(Math.log((double) model.getEdgeScale() / VizConfig.EDGE_SCALE_MIN) / Math.log((double) VizConfig.EDGE_SCALE_MAX / VizConfig.EDGE_SCALE_MIN) * 100);
+            if (edgeScaleSlider.getValue() != targetSlider) {
+                edgeScaleSlider.setValue(targetSlider);
             }
         } else if (evt.getPropertyName().equals("edgeColorMode")) {
             if (edgeColorModeButton.getSelectedItem() != model.getEdgeColorMode()) {
