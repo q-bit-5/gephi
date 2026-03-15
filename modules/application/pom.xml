@@ -426,6 +426,10 @@
             <groupId>${project.groupId}</groupId>
             <artifactId>desktop-search</artifactId>
         </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>desktop-selection</artifactId>
+        </dependency>
     </dependencies>
     
     <build>
