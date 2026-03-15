@@ -180,12 +180,17 @@ jobs:
           VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
           [[ "$VERSION" != *SNAPSHOT* ]] && exit 0
           BASE="https://central.sonatype.com/repository/maven-snapshots/org/gephi/gephi/$VERSION"
+          METADATA=$(curl -sf "$BASE/maven-metadata.xml")
+          SNAPSHOT_TS=$(echo "$METADATA" | grep -oP '<timestamp>\K[^<]+')
+          SNAPSHOT_BN=$(echo "$METADATA" | grep -oP '<buildNumber>\K[^<]+')
+          SNAP_VERSION="${VERSION%-SNAPSHOT}-${SNAPSHOT_TS}-${SNAPSHOT_BN}"
           FILE=$(find ~/.m2/repository/org/gephi/gephi/$VERSION/ \
             -name "gephi-*-${{ matrix.arch }}.*" \
             ! -name "*.asc" ! -name "*.md5" ! -name "*.sha*" ! -name "*.pom" \
             | sort | tail -1)
           FILENAME=$(basename "$FILE")
-          echo "- [$FILENAME]($BASE/$FILENAME)" >> $GITHUB_STEP_SUMMARY
+          REMOTE_FILENAME="${FILENAME/SNAPSHOT/$SNAP_VERSION}"
+          echo "- [$REMOTE_FILENAME]($BASE/$REMOTE_FILENAME)" >> $GITHUB_STEP_SUMMARY
 
   update-site:
     needs: bundle
