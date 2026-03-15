@@ -40,7 +40,7 @@
  Portions Copyrighted 2011 Gephi Consortium.
  */
 
-package org.gephi.ui.tools.plugin.edit;
+package org.gephi.desktop.selection.edit;
 
 /**
  * @author Eduardo Ramos

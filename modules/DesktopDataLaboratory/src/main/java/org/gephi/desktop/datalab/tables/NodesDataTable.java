@@ -56,7 +56,7 @@ import org.gephi.desktop.datalab.tables.columns.PropertyDataColumn;
 import org.gephi.desktop.datalab.tables.popup.NodesPopupAdapter;
 import org.gephi.graph.api.GraphModel;
 import org.gephi.graph.api.Node;
-import org.gephi.tools.api.EditWindowController;
+import org.gephi.desktop.selection.EditWindowController;
 import org.openide.util.Lookup;
 
 /**

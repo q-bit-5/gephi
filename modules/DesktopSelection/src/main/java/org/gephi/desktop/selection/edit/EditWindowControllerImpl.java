@@ -40,12 +40,12 @@
  Portions Copyrighted 2011 Gephi Consortium.
  */
 
-package org.gephi.ui.tools.plugin.edit;
+package org.gephi.desktop.selection.edit;
 
 import javax.swing.SwingUtilities;
 import org.gephi.graph.api.Edge;
 import org.gephi.graph.api.Node;
-import org.gephi.tools.api.EditWindowController;
+import org.gephi.desktop.selection.EditWindowController;
 import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.WindowManager;

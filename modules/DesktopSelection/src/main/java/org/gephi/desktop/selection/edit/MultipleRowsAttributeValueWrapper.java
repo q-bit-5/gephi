@@ -40,34 +40,36 @@
  Portions Copyrighted 2011 Gephi Consortium.
  */
 
-package org.gephi.ui.tools.plugin.edit;
+package org.gephi.desktop.selection.edit;
 
 import java.time.ZoneId;
 import org.gephi.graph.api.AttributeUtils;
 import org.gephi.graph.api.Column;
 import org.gephi.graph.api.Element;
 import org.gephi.graph.api.TimeFormat;
+import org.gephi.desktop.selection.edit.EditWindowUtils.AttributeValueWrapper;
 
 /**
  * @author Eduardo Ramos
  */
-public class SingleRowAttributeValueWrapper implements EditWindowUtils.AttributeValueWrapper {
+public class MultipleRowsAttributeValueWrapper implements AttributeValueWrapper {
 
-    private final Element row;
+    private final Element[] rows;
     private final Column column;
     private final TimeFormat currentTimeFormat;
     private final ZoneId dateTimeZone;
+    private Object value;
 
-    public SingleRowAttributeValueWrapper(Element row, Column column, TimeFormat currentTimeFormat,
-                                          ZoneId dateTimeZone) {
-        this.row = row;
+    public MultipleRowsAttributeValueWrapper(Element[] rows, Column column, TimeFormat currentTimeFormat,
+                                             ZoneId dateTimeZone) {
+        this.rows = rows;
         this.column = column;
         this.currentTimeFormat = currentTimeFormat;
         this.dateTimeZone = dateTimeZone;
+        this.value = null;
     }
 
     private String convertToStringIfNotNull() {
-        Object value = row.getAttribute(column);
         if (value != null) {
             return AttributeUtils.print(value, currentTimeFormat, dateTimeZone);
         } else {
@@ -75,94 +77,101 @@ public class SingleRowAttributeValueWrapper implements EditWindowUtils.Attribute
         }
     }
 
+    private void setValueToAllElements(Object object) {
+        this.value = object;
+        for (Element row : rows) {
+            row.setAttribute(column, value);
+        }
+    }
+
     @Override
     public Byte getValueByte() {
-        return (Byte) row.getAttribute(column);
+        return (Byte) value;
     }
 
     @Override
     public void setValueByte(Byte object) {
-        row.setAttribute(column, object);
+        setValueToAllElements(object);
     }
 
     @Override
     public Short getValueShort() {
-        return (Short) row.getAttribute(column);
+        return (Short) value;
     }
 
     @Override
     public void setValueShort(Short object) {
-        row.setAttribute(column, object);
+        setValueToAllElements(object);
     }
 
     @Override
     public Character getValueCharacter() {
-        return (Character) row.getAttribute(column);
+        return (Character) value;
     }
 
     @Override
     public void setValueCharacter(Character object) {
-        row.setAttribute(column, object);
+        setValueToAllElements(object);
     }
 
     @Override
     public String getValueString() {
-        return (String) row.getAttribute(column);
+        return (String) value;
     }
 
     @Override
     public void setValueString(String object) {
-        row.setAttribute(column, object);
+        setValueToAllElements(object);
     }
 
     @Override
     public Double getValueDouble() {
-        return (Double) row.getAttribute(column);
+        return (Double) value;
     }
 
     @Override
     public void setValueDouble(Double object) {
-        row.setAttribute(column, object);
+        setValueToAllElements(object);
     }
 
     @Override
     public Float getValueFloat() {
-        return (Float) row.getAttribute(column);
+        return (Float) value;
     }
 
     @Override
     public void setValueFloat(Float object) {
-        row.setAttribute(column, object);
+        setValueToAllElements(object);
     }
 
     @Override
     public Integer getValueInteger() {
-        return (Integer) row.getAttribute(column);
+        return (Integer) value;
     }
 
     @Override
     public void setValueInteger(Integer object) {
-        row.setAttribute(column, object);
+        setValueToAllElements(object);
     }
 
     @Override
     public Boolean getValueBoolean() {
-        return (Boolean) row.getAttribute(column);
+        return (Boolean) value;
     }
 
     @Override
     public void setValueBoolean(Boolean object) {
-        row.setAttribute(column, object);
+        setValueToAllElements(object);
     }
 
     @Override
     public Long getValueLong() {
-        return (Long) row.getAttribute(column);
+        return (Long) value;
     }
 
     @Override
     public void setValueLong(Long object) {
-        row.setAttribute(column, object);
+        setValueToAllElements(object);
     }
 
     @Override
@@ -172,6 +181,6 @@ public class SingleRowAttributeValueWrapper implements EditWindowUtils.Attribute
 
     @Override
     public void setValueAsString(String value) {
-        row.setAttribute(column, AttributeUtils.parse(value, column.getTypeClass()));
+        setValueToAllElements(AttributeUtils.parse(value, column.getTypeClass()));
     }
 }

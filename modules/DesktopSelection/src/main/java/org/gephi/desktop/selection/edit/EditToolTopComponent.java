@@ -40,7 +40,7 @@ Contributor(s):
 Portions Copyrighted 2011 Gephi Consortium.
 */
 
-package org.gephi.ui.tools.plugin.edit;
+package org.gephi.desktop.selection.edit;
 
 import javax.swing.SwingUtilities;
 import org.gephi.graph.api.Edge;
@@ -54,7 +54,7 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 
-@ConvertAsProperties(dtd = "-//org.gephi.ui.tools.plugin.edit//EditTool//EN",
+@ConvertAsProperties(dtd = "-//org.gephi.desktop.selection.edit//EditTool//EN",
     autostore = false)
 @TopComponent.Description(preferredID = "EditToolTopComponent",
     persistenceType = TopComponent.PERSISTENCE_ALWAYS)

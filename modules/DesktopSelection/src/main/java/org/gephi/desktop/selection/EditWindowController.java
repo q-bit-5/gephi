@@ -40,7 +40,7 @@ Contributor(s):
 Portions Copyrighted 2011 Gephi Consortium.
  */
 
-package org.gephi.tools.api;
+package org.gephi.desktop.selection;
 
 import org.gephi.graph.api.Edge;
 import org.gephi.graph.api.Node;

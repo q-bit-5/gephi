@@ -40,7 +40,7 @@ Contributor(s):
 Portions Copyrighted 2011 Gephi Consortium.
  */
 
-package org.gephi.ui.tools.plugin.edit;
+package org.gephi.desktop.selection.edit;
 
 import java.awt.Color;
 import java.beans.PropertyEditor;
@@ -52,7 +52,7 @@ import org.gephi.graph.api.Edge;
 import org.gephi.graph.api.GraphController;
 import org.gephi.graph.api.TextProperties;
 import org.gephi.graph.api.TimeFormat;
-import org.gephi.ui.tools.plugin.edit.EditWindowUtils.AttributeValueWrapper;
+import org.gephi.desktop.selection.edit.EditWindowUtils.AttributeValueWrapper;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.PropertySupport;
