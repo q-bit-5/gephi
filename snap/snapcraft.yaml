@@ -11,7 +11,7 @@ description: |
 
   Example datasets can be found on our wiki: https://github.com/gephi/gephi/wiki/Datasets
 
-  Localization is available in English, French, Spanish, Japanese, Russian, Brazilian Portuguese, Chinese, Czech and German.
+  Localization is available in English, French, Spanish, Japanese, Russian, Brazilian Portuguese, Chinese, Czech, German, Romanian, Greek, Hungarian, Korean, Swedish and Ukrainian.
 
 license: GPL-3.0
 architectures: [ amd64 ]
