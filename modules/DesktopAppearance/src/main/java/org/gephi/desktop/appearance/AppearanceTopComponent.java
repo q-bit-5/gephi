@@ -77,7 +77,7 @@ import org.openide.windows.TopComponent;
 @TopComponent.Description(preferredID = "AppearanceTopComponent",
     iconBase = "DesktopAppearance/small.svg",
     persistenceType = TopComponent.PERSISTENCE_ALWAYS)
-@TopComponent.Registration(mode = "rankingmode", openAtStartup = true, roles = {"overview"})
+@TopComponent.Registration(mode = "rankingmode", openAtStartup = true, roles = {"overview"}, position = 10)
 @ActionID(category = "Window", id = "org.gephi.desktop.appearance.AppearanceTopComponent")
 @ActionReference(path = "Menu/Window", position = 1100)
 @TopComponent.OpenActionRegistration(displayName = "#CTL_AppearanceAction",

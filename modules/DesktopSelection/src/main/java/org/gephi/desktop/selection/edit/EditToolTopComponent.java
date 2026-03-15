@@ -42,6 +42,7 @@ Portions Copyrighted 2011 Gephi Consortium.
 
 package org.gephi.desktop.selection.edit;
 
+import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import org.gephi.graph.api.Edge;
 import org.gephi.graph.api.Node;
@@ -54,14 +55,7 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 
-@ConvertAsProperties(dtd = "-//org.gephi.desktop.selection.edit//EditTool//EN",
-    autostore = false)
-@TopComponent.Description(preferredID = "EditToolTopComponent",
-    persistenceType = TopComponent.PERSISTENCE_ALWAYS)
-@TopComponent.Registration(mode = "rankingmode", openAtStartup = false, roles = {"overview", "datalab"})
-@TopComponent.OpenActionRegistration(displayName = "#CTL_EditToolTopComponent",
-    preferredID = "EditToolTopComponent")
-public final class EditToolTopComponent extends TopComponent {
+public final class EditToolTopComponent extends JComponent {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel propertySheet;
@@ -69,9 +63,7 @@ public final class EditToolTopComponent extends TopComponent {
 
     public EditToolTopComponent() {
         initComponents();
-        setName(NbBundle.getMessage(EditToolTopComponent.class, "CTL_EditToolTopComponent"));
 
-        putClientProperty(TopComponent.PROP_MAXIMIZATION_DISABLED, Boolean.TRUE);
         ((PropertySheet) propertySheet).setDescriptionAreaVisible(false);
 
         Lookup.getDefault().lookup(ProjectController.class).addWorkspaceListener(new WorkspaceListener() {
@@ -100,7 +92,6 @@ public final class EditToolTopComponent extends TopComponent {
             public void disable() {
                 SwingUtilities.invokeLater(() -> {
                     propertySheet.setEnabled(false);
-                    EditToolTopComponent.this.close();
                 });
             }
         });
@@ -148,26 +139,4 @@ public final class EditToolTopComponent extends TopComponent {
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
         add(propertySheet, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
-
-    @Override
-    public void componentOpened() {
-        // TODO add custom code on component opening
-    }
-
-    @Override
-    public void componentClosed() {
-        // TODO add custom code on component closing
-    }
-
-    void writeProperties(java.util.Properties p) {
-        // better to version settings since initial version as advocated at
-        // http://wiki.apidesign.org/wiki/PropertyFiles
-        p.setProperty("version", "1.0");
-        // TODO store your settings
-    }
-
-    void readProperties(java.util.Properties p) {
-        String version = p.getProperty("version");
-        // TODO read your settings according to their version
-    }
 }

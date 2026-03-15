@@ -43,6 +43,7 @@
 package org.gephi.desktop.selection.edit;
 
 import javax.swing.SwingUtilities;
+import org.gephi.desktop.selection.SelectionTopComponent;
 import org.gephi.graph.api.Edge;
 import org.gephi.graph.api.Node;
 import org.gephi.desktop.selection.EditWindowController;
@@ -58,8 +59,8 @@ import org.openide.windows.WindowManager;
 @ServiceProvider(service = EditWindowController.class)
 public class EditWindowControllerImpl implements EditWindowController {
 
-    public EditToolTopComponent findInstance() {
-        return (EditToolTopComponent) WindowManager.getDefault().findTopComponent("EditToolTopComponent");
+    public SelectionTopComponent findInstance() {
+        return (SelectionTopComponent) WindowManager.getDefault().findTopComponent("SelectionTopComponent");
     }
 
     private void runAction(Runnable runnable) {
@@ -76,7 +77,7 @@ public class EditWindowControllerImpl implements EditWindowController {
 
             @Override
             public void run() {
-                EditToolTopComponent topComponent = findInstance();
+                SelectionTopComponent topComponent = findInstance();
                 topComponent.open();
                 topComponent.requestActive();
             }
@@ -90,8 +91,8 @@ public class EditWindowControllerImpl implements EditWindowController {
 
             @Override
             public void run() {
-                EditToolTopComponent topComponent = findInstance();
-                topComponent.disableEdit();
+                SelectionTopComponent topComponent = findInstance();
+                topComponent.getEditPanel().disableEdit();
                 topComponent.close();
             }
         });
@@ -118,8 +119,8 @@ public class EditWindowControllerImpl implements EditWindowController {
 
             @Override
             public void run() {
-                EditToolTopComponent topComponent = findInstance();
-                topComponent.editNode(node);
+                SelectionTopComponent topComponent = findInstance();
+                topComponent.getEditPanel().editNode(node);
             }
         });
     }
@@ -130,8 +131,8 @@ public class EditWindowControllerImpl implements EditWindowController {
 
             @Override
             public void run() {
-                EditToolTopComponent topComponent = findInstance();
-                topComponent.editNodes(nodes);
+                SelectionTopComponent topComponent = findInstance();
+                topComponent.getEditPanel().editNodes(nodes);
             }
         });
     }
@@ -142,8 +143,8 @@ public class EditWindowControllerImpl implements EditWindowController {
 
             @Override
             public void run() {
-                EditToolTopComponent topComponent = findInstance();
-                topComponent.editEdge(edge);
+                SelectionTopComponent topComponent = findInstance();
+                topComponent.getEditPanel().editEdge(edge);
             }
         });
     }
@@ -154,8 +155,8 @@ public class EditWindowControllerImpl implements EditWindowController {
 
             @Override
             public void run() {
-                EditToolTopComponent topComponent = findInstance();
-                topComponent.editEdges(edges);
+                SelectionTopComponent topComponent = findInstance();
+                topComponent.getEditPanel().editEdges(edges);
             }
         });
     }
@@ -166,8 +167,8 @@ public class EditWindowControllerImpl implements EditWindowController {
 
             @Override
             public void run() {
-                EditToolTopComponent topComponent = findInstance();
-                topComponent.disableEdit();
+                SelectionTopComponent topComponent = findInstance();
+                topComponent.getEditPanel().disableEdit();
             }
         });
     }
@@ -178,7 +179,7 @@ public class EditWindowControllerImpl implements EditWindowController {
 
         @Override
         public void run() {
-            EditToolTopComponent topComponent = findInstance();
+            SelectionTopComponent topComponent = findInstance();
             open = topComponent != null && topComponent.isOpened();
         }
     }
