@@ -40,7 +40,7 @@ Contributor(s):
 Portions Copyrighted 2011 Gephi Consortium.
  */
 
-package org.gephi.desktop.selection;
+package org.gephi.desktop.selection.api;
 
 import org.gephi.graph.api.Edge;
 import org.gephi.graph.api.Node;
@@ -50,10 +50,10 @@ import org.gephi.graph.api.Node;
  *
  * @author Eduardo Ramos
  */
-public interface EditWindowController {
-    void openEditWindow();
+public interface SelectionWindowController {
+    void openWindow();
 
-    void closeEditWindow();
+    void closeWindow();
 
     boolean isOpen();
 

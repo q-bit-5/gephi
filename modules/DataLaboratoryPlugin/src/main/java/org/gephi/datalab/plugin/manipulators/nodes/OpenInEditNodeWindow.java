@@ -45,7 +45,7 @@ package org.gephi.datalab.plugin.manipulators.nodes;
 import javax.swing.Icon;
 import org.gephi.datalab.spi.ManipulatorUI;
 import org.gephi.graph.api.Node;
-import org.gephi.desktop.selection.EditWindowController;
+import org.gephi.desktop.selection.api.SelectionWindowController;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -66,8 +66,8 @@ public class OpenInEditNodeWindow extends BasicNodesManipulator {
 
     @Override
     public void execute() {
-        EditWindowController edc = Lookup.getDefault().lookup(EditWindowController.class);
-        edc.openEditWindow();
+        SelectionWindowController edc = Lookup.getDefault().lookup(SelectionWindowController.class);
+        edc.openWindow();
         edc.editNodes(nodes);
     }
 

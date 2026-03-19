@@ -1,6 +1,6 @@
 package org.gephi.desktop.selection;
 
-import org.gephi.desktop.selection.edit.EditToolTopComponent;
+import org.gephi.desktop.selection.edit.EditPanel;
 import org.netbeans.api.settings.ConvertAsProperties;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
@@ -12,14 +12,14 @@ import org.openide.windows.TopComponent;
 @TopComponent.Description(preferredID = "SelectionTopComponent",
     iconBase = "DesktopSelection/edit.svg",
     persistenceType = TopComponent.PERSISTENCE_ALWAYS)
-@TopComponent.Registration(mode = "rankingmode", openAtStartup = true, roles = {"overview"}, position = 20)
+@TopComponent.Registration(mode = "rankingmode", openAtStartup = false, roles = {"overview", "datalab"}, position = 20)
 @ActionID(category = "Window", id = "org.gephi.desktop.selection.SelectionTopComponent")
 @ActionReference(path = "Menu/Window", position = 1500)
 @TopComponent.OpenActionRegistration(displayName = "#CTL_SelectionTopComponent",
     preferredID = "SelectionTopComponent")
 public final class SelectionTopComponent extends TopComponent {
 
-    private final EditToolTopComponent editPanel;
+    private final EditPanel editPanel;
 
     public SelectionTopComponent() {
         setName(NbBundle.getMessage(SelectionTopComponent.class, "CTL_SelectionTopComponent"));
@@ -27,11 +27,11 @@ public final class SelectionTopComponent extends TopComponent {
         putClientProperty(TopComponent.PROP_MAXIMIZATION_DISABLED, Boolean.TRUE);
 
         setLayout(new java.awt.BorderLayout());
-        editPanel = new EditToolTopComponent();
+        editPanel = new EditPanel();
         add(editPanel, java.awt.BorderLayout.CENTER);
     }
 
-    public EditToolTopComponent getEditPanel() {
+    public EditPanel getEditPanel() {
         return editPanel;
     }
 

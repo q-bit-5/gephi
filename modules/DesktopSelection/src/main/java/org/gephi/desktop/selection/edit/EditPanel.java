@@ -43,58 +43,25 @@ Portions Copyrighted 2011 Gephi Consortium.
 package org.gephi.desktop.selection.edit;
 
 import javax.swing.JComponent;
-import javax.swing.SwingUtilities;
 import org.gephi.graph.api.Edge;
 import org.gephi.graph.api.Node;
-import org.gephi.project.api.ProjectController;
-import org.gephi.project.api.Workspace;
-import org.gephi.project.api.WorkspaceListener;
-import org.netbeans.api.settings.ConvertAsProperties;
 import org.openide.explorer.propertysheet.PropertySheet;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
-import org.openide.windows.TopComponent;
 
-public final class EditToolTopComponent extends JComponent {
+public final class EditPanel extends JComponent {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel propertySheet;
     // End of variables declaration//GEN-END:variables
 
-    public EditToolTopComponent() {
+    public EditPanel() {
         initComponents();
 
         ((PropertySheet) propertySheet).setDescriptionAreaVisible(false);
+    }
 
-        Lookup.getDefault().lookup(ProjectController.class).addWorkspaceListener(new WorkspaceListener() {
-
-            @Override
-            public void initialize(Workspace workspace) {
-            }
-
-            @Override
-            public void select(Workspace workspace) {
-                SwingUtilities.invokeLater(() -> {
-                    propertySheet.setEnabled(true);
-                });
-            }
-
-            @Override
-            public void unselect(Workspace workspace) {
-                disableEdit();
-            }
-
-            @Override
-            public void close(Workspace workspace) {
-            }
-
-            @Override
-            public void disable() {
-                SwingUtilities.invokeLater(() -> {
-                    propertySheet.setEnabled(false);
-                });
-            }
-        });
+    public void setEnabled(boolean enabled) {
+        super.setEnabled(enabled);
+        ((PropertySheet) propertySheet).setEnabled(enabled);
     }
 
     public void editNode(Node node) {

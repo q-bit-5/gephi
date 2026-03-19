@@ -40,14 +40,17 @@
  Portions Copyrighted 2011 Gephi Consortium.
  */
 
-package org.gephi.desktop.selection.edit;
+package org.gephi.desktop.selection;
 
 import javax.swing.SwingUtilities;
-import org.gephi.desktop.selection.SelectionTopComponent;
+import org.gephi.desktop.selection.api.SelectionWindowController;
 import org.gephi.graph.api.Edge;
 import org.gephi.graph.api.Node;
-import org.gephi.desktop.selection.EditWindowController;
+import org.gephi.project.api.ProjectController;
+import org.gephi.project.api.Workspace;
+import org.gephi.project.api.WorkspaceListener;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.WindowManager;
 
@@ -56,10 +59,38 @@ import org.openide.windows.WindowManager;
  *
  * @author Eduardo Ramos
  */
-@ServiceProvider(service = EditWindowController.class)
-public class EditWindowControllerImpl implements EditWindowController {
+@ServiceProvider(service = SelectionWindowController.class)
+public class SelectionWindowControllerImpl implements SelectionWindowController {
 
-    public SelectionTopComponent findInstance() {
+    public SelectionWindowControllerImpl() {
+
+        Lookup.getDefault().lookup(ProjectController.class).addWorkspaceListener(new WorkspaceListener() {
+
+            @Override
+            public void initialize(Workspace workspace) {
+            }
+
+            @Override
+            public void select(Workspace workspace) {
+            }
+
+            @Override
+            public void unselect(Workspace workspace) {
+                disableEdit();
+            }
+
+            @Override
+            public void close(Workspace workspace) {
+            }
+
+            @Override
+            public void disable() {
+                closeWindow();
+            }
+        });
+    }
+
+    protected static SelectionTopComponent findInstance() {
         return (SelectionTopComponent) WindowManager.getDefault().findTopComponent("SelectionTopComponent");
     }
 
@@ -72,29 +103,21 @@ public class EditWindowControllerImpl implements EditWindowController {
     }
 
     @Override
-    public void openEditWindow() {
-        runAction(new Runnable() {
-
-            @Override
-            public void run() {
-                SelectionTopComponent topComponent = findInstance();
-                topComponent.open();
-                topComponent.requestActive();
-            }
+    public void openWindow() {
+        runAction(() -> {
+            SelectionTopComponent topComponent = findInstance();
+            topComponent.open();
+            topComponent.requestActive();
         });
 
     }
 
     @Override
-    public void closeEditWindow() {
-        runAction(new Runnable() {
-
-            @Override
-            public void run() {
-                SelectionTopComponent topComponent = findInstance();
-                topComponent.getEditPanel().disableEdit();
-                topComponent.close();
-            }
+    public void closeWindow() {
+        runAction(() -> {
+            SelectionTopComponent topComponent = findInstance();
+            topComponent.getEditPanel().disableEdit();
+            topComponent.close();
         });
     }
 
@@ -115,61 +138,41 @@ public class EditWindowControllerImpl implements EditWindowController {
 
     @Override
     public void editNode(final Node node) {
-        runAction(new Runnable() {
-
-            @Override
-            public void run() {
-                SelectionTopComponent topComponent = findInstance();
-                topComponent.getEditPanel().editNode(node);
-            }
+        runAction(() -> {
+            SelectionTopComponent topComponent = findInstance();
+            topComponent.getEditPanel().editNode(node);
         });
     }
 
     @Override
     public void editNodes(final Node[] nodes) {
-        runAction(new Runnable() {
-
-            @Override
-            public void run() {
-                SelectionTopComponent topComponent = findInstance();
-                topComponent.getEditPanel().editNodes(nodes);
-            }
+        runAction(() -> {
+            SelectionTopComponent topComponent = findInstance();
+            topComponent.getEditPanel().editNodes(nodes);
         });
     }
 
     @Override
     public void editEdge(final Edge edge) {
-        runAction(new Runnable() {
-
-            @Override
-            public void run() {
-                SelectionTopComponent topComponent = findInstance();
-                topComponent.getEditPanel().editEdge(edge);
-            }
+        runAction(() -> {
+            SelectionTopComponent topComponent = findInstance();
+            topComponent.getEditPanel().editEdge(edge);
         });
     }
 
     @Override
     public void editEdges(final Edge[] edges) {
-        runAction(new Runnable() {
-
-            @Override
-            public void run() {
-                SelectionTopComponent topComponent = findInstance();
-                topComponent.getEditPanel().editEdges(edges);
-            }
+        runAction(() -> {
+            SelectionTopComponent topComponent = findInstance();
+            topComponent.getEditPanel().editEdges(edges);
         });
     }
 
     @Override
     public void disableEdit() {
-        runAction(new Runnable() {
-
-            @Override
-            public void run() {
-                SelectionTopComponent topComponent = findInstance();
-                topComponent.getEditPanel().disableEdit();
-            }
+        runAction(() -> {
+            SelectionTopComponent topComponent = findInstance();
+            topComponent.getEditPanel().disableEdit();
         });
     }
 
