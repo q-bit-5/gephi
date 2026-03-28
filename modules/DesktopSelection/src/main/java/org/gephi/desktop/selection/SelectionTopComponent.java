@@ -177,6 +177,9 @@ public final class SelectionTopComponent extends TopComponent implements Selecti
             emptyLabel.setEnabled(false);
             popup.add(emptyLabel);
         } else {
+            boolean allVisible = columns.stream().allMatch(model::isColumnVisible);
+            boolean noneVisible = columns.stream().noneMatch(model::isColumnVisible);
+
             columns.stream()
                 .map(column -> {
                     JCheckBoxMenuItem item = new JCheckBoxMenuItem(column.getTitle());
@@ -187,6 +190,28 @@ public final class SelectionTopComponent extends TopComponent implements Selecti
                     return item;
                 })
                 .forEach(popup::add);
+
+            popup.addSeparator();
+
+            JMenuItem selectAll = new JMenuItem(
+                NbBundle.getMessage(SelectionTopComponent.class, "SelectionTopComponent.selectAll"));
+            selectAll.setEnabled(!allVisible);
+            selectAll.addActionListener(evt -> {
+                columns.forEach(column -> model.setColumnHidden(column, false));
+                controller.firePropertyChangeEvent(
+                    SelectionUIModelEvent.HIDDEN_COLUMN_IDS, null, model.getHiddenColumnIds());
+            });
+            popup.add(selectAll);
+
+            JMenuItem unselectAll = new JMenuItem(
+                NbBundle.getMessage(SelectionTopComponent.class, "SelectionTopComponent.unselectAll"));
+            unselectAll.setEnabled(!noneVisible);
+            unselectAll.addActionListener(evt -> {
+                columns.forEach(column -> model.setColumnHidden(column, true));
+                controller.firePropertyChangeEvent(
+                    SelectionUIModelEvent.HIDDEN_COLUMN_IDS, null, model.getHiddenColumnIds());
+            });
+            popup.add(unselectAll);
         }
 
         popup.show(columnsButton, 0, -popup.getPreferredSize().height);
