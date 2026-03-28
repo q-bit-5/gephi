@@ -1,11 +1,27 @@
 package org.gephi.desktop.selection;
 
+import java.awt.BorderLayout;
 import java.awt.CardLayout;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeEvent;
+import java.util.List;
+import javax.swing.Box;
+import javax.swing.JButton;
+import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JMenuItem;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JToggleButton;
+import javax.swing.JToolBar;
 import org.gephi.desktop.selection.edit.EditPanel;
 import org.gephi.desktop.selection.selection.SelectionPanel;
+import org.gephi.graph.api.Column;
 import org.netbeans.api.settings.ConvertAsProperties;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
+import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 
@@ -19,38 +35,161 @@ import org.openide.windows.TopComponent;
 @ActionReference(path = "Menu/Window", position = 1500)
 @TopComponent.OpenActionRegistration(displayName = "#CTL_SelectionTopComponent",
     preferredID = "SelectionTopComponent")
-public final class SelectionTopComponent extends TopComponent {
+public final class SelectionTopComponent extends TopComponent implements SelectionUIModelListener {
 
     private static final String SELECTION_CARD = "selection";
     private static final String EDIT_CARD = "edit";
 
     private final CardLayout cardLayout;
+    private final JPanel cardPanel;
     private final EditPanel editPanel;
     private final SelectionPanel selectionPanel;
+    private final JButton columnsButton;
+    private final JToggleButton showNullButton;
+
+    private final SelectionUIControllerImpl controller;
+
+    // Model
+    private SelectionUIModelImpl model;
 
     public SelectionTopComponent() {
+        // Register
+        controller = Lookup.getDefault().lookup(SelectionUIControllerImpl.class);
+        controller.addPropertyChangeListener(this);
+
         setName(NbBundle.getMessage(SelectionTopComponent.class, "CTL_SelectionTopComponent"));
 
         putClientProperty(TopComponent.PROP_MAXIMIZATION_DISABLED, Boolean.TRUE);
 
+        setLayout(new BorderLayout());
+
         cardLayout = new CardLayout();
-        setLayout(cardLayout);
+        cardPanel = new JPanel(cardLayout);
 
         selectionPanel = new SelectionPanel();
         editPanel = new EditPanel();
 
-        add(selectionPanel, SELECTION_CARD);
-        add(editPanel, EDIT_CARD);
+        cardPanel.add(selectionPanel, SELECTION_CARD);
+        cardPanel.add(editPanel, EDIT_CARD);
 
-        cardLayout.show(this, SELECTION_CARD);
+        cardLayout.show(cardPanel, SELECTION_CARD);
+
+        add(cardPanel, BorderLayout.CENTER);
+
+        JToolBar toolbar = new JToolBar();
+        toolbar.setFloatable(false);
+        toolbar.setRollover(true);
+
+        columnsButton = new JButton(
+            ImageUtilities.loadImageIcon("DesktopSelection/column.svg", false));
+        columnsButton.setText(
+            NbBundle.getMessage(SelectionTopComponent.class, "SelectionTopComponent.columnsButton.text"));
+        columnsButton.setToolTipText(
+            NbBundle.getMessage(SelectionTopComponent.class, "SelectionTopComponent.columnsButton.tooltip"));
+        columnsButton.setFocusable(false);
+        columnsButton.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                showColumnsPopup(e);
+            }
+        });
+        toolbar.add(columnsButton);
+
+        toolbar.add(Box.createHorizontalGlue());
+
+        showNullButton = new JToggleButton(
+            ImageUtilities.loadImageIcon("DesktopSelection/includeNull.svg", false));
+        showNullButton.setToolTipText(
+            NbBundle.getMessage(SelectionTopComponent.class, "SelectionTopComponent.showNullButton.tooltip"));
+        showNullButton.setFocusable(false);
+        showNullButton.addActionListener(e -> {
+            if (model != null) {
+                model.setShowNullColumns(showNullButton.isSelected());
+                controller.firePropertyChangeEvent(
+                    SelectionUIModelEvent.SHOW_NULL_COLUMNS, !showNullButton.isSelected(),
+                    showNullButton.isSelected());
+            }
+        });
+        toolbar.add(showNullButton);
+
+        add(toolbar, BorderLayout.SOUTH);
+
+        // Init if needed
+        SelectionUIModelImpl model = controller.getModel();
+        if (model != null) {
+            setup(model);
+        } else {
+            unsetup();
+        }
     }
 
-    public void showSelectionMode() {
-        cardLayout.show(this, SELECTION_CARD);
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (evt.getPropertyName().equals(SelectionUIModelEvent.SELECTED_ELEMENTS) ||
+            evt.getPropertyName().equals(SelectionUIModelEvent.HIDDEN_COLUMN_IDS) ||
+            evt.getPropertyName().equals(SelectionUIModelEvent.SHOW_NULL_COLUMNS)) {
+            refreshSelection();
+        } else if (evt.getPropertyName().equals(SelectionUIModelEvent.MODEL)) {
+            if (evt.getNewValue() == null) {
+                unsetup();
+            } else {
+                setup((SelectionUIModelImpl) evt.getNewValue());
+            }
+        } else if (evt.getPropertyName().equals(SelectionUIModelEvent.EDIT_MODE)) {
+            setup(this.model);
+        }
     }
 
-    public void showEditMode() {
-        cardLayout.show(this, EDIT_CARD);
+    private void refreshSelection() {
+        selectionPanel.refreshSelectedNodes(model);
+    }
+
+    private void setup(SelectionUIModelImpl model) {
+        this.model = model;
+
+        if (model.isEditMode()) {
+            cardLayout.show(cardPanel, EDIT_CARD);
+        } else {
+            cardLayout.show(cardPanel, SELECTION_CARD);
+        }
+        showNullButton.setSelected(model.isShowNullColumns());
+        showNullButton.setEnabled(true);
+        columnsButton.setEnabled(true);
+    }
+
+    private void unsetup() {
+        this.model = null;
+
+        cardLayout.show(cardPanel, SELECTION_CARD);
+        showNullButton.setSelected(false);
+        showNullButton.setEnabled(false);
+        columnsButton.setEnabled(false);
+    }
+
+    private void showColumnsPopup(MouseEvent e) {
+        List<Column> columns = model.getEligibleColumns();
+
+        JPopupMenu popup = new JPopupMenu();
+
+        if (columns.isEmpty()) {
+            JMenuItem emptyLabel = new JMenuItem(
+                NbBundle.getMessage(SelectionTopComponent.class, "SelectionTopComponent.noColumns"));
+            emptyLabel.setEnabled(false);
+            popup.add(emptyLabel);
+        } else {
+            columns.stream()
+                .map(column -> {
+                    JCheckBoxMenuItem item = new JCheckBoxMenuItem(column.getTitle());
+                    item.setSelected(model.isColumnVisible(column));
+                    item.addActionListener(evt -> {
+                        model.setColumnHidden(column, !item.isSelected());
+                    });
+                    return item;
+                })
+                .forEach(popup::add);
+        }
+
+        popup.show(columnsButton, 0, -popup.getPreferredSize().height);
     }
 
     public EditPanel getEditPanel() {
@@ -63,24 +202,18 @@ public final class SelectionTopComponent extends TopComponent {
 
     @Override
     public void componentOpened() {
-        // TODO add custom code on component opening
     }
 
     @Override
     public void componentClosed() {
-        // TODO add custom code on component closing
     }
 
     void writeProperties(java.util.Properties p) {
-        // better to version settings since initial version as advocated at
-        // http://wiki.apidesign.org/wiki/PropertyFiles
         p.setProperty("version", "1.0");
-        // TODO store your settings
     }
 
     void readProperties(java.util.Properties p) {
         String version = p.getProperty("version");
-        // TODO read your settings according to their version
     }
 
 }

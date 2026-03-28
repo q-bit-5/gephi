@@ -42,6 +42,8 @@
 
 package org.gephi.desktop.selection;
 
+import java.util.HashSet;
+import java.util.Set;
 import javax.swing.SwingUtilities;
 import org.gephi.desktop.selection.api.SelectionUIController;
 import org.gephi.graph.api.Edge;
@@ -53,6 +55,7 @@ import org.gephi.project.spi.Controller;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
+import org.openide.util.lookup.ServiceProviders;
 import org.openide.windows.WindowManager;
 
 /**
@@ -60,8 +63,12 @@ import org.openide.windows.WindowManager;
  *
  * @author Eduardo Ramos
  */
-@ServiceProvider(service = SelectionUIController.class)
+@ServiceProviders({
+    @ServiceProvider(service = SelectionUIController.class),
+    @ServiceProvider(service = Controller.class)})
 public class SelectionUIControllerImpl implements SelectionUIController, Controller<SelectionUIModelImpl> {
+
+    private final Set<SelectionUIModelListener> listeners = new HashSet<>();
 
     public SelectionUIControllerImpl() {
 
@@ -73,11 +80,15 @@ public class SelectionUIControllerImpl implements SelectionUIController, Control
 
             @Override
             public void select(Workspace workspace) {
+                SelectionUIModelImpl model = getModel(workspace);
+                firePropertyChangeEvent(SelectionUIModelEvent.MODEL, null, model);
             }
 
             @Override
             public void unselect(Workspace workspace) {
-                disableEdit();
+                SelectionUIModelImpl model = getModel(workspace);
+                model.resetSelection();
+                firePropertyChangeEvent(SelectionUIModelEvent.MODEL, null, null);
             }
 
             @Override
@@ -105,11 +116,27 @@ public class SelectionUIControllerImpl implements SelectionUIController, Control
         return (SelectionTopComponent) WindowManager.getDefault().findTopComponent("SelectionTopComponent");
     }
 
-    private void runAction(Runnable runnable) {
-        if (SwingUtilities.isEventDispatchThread()) {
-            runnable.run();
-        } else {
-            SwingUtilities.invokeLater(runnable);
+    private void setEditMode(boolean editMode) {
+        SelectionUIModelImpl model = getModel();
+        if (model.isEditMode() != editMode) {
+            model.setEditMode(editMode);
+            firePropertyChangeEvent(SelectionUIModelEvent.EDIT_MODE, !editMode, editMode);
+        }
+    }
+
+    private void setSelectedNodes(Node[] nodes) {
+        SelectionUIModelImpl model = getModel();
+        if (model.getSelectedNodes() != nodes) {
+            model.setSelectedNodes(nodes);
+            firePropertyChangeEvent(SelectionUIModelEvent.SELECTED_ELEMENTS, null, nodes);
+        }
+    }
+
+    private void setSelectedEdges(Edge[] edges) {
+        SelectionUIModelImpl model = getModel();
+        if (model.getSelectedEdges() != edges) {
+            model.setSelectedEdges(edges);
+            firePropertyChangeEvent(SelectionUIModelEvent.SELECTED_ELEMENTS, null, edges);
         }
     }
 
@@ -150,54 +177,54 @@ public class SelectionUIControllerImpl implements SelectionUIController, Control
     @Override
     public void editNode(final Node node) {
         runAction(() -> {
-            SelectionTopComponent topComponent = findInstance();
-            topComponent.showEditMode();
-            topComponent.getEditPanel().editNode(node);
+            setEditMode(true);
+            setSelectedNodes(new Node[] {node});
         });
     }
 
     @Override
     public void editNodes(final Node[] nodes) {
         runAction(() -> {
-            SelectionTopComponent topComponent = findInstance();
-            topComponent.showEditMode();
-            topComponent.getEditPanel().editNodes(nodes);
+            setEditMode(true);
+            setSelectedNodes(nodes);
         });
     }
 
     @Override
     public void editEdge(final Edge edge) {
         runAction(() -> {
-            SelectionTopComponent topComponent = findInstance();
-            topComponent.showEditMode();
-            topComponent.getEditPanel().editEdge(edge);
+            setEditMode(true);
+            setSelectedEdges(new Edge[] {edge});
         });
     }
 
     @Override
     public void editEdges(final Edge[] edges) {
         runAction(() -> {
-            SelectionTopComponent topComponent = findInstance();
-            topComponent.showEditMode();
-            topComponent.getEditPanel().editEdges(edges);
+            setEditMode(true);
+            setSelectedEdges(edges);
         });
     }
 
     @Override
     public void disableEdit() {
         runAction(() -> {
-            SelectionTopComponent topComponent = findInstance();
-            topComponent.showEditMode();
-            topComponent.getEditPanel().disableEdit();
+            setEditMode(true);
+//            SelectionTopComponent topComponent = findInstance();
+//            topComponent.showEditMode();
+//            topComponent.getEditPanel().disableEdit();
         });
     }
 
     @Override
     public void selectNodes(Node[] nodes) {
-        runAction(() -> {
-            SelectionTopComponent topComponent = findInstance();
-            topComponent.getSelectionPanel().setLabel(nodes.length + " node(s) selected");
-        });
+        SelectionUIModelImpl model = getModel();
+        if (model != null && !model.isEditMode()) {
+            runAction(() -> {
+                setSelectedNodes(nodes);
+            });
+        }
+
     }
 
     class IsOpenRunnable implements Runnable {
@@ -208,6 +235,29 @@ public class SelectionUIControllerImpl implements SelectionUIController, Control
         public void run() {
             SelectionTopComponent topComponent = findInstance();
             open = topComponent != null && topComponent.isOpened();
+        }
+    }
+
+    public void addPropertyChangeListener(SelectionUIModelListener listener) {
+        listeners.add(listener);
+    }
+
+    public void removePropertyChangeListener(SelectionUIModelListener listener) {
+        listeners.remove(listener);
+    }
+
+    protected void firePropertyChangeEvent(String propertyName, Object oldValue, Object newValue) {
+        SelectionUIModelEvent event = new SelectionUIModelEvent(this, propertyName, oldValue, newValue);
+        for (SelectionUIModelListener listener : listeners) {
+            listener.propertyChange(event);
+        }
+    }
+
+    private void runAction(Runnable runnable) {
+        if (SwingUtilities.isEventDispatchThread()) {
+            runnable.run();
+        } else {
+            SwingUtilities.invokeLater(runnable);
         }
     }
 }
