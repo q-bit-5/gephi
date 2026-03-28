@@ -20,7 +20,7 @@ void main() {
     vec2 sideVector = vec2(-directionNormalized.y, directionNormalized.x) * thickness * 0.5;
     vec2 arrowHeight = directionNormalized * thickness * ARROW_HEIGHT * 2.0;
 
-    vec2 lineStart = directionNormalized * (sourceSize * nodeScale);
+    vec2 lineStart = directionNormalized * (sourceSize * nodeScale * (1.0 - edgeInset));
     vec2 lineLength = (direction - lineStart) - directionNormalized * (targetSize * nodeScale);
 
     vec2 edgeVert = lineStart + lineLength * vert.x + sideVector * vert.y + arrowHeight * vert.z;
