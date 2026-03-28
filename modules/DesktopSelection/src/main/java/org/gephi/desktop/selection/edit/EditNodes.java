@@ -200,7 +200,6 @@ public class EditNodes extends AbstractNode {
                 //All position coordinates:
                 set.put(buildMultipleNodesGeneralPositionProperty(nodesWrapper, "x"));
                 set.put(buildMultipleNodesGeneralPositionProperty(nodesWrapper, "y"));
-                set.put(buildMultipleNodesGeneralPositionProperty(nodesWrapper, "z"));
 
                 //Color:
                 p = new PropertySupport.Reflection(nodesWrapper, Color.class, "getNodesColor", "setNodesColor");
@@ -333,9 +332,6 @@ public class EditNodes extends AbstractNode {
 
         public Color getLabelColor() {
             TextProperties textProps = node.getTextProperties();
-            if (textProps.getAlpha() == 0) {
-                return null;//Not specific color for label
-            }
 
             return textProps.getColor();
         }

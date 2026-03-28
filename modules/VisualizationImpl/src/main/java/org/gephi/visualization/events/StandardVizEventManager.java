@@ -50,6 +50,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.gephi.desktop.selection.api.SelectionUIController;
 import org.gephi.graph.api.Node;
 import org.gephi.visualization.VizController;
 import org.gephi.visualization.api.VisualizationEvent;
@@ -58,6 +59,7 @@ import org.gephi.visualization.contextmenu.GraphContextMenu;
 import org.gephi.visualization.VizConfig;
 import org.gephi.visualization.component.VizEngineGraphCanvasManager;
 import org.gephi.viz.engine.VizEngine;
+import org.gephi.viz.engine.VizEngineModel;
 import org.gephi.viz.engine.status.GraphSelection;
 import org.gephi.viz.engine.structure.GraphIndex;
 import org.joml.Vector2f;
@@ -120,7 +122,7 @@ public class StandardVizEventManager {
     }
 
     public boolean processMouseEvent(Component parentComponent, VizEngineGraphCanvasManager canvasManager,
-                                     VizEngine engine, MouseEvent mouseEvent) {
+                                     VizEngine engine, VizEngineModel model, MouseEvent mouseEvent) {
         previousMouseScreenPosition.set(mouseScreenPosition);
         previousMouseWorldPosition2d.set(mouseWorldPosition);
 
@@ -141,32 +143,32 @@ public class StandardVizEventManager {
                     dragStartMouseWorldPosition2d.set(mouseWorldPosition);
                     dragging = true;
 
-                    startDragConsumed = startDrag(engine);
+                    startDragConsumed = startDrag();
                 } else {
                     startDragConsumed = false;
                 }
 
-                return drag(engine) || startDragConsumed;
+                return drag() || startDragConsumed;
             case MouseEvent.EVENT_MOUSE_MOVED:
-                return mouseMove(engine);
+                return mouseMove(model);
             case MouseEvent.EVENT_MOUSE_CLICKED:
                 switch (mouseEvent.getButton()) {
                     case MOUSE_LEFT_BUTTON:
-                        return mouseLeftClick(engine);
+                        return mouseLeftClick(model);
                     case MOUSE_RIGHT_BUTTON:
-                        return mouseRightClick(parentComponent, canvasManager, engine);
+                        return mouseRightClick(parentComponent, canvasManager, model);
                     case MOUSE_WHEEL_BUTTON:
-                        return mouseMiddleClick(engine);
+                        return mouseMiddleClick();
                 }
                 return false;
             case MouseEvent.EVENT_MOUSE_PRESSED:
                 switch (mouseEvent.getButton()) {
                     case MOUSE_LEFT_BUTTON:
-                        return mouseLeftPress(engine);
+                        return mouseLeftPress(model);
                     case MOUSE_RIGHT_BUTTON:
-                        return mouseRightPress(engine);
+                        return mouseRightPress();
                     case MOUSE_WHEEL_BUTTON:
-                        return mouseMiddlePress(engine);
+                        return mouseMiddlePress();
                 }
                 return false;
             case MouseEvent.EVENT_MOUSE_WHEEL_MOVED:
@@ -175,9 +177,9 @@ public class StandardVizEventManager {
             case MouseEvent.EVENT_MOUSE_RELEASED:
                 if (dragging) {
                     dragging = false;
-                    stopDrag(engine);
+                    stopDrag();
                 }
-                mouseReleased(engine);
+                mouseReleased();
 
                 // Stop pressing thread if it was running
                 if (mouseEvent.getButton() == MOUSE_LEFT_BUTTON) {
@@ -194,9 +196,9 @@ public class StandardVizEventManager {
         }
     }
 
-    public boolean mouseLeftClick(VizEngine engine) {
-        final GraphIndex graphIndex = engine.getGraphIndex();
-        final GraphSelection graphSelection = engine.getGraphSelection();
+    public boolean mouseLeftClick(VizEngineModel model) {
+        final GraphIndex graphIndex = model.getGraphIndex();
+        final GraphSelection graphSelection = model.getGraphSelection();
 
         Node[] clickedNodes = null;
         if (!graphSelection.getMode().equals(GraphSelection.GraphSelectionMode.CUSTOM_SELECTION)) {
@@ -205,7 +207,7 @@ public class StandardVizEventManager {
             clickedNodes = graphIndex.getNodesUnderPosition(
                 mouseWorldPosition.x,
                 mouseWorldPosition.y,
-                engine.getRenderingOptions().getNodeScale()
+                model.getRenderingOptions().getNodeScale()
             ).toArray();
         }
 
@@ -237,8 +239,8 @@ public class StandardVizEventManager {
         };
     }
 
-    public boolean mouseLeftPress(VizEngine engine) {
-        final GraphSelection selectionIndex = engine.getGraphSelection();
+    public boolean mouseLeftPress(VizEngineModel model) {
+        final GraphSelection selectionIndex = model.getGraphSelection();
 
         final VisualizationEventTypeHandler nodeLefPressingHandler =
             handlers[VisualizationEvent.Type.NODE_LEFT_PRESSING.ordinal()];
@@ -246,7 +248,7 @@ public class StandardVizEventManager {
             //Check if some node are selected
             final Collection<Node> selectedNodes = selectionIndex.getSelectedNodes();
             if (!selectedNodes.isEmpty()) {
-                startPressingThread(engine);
+                startPressingThread(model);
                 return nodeLefPressingHandler.dispatch(toArray(selectedNodes));
             }
         }
@@ -264,8 +266,8 @@ public class StandardVizEventManager {
         return handlers[VisualizationEvent.Type.MOUSE_LEFT_PRESS.ordinal()].dispatch();
     }
 
-    private void startPressingThread(final VizEngine engine) {
-        final GraphSelection selectionIndex = engine.getGraphSelection();
+    private void startPressingThread(final VizEngineModel model) {
+        final GraphSelection selectionIndex = model.getGraphSelection();
         synchronized (pressingLock) {
             // Stop any existing pressing thread
             stopPressingThread();
@@ -316,45 +318,58 @@ public class StandardVizEventManager {
         return selectedNodes.toArray(new Node[0]);
     }
 
-    public boolean mouseMiddleClick(VizEngine engine) {
+    public boolean mouseMiddleClick() {
         return handlers[VisualizationEvent.Type.MOUSE_MIDDLE_CLICK.ordinal()].dispatch();
     }
 
-    public boolean mouseMiddlePress(VizEngine engine) {
+    public boolean mouseMiddlePress() {
         return handlers[VisualizationEvent.Type.MOUSE_MIDDLE_PRESS.ordinal()].dispatch();
     }
 
-    public boolean mouseMove(VizEngine engine) {
-        return handlers[VisualizationEvent.Type.MOUSE_MOVE.ordinal()].dispatch();
+    public boolean mouseMove(VizEngineModel model) {
+        VisualizationEventTypeHandler handler = handlers[VisualizationEvent.Type.MOUSE_MOVE.ordinal()];
+
+//        if (handler.hasListeners()) {
+            Collection<Node> selectedNodes = model.getGraphSelection().getSelectedNodes();
+//            System.out.println("Mouse move - selected nodes: " + selectedNodes.size());
+
+            SelectionUIController selectionUIController = Lookup.getDefault().lookup(SelectionUIController.class);
+            if (selectionUIController != null) {
+                selectionUIController.selectNodes(selectedNodes.toArray(new Node[0]));
+            }
+
+            return handlers[VisualizationEvent.Type.MOUSE_MOVE.ordinal()].dispatch();
+//        }
+//        return false;
     }
 
     public boolean mouseRightClick(Component parentComponent, VizEngineGraphCanvasManager canvasManager,
-                                   VizEngine engine) {
+                                   VizEngineModel model) {
         VizController controller = Lookup.getDefault().lookup(VizController.class);
         if (controller != null && controller.getModel() != null && VizConfig.isEnableContextMenu()) {
             GraphContextMenu popupMenu = new GraphContextMenu();
             float globalScale = canvasManager.getSurfaceScale().orElse(1.0f);
             int x = (int) (mouseScreenPosition.x / globalScale);
             int y = (int) (mouseScreenPosition.y / globalScale);
-            popupMenu.getMenu(engine).show(parentComponent, x, y);
+            popupMenu.getMenu(model).show(parentComponent, x, y);
         }
 
         return handlers[VisualizationEvent.Type.MOUSE_RIGHT_CLICK.ordinal()].dispatch();
     }
 
-    public boolean mouseRightPress(VizEngine engine) {
+    public boolean mouseRightPress() {
         return handlers[VisualizationEvent.Type.MOUSE_RIGHT_PRESS.ordinal()].dispatch();
     }
 
-    public boolean startDrag(VizEngine engine) {
+    public boolean startDrag() {
         return handlers[VisualizationEvent.Type.START_DRAG.ordinal()].dispatch();
     }
 
-    public void stopDrag(VizEngine engine) {
+    public void stopDrag() {
         handlers[VisualizationEvent.Type.STOP_DRAG.ordinal()].dispatch();
     }
 
-    public boolean drag(VizEngine engine) {
+    public boolean drag() {
         final VisualizationEventTypeHandler handler = handlers[VisualizationEvent.Type.DRAG.ordinal()];
         if (handler.hasListeners()) {
             final Vector2i dragScreenDisplacement = new Vector2i(mouseScreenPosition);
@@ -370,7 +385,7 @@ public class StandardVizEventManager {
         return false;
     }
 
-    public void mouseReleased(VizEngine engine) {
+    public void mouseReleased() {
         handlers[VisualizationEvent.Type.MOUSE_RELEASED.ordinal()].dispatch();
     }
 

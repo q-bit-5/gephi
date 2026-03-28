@@ -50,7 +50,7 @@ import org.gephi.graph.api.Node;
  *
  * @author Eduardo Ramos
  */
-public interface SelectionWindowController {
+public interface SelectionUIController {
     void openWindow();
 
     void closeWindow();
@@ -66,4 +66,6 @@ public interface SelectionWindowController {
     void editEdges(final Edge[] edges);
 
     void disableEdit();
+
+    void selectNodes(final Node[] nodes);
 }

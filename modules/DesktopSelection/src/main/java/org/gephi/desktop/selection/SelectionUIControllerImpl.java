@@ -43,12 +43,13 @@
 package org.gephi.desktop.selection;
 
 import javax.swing.SwingUtilities;
-import org.gephi.desktop.selection.api.SelectionWindowController;
+import org.gephi.desktop.selection.api.SelectionUIController;
 import org.gephi.graph.api.Edge;
 import org.gephi.graph.api.Node;
 import org.gephi.project.api.ProjectController;
 import org.gephi.project.api.Workspace;
 import org.gephi.project.api.WorkspaceListener;
+import org.gephi.project.spi.Controller;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
@@ -59,10 +60,10 @@ import org.openide.windows.WindowManager;
  *
  * @author Eduardo Ramos
  */
-@ServiceProvider(service = SelectionWindowController.class)
-public class SelectionWindowControllerImpl implements SelectionWindowController {
+@ServiceProvider(service = SelectionUIController.class)
+public class SelectionUIControllerImpl implements SelectionUIController, Controller<SelectionUIModelImpl> {
 
-    public SelectionWindowControllerImpl() {
+    public SelectionUIControllerImpl() {
 
         Lookup.getDefault().lookup(ProjectController.class).addWorkspaceListener(new WorkspaceListener() {
 
@@ -88,6 +89,16 @@ public class SelectionWindowControllerImpl implements SelectionWindowController 
                 closeWindow();
             }
         });
+    }
+
+    @Override
+    public SelectionUIModelImpl newModel(Workspace workspace) {
+        return new SelectionUIModelImpl(workspace);
+    }
+
+    @Override
+    public Class<SelectionUIModelImpl> getModelClass() {
+        return SelectionUIModelImpl.class;
     }
 
     protected static SelectionTopComponent findInstance() {
@@ -140,6 +151,7 @@ public class SelectionWindowControllerImpl implements SelectionWindowController 
     public void editNode(final Node node) {
         runAction(() -> {
             SelectionTopComponent topComponent = findInstance();
+            topComponent.showEditMode();
             topComponent.getEditPanel().editNode(node);
         });
     }
@@ -148,6 +160,7 @@ public class SelectionWindowControllerImpl implements SelectionWindowController 
     public void editNodes(final Node[] nodes) {
         runAction(() -> {
             SelectionTopComponent topComponent = findInstance();
+            topComponent.showEditMode();
             topComponent.getEditPanel().editNodes(nodes);
         });
     }
@@ -156,6 +169,7 @@ public class SelectionWindowControllerImpl implements SelectionWindowController 
     public void editEdge(final Edge edge) {
         runAction(() -> {
             SelectionTopComponent topComponent = findInstance();
+            topComponent.showEditMode();
             topComponent.getEditPanel().editEdge(edge);
         });
     }
@@ -164,6 +178,7 @@ public class SelectionWindowControllerImpl implements SelectionWindowController 
     public void editEdges(final Edge[] edges) {
         runAction(() -> {
             SelectionTopComponent topComponent = findInstance();
+            topComponent.showEditMode();
             topComponent.getEditPanel().editEdges(edges);
         });
     }
@@ -172,7 +187,16 @@ public class SelectionWindowControllerImpl implements SelectionWindowController 
     public void disableEdit() {
         runAction(() -> {
             SelectionTopComponent topComponent = findInstance();
+            topComponent.showEditMode();
             topComponent.getEditPanel().disableEdit();
+        });
+    }
+
+    @Override
+    public void selectNodes(Node[] nodes) {
+        runAction(() -> {
+            SelectionTopComponent topComponent = findInstance();
+            topComponent.getSelectionPanel().setLabel(nodes.length + " node(s) selected");
         });
     }
 

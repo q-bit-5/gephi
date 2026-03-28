@@ -28,6 +28,7 @@ import org.gephi.visualization.VizConfig;
 import org.gephi.visualization.events.StandardVizEventManager;
 import org.gephi.viz.engine.VizEngine;
 import org.gephi.viz.engine.VizEngineFactory;
+import org.gephi.viz.engine.VizEngineModel;
 import org.gephi.viz.engine.jogl.JOGLRenderingTarget;
 import org.gephi.viz.engine.jogl.VizEngineJOGLConfigurator;
 import org.gephi.viz.engine.spi.InputListener;
@@ -102,6 +103,19 @@ public class VizEngineGraphCanvasManager {
         glOptions.setDebug(VizConfig.isEngineOpenGLDebug());
 
         engine.addInputListener(new InputListener<>() {
+
+            private VizEngineModel model;
+
+            @Override
+            public void frameStart(VizEngineModel model) {
+                this.model = model;
+            }
+
+            @Override
+            public void frameEnd(VizEngineModel model) {
+                this.model = null;
+            }
+
             @Override
             public List<NEWTEvent> processEvents(List<NEWTEvent> inputEvents) {
                 if (engine != null && vizController.getVizEventManager() != null) {
@@ -109,7 +123,7 @@ public class VizEngineGraphCanvasManager {
                     List<NEWTEvent> remainingEvents = new ArrayList<>();
                     for (NEWTEvent inputEvent : inputEvents) {
                         if (!(inputEvent instanceof MouseEvent &&
-                            vizEventManager.processMouseEvent(glCanvas, VizEngineGraphCanvasManager.this, engine,
+                            vizEventManager.processMouseEvent(glCanvas, VizEngineGraphCanvasManager.this, engine, model,
                                 (MouseEvent) inputEvent))) {
                             remainingEvents.add(inputEvent);
                         }

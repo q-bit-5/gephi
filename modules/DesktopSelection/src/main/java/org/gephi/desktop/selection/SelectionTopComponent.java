@@ -1,6 +1,8 @@
 package org.gephi.desktop.selection;
 
+import java.awt.CardLayout;
 import org.gephi.desktop.selection.edit.EditPanel;
+import org.gephi.desktop.selection.selection.SelectionPanel;
 import org.netbeans.api.settings.ConvertAsProperties;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
@@ -19,20 +21,44 @@ import org.openide.windows.TopComponent;
     preferredID = "SelectionTopComponent")
 public final class SelectionTopComponent extends TopComponent {
 
+    private static final String SELECTION_CARD = "selection";
+    private static final String EDIT_CARD = "edit";
+
+    private final CardLayout cardLayout;
     private final EditPanel editPanel;
+    private final SelectionPanel selectionPanel;
 
     public SelectionTopComponent() {
         setName(NbBundle.getMessage(SelectionTopComponent.class, "CTL_SelectionTopComponent"));
 
         putClientProperty(TopComponent.PROP_MAXIMIZATION_DISABLED, Boolean.TRUE);
 
-        setLayout(new java.awt.BorderLayout());
+        cardLayout = new CardLayout();
+        setLayout(cardLayout);
+
+        selectionPanel = new SelectionPanel();
         editPanel = new EditPanel();
-        add(editPanel, java.awt.BorderLayout.CENTER);
+
+        add(selectionPanel, SELECTION_CARD);
+        add(editPanel, EDIT_CARD);
+
+        cardLayout.show(this, SELECTION_CARD);
+    }
+
+    public void showSelectionMode() {
+        cardLayout.show(this, SELECTION_CARD);
+    }
+
+    public void showEditMode() {
+        cardLayout.show(this, EDIT_CARD);
     }
 
     public EditPanel getEditPanel() {
         return editPanel;
+    }
+
+    public SelectionPanel getSelectionPanel() {
+        return selectionPanel;
     }
 
     @Override
