@@ -116,12 +116,21 @@ public class SelectionUIControllerImpl implements SelectionUIController, Control
         return (SelectionTopComponent) WindowManager.getDefault().findTopComponent("SelectionTopComponent");
     }
 
+    private void resetSelection() {
+        SelectionUIModelImpl model = getModel();
+        if (model != null) {
+            model.resetSelection();
+            firePropertyChangeEvent(SelectionUIModelEvent.SELECTED_ELEMENTS, null, null);
+        }
+    }
+
     private void setEditMode(boolean editMode) {
         SelectionUIModelImpl model = getModel();
         if (model.isEditMode() != editMode) {
             model.setEditMode(editMode);
             if (editMode) {
                 model.resetSelection();
+                firePropertyChangeEvent(SelectionUIModelEvent.SELECTED_ELEMENTS, null, null);
             }
             firePropertyChangeEvent(SelectionUIModelEvent.EDIT_MODE, !editMode, editMode);
         }
@@ -165,6 +174,7 @@ public class SelectionUIControllerImpl implements SelectionUIController, Control
     @Override
     public void closeWindow() {
         runAction(() -> {
+            resetSelection();
             SelectionTopComponent topComponent = findInstance();
             topComponent.getEditPanel().disableEdit();
             topComponent.close();

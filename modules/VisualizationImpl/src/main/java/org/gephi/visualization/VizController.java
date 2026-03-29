@@ -129,6 +129,11 @@ public class VizController implements VisualizationController, Controller<VizMod
     public void disableMouseHandler() {
         if (mouseMoveListener != null) {
             removeListener(mouseMoveListener);
+
+            SelectionUIController selectionUIController = Lookup.getDefault().lookup(SelectionUIController.class);
+            if (selectionUIController != null) {
+                selectionUIController.closeWindow();
+            }
         }
     }
 
