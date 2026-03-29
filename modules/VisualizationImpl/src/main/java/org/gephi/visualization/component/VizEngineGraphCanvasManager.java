@@ -179,6 +179,9 @@ public class VizEngineGraphCanvasManager {
         GraphModel graphModel = workspace.getLookup().lookup(GraphModel.class);
 
         engine.setGraphModel(graphModel, model.toGraphRenderingOptions(), model.toGraphSelection());
+        if (model.isDirectMouseSelection()) {
+            vizController.enableMouseHandler();
+        }
         return model;
     }
 
@@ -196,6 +199,7 @@ public class VizEngineGraphCanvasManager {
             // Only then, reset the engine's engine model
             engine.unsetGraphModel(graphModel);
         }
+        vizController.disableMouseHandler();
 
         return model;
     }

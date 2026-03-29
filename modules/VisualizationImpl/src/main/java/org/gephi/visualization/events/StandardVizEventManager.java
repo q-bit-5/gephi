@@ -331,20 +331,7 @@ public class StandardVizEventManager {
     }
 
     public boolean mouseMove(VizEngineModel model) {
-        VisualizationEventTypeHandler handler = handlers[VisualizationEvent.Type.MOUSE_MOVE.ordinal()];
-
-//        if (handler.hasListeners()) {
-            Collection<Node> selectedNodes = model.getGraphSelection().getSelectedNodes();
-//            System.out.println("Mouse move - selected nodes: " + selectedNodes.size());
-
-            SelectionUIController selectionUIController = Lookup.getDefault().lookup(SelectionUIController.class);
-            if (selectionUIController != null) {
-                selectionUIController.selectNodes(selectedNodes.toArray(new Node[0]));
-            }
-
-            return handlers[VisualizationEvent.Type.MOUSE_MOVE.ordinal()].dispatch();
-//        }
-//        return false;
+        return handlers[VisualizationEvent.Type.MOUSE_MOVE.ordinal()].dispatch(model);
     }
 
     public boolean mouseRightClick(Component parentComponent, VizEngineGraphCanvasManager canvasManager,
