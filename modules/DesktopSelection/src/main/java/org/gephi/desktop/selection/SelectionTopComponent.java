@@ -165,20 +165,20 @@ public final class SelectionTopComponent extends TopComponent implements Selecti
                     includeProperties.isSelected());
             });
             popup.add(includeProperties);
+        } else {
+            JCheckBoxMenuItem showNullItem = new JCheckBoxMenuItem(
+                NbBundle.getMessage(SelectionTopComponent.class,
+                    "SelectionTopComponent.showNullButton"));
+            showNullItem.setSelected(model.isShowNullColumns());
+            showNullItem.addActionListener(evt -> {
+                model.setShowNullColumns(showNullItem.isSelected());
+                controller.firePropertyChangeEvent(
+                    SelectionUIModelEvent.SHOW_NULL_COLUMNS,
+                    !showNullItem.isSelected(),
+                    showNullItem.isSelected());
+            });
+            popup.add(showNullItem);
         }
-
-        JCheckBoxMenuItem showNullItem = new JCheckBoxMenuItem(
-            NbBundle.getMessage(SelectionTopComponent.class,
-                "SelectionTopComponent.showNullButton"));
-        showNullItem.setSelected(model.isShowNullColumns());
-        showNullItem.addActionListener(evt -> {
-            model.setShowNullColumns(showNullItem.isSelected());
-            controller.firePropertyChangeEvent(
-                SelectionUIModelEvent.SHOW_NULL_COLUMNS,
-                !showNullItem.isSelected(),
-                showNullItem.isSelected());
-        });
-        popup.add(showNullItem);
 
         popup.addSeparator();
 
