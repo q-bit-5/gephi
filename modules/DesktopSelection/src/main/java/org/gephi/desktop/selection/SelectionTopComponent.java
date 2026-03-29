@@ -6,13 +6,11 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.util.List;
-import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
-import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import org.gephi.desktop.selection.edit.EditPanel;
 import org.gephi.desktop.selection.selection.SelectionPanel;
@@ -45,7 +43,6 @@ public final class SelectionTopComponent extends TopComponent implements Selecti
     private final EditPanel editPanel;
     private final SelectionPanel selectionPanel;
     private final JButton columnsButton;
-    private final JToggleButton showNullButton;
 
     private final SelectionUIControllerImpl controller;
 
@@ -95,23 +92,6 @@ public final class SelectionTopComponent extends TopComponent implements Selecti
         });
         toolbar.add(columnsButton);
 
-        toolbar.add(Box.createHorizontalGlue());
-
-        showNullButton = new JToggleButton(
-            ImageUtilities.loadImageIcon("DesktopSelection/includeNull.svg", false));
-        showNullButton.setToolTipText(
-            NbBundle.getMessage(SelectionTopComponent.class, "SelectionTopComponent.showNullButton.tooltip"));
-        showNullButton.setFocusable(false);
-        showNullButton.addActionListener(e -> {
-            if (model != null) {
-                model.setShowNullColumns(showNullButton.isSelected());
-                controller.firePropertyChangeEvent(
-                    SelectionUIModelEvent.SHOW_NULL_COLUMNS, !showNullButton.isSelected(),
-                    showNullButton.isSelected());
-            }
-        });
-        toolbar.add(showNullButton);
-
         add(toolbar, BorderLayout.SOUTH);
 
         // Init if needed
@@ -157,8 +137,6 @@ public final class SelectionTopComponent extends TopComponent implements Selecti
         } else {
             cardLayout.show(cardPanel, SELECTION_CARD);
         }
-        showNullButton.setSelected(model.isShowNullColumns());
-        showNullButton.setEnabled(true);
         columnsButton.setEnabled(true);
     }
 
@@ -166,8 +144,6 @@ public final class SelectionTopComponent extends TopComponent implements Selecti
         this.model = null;
 
         cardLayout.show(cardPanel, SELECTION_CARD);
-        showNullButton.setSelected(false);
-        showNullButton.setEnabled(false);
         columnsButton.setEnabled(false);
     }
 
@@ -182,6 +158,36 @@ public final class SelectionTopComponent extends TopComponent implements Selecti
             emptyLabel.setEnabled(false);
             popup.add(emptyLabel);
         } else {
+            if (model.isEditMode()) {
+                JCheckBoxMenuItem includeProperties = new JCheckBoxMenuItem(
+                    NbBundle.getMessage(SelectionTopComponent.class,
+                        "SelectionTopComponent.includeProperties"));
+                includeProperties.setSelected(model.isIncludeProperties());
+                includeProperties.addActionListener(evt -> {
+                    model.setIncludeProperties(includeProperties.isSelected());
+                    controller.firePropertyChangeEvent(
+                        SelectionUIModelEvent.INCLUDE_PROPERTIES,
+                        !includeProperties.isSelected(),
+                        includeProperties.isSelected());
+                });
+                popup.add(includeProperties);
+            }
+
+            JCheckBoxMenuItem showNullItem = new JCheckBoxMenuItem(
+                NbBundle.getMessage(SelectionTopComponent.class,
+                    "SelectionTopComponent.showNullButton"));
+            showNullItem.setSelected(model.isShowNullColumns());
+            showNullItem.addActionListener(evt -> {
+                model.setShowNullColumns(showNullItem.isSelected());
+                controller.firePropertyChangeEvent(
+                    SelectionUIModelEvent.SHOW_NULL_COLUMNS,
+                    !showNullItem.isSelected(),
+                    showNullItem.isSelected());
+            });
+            popup.add(showNullItem);
+
+            popup.addSeparator();
+
             boolean allVisible = columns.stream().allMatch(model::isColumnVisible);
             boolean noneVisible = columns.stream().noneMatch(model::isColumnVisible);
 
@@ -197,23 +203,6 @@ public final class SelectionTopComponent extends TopComponent implements Selecti
                     return item;
                 })
                 .forEach(popup::add);
-
-            if (model.isEditMode()) {
-                popup.addSeparator();
-
-                JCheckBoxMenuItem includeProperties = new JCheckBoxMenuItem(
-                    NbBundle.getMessage(SelectionTopComponent.class,
-                        "SelectionTopComponent.includeProperties"));
-                includeProperties.setSelected(model.isIncludeProperties());
-                includeProperties.addActionListener(evt -> {
-                    model.setIncludeProperties(includeProperties.isSelected());
-                    controller.firePropertyChangeEvent(
-                        SelectionUIModelEvent.INCLUDE_PROPERTIES,
-                        !includeProperties.isSelected(),
-                        includeProperties.isSelected());
-                });
-                popup.add(includeProperties);
-            }
 
             popup.addSeparator();
 
