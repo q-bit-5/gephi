@@ -259,7 +259,7 @@
         
         <gephi.scm-publish-plugin.version>3.2.1</gephi.scm-publish-plugin.version>
         
-        <gephi.versions-maven-plugin.version>2.16.2</gephi.versions-maven-plugin.version>
+        <gephi.versions-maven-plugin.version>2.21.0</gephi.versions-maven-plugin.version>
 
         <gephi.maven-checkstyle-plugin.version>3.4.0</gephi.maven-checkstyle-plugin.version>
 
