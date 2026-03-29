@@ -152,42 +152,42 @@ public final class SelectionTopComponent extends TopComponent implements Selecti
 
         JPopupMenu popup = new JPopupMenu();
 
+        if (model.isEditMode()) {
+            JCheckBoxMenuItem includeProperties = new JCheckBoxMenuItem(
+                NbBundle.getMessage(SelectionTopComponent.class,
+                    "SelectionTopComponent.includeProperties"));
+            includeProperties.setSelected(model.isIncludeProperties());
+            includeProperties.addActionListener(evt -> {
+                model.setIncludeProperties(includeProperties.isSelected());
+                controller.firePropertyChangeEvent(
+                    SelectionUIModelEvent.INCLUDE_PROPERTIES,
+                    !includeProperties.isSelected(),
+                    includeProperties.isSelected());
+            });
+            popup.add(includeProperties);
+        }
+
+        JCheckBoxMenuItem showNullItem = new JCheckBoxMenuItem(
+            NbBundle.getMessage(SelectionTopComponent.class,
+                "SelectionTopComponent.showNullButton"));
+        showNullItem.setSelected(model.isShowNullColumns());
+        showNullItem.addActionListener(evt -> {
+            model.setShowNullColumns(showNullItem.isSelected());
+            controller.firePropertyChangeEvent(
+                SelectionUIModelEvent.SHOW_NULL_COLUMNS,
+                !showNullItem.isSelected(),
+                showNullItem.isSelected());
+        });
+        popup.add(showNullItem);
+
+        popup.addSeparator();
+
         if (columns.isEmpty()) {
             JMenuItem emptyLabel = new JMenuItem(
                 NbBundle.getMessage(SelectionTopComponent.class, "SelectionTopComponent.noColumns"));
             emptyLabel.setEnabled(false);
             popup.add(emptyLabel);
         } else {
-            if (model.isEditMode()) {
-                JCheckBoxMenuItem includeProperties = new JCheckBoxMenuItem(
-                    NbBundle.getMessage(SelectionTopComponent.class,
-                        "SelectionTopComponent.includeProperties"));
-                includeProperties.setSelected(model.isIncludeProperties());
-                includeProperties.addActionListener(evt -> {
-                    model.setIncludeProperties(includeProperties.isSelected());
-                    controller.firePropertyChangeEvent(
-                        SelectionUIModelEvent.INCLUDE_PROPERTIES,
-                        !includeProperties.isSelected(),
-                        includeProperties.isSelected());
-                });
-                popup.add(includeProperties);
-            }
-
-            JCheckBoxMenuItem showNullItem = new JCheckBoxMenuItem(
-                NbBundle.getMessage(SelectionTopComponent.class,
-                    "SelectionTopComponent.showNullButton"));
-            showNullItem.setSelected(model.isShowNullColumns());
-            showNullItem.addActionListener(evt -> {
-                model.setShowNullColumns(showNullItem.isSelected());
-                controller.firePropertyChangeEvent(
-                    SelectionUIModelEvent.SHOW_NULL_COLUMNS,
-                    !showNullItem.isSelected(),
-                    showNullItem.isSelected());
-            });
-            popup.add(showNullItem);
-
-            popup.addSeparator();
-
             boolean allVisible = columns.stream().allMatch(model::isColumnVisible);
             boolean noneVisible = columns.stream().noneMatch(model::isColumnVisible);
 
