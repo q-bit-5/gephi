@@ -148,6 +148,15 @@ public class SelectionUIControllerImpl implements SelectionUIController, Control
         runAction(() -> {
             SelectionTopComponent topComponent = findInstance();
             topComponent.open();
+        });
+
+    }
+
+    @Override
+    public void openWindowAndRequestActive() {
+        runAction(() -> {
+            SelectionTopComponent topComponent = findInstance();
+            topComponent.open();
             topComponent.requestActive();
         });
 

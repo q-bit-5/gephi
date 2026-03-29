@@ -53,6 +53,8 @@ import org.gephi.graph.api.Node;
 public interface SelectionUIController {
     void openWindow();
 
+    void openWindowAndRequestActive();
+
     void closeWindow();
 
     boolean isOpen();

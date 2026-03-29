@@ -66,7 +66,7 @@ public class OpenInEditEdgeWindow extends BasicEdgesManipulator {
     @Override
     public void execute() {
         SelectionUIController edc = Lookup.getDefault().lookup(SelectionUIController.class);
-        edc.openWindow();
+        edc.openWindowAndRequestActive();
         edc.editEdges(edges);
     }
 

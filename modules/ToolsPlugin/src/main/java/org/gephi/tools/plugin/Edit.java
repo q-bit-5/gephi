@@ -68,7 +68,7 @@ public class Edit implements Tool {
         SelectionUIController controller = Lookup.getDefault().lookup(SelectionUIController.class);
         if (controller != null) {
             controller.enableEdit();
-            controller.openWindow();
+            controller.openWindowAndRequestActive();
         }
     }
 
