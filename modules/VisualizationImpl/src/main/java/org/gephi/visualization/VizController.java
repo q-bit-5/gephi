@@ -46,8 +46,10 @@ import com.jogamp.newt.event.NEWTEvent;
 import java.awt.Color;
 import java.awt.Font;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import org.gephi.desktop.selection.api.SelectionUIController;
 import org.gephi.graph.api.Column;
 import org.gephi.graph.api.Edge;
 import org.gephi.graph.api.Estimator;
@@ -57,17 +59,19 @@ import org.gephi.project.spi.Controller;
 import org.gephi.visualization.api.EdgeColorMode;
 import org.gephi.visualization.api.LabelColorMode;
 import org.gephi.visualization.api.LabelSizeMode;
-import org.gephi.visualization.api.ScreenshotController;
 import org.gephi.visualization.api.VisualizationController;
+import org.gephi.visualization.api.VisualizationEvent;
 import org.gephi.visualization.api.VisualizationEventListener;
 import org.gephi.visualization.api.VisualizationPropertyChangeListener;
 import org.gephi.visualization.component.VizEngineGraphCanvasManager;
 import org.gephi.visualization.events.StandardVizEventManager;
 import org.gephi.visualization.screenshot.ScreenshotControllerImpl;
 import org.gephi.viz.engine.VizEngine;
+import org.gephi.viz.engine.VizEngineModel;
 import org.gephi.viz.engine.jogl.JOGLRenderingTarget;
 import org.gephi.viz.engine.status.GraphSelection;
 import org.joml.Vector2f;
+import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.util.lookup.ServiceProviders;
 
@@ -85,10 +89,52 @@ public class VizController implements VisualizationController, Controller<VizMod
     private final StandardVizEventManager vizEventManager;
     private final ScreenshotControllerImpl screenshotController;
 
+    // Current mouse move listener, if any
+    private VisualizationEventListener mouseMoveListener;
+
     public VizController() {
         vizEventManager = new StandardVizEventManager();
         screenshotController = new ScreenshotControllerImpl(this);
         canvasManager = new VizEngineGraphCanvasManager(this);
+    }
+
+    public void enableMouseHandler() {
+        mouseMoveListener = new VisualizationEventListener() {
+            @Override
+            public boolean handleEvent(VisualizationEvent event) {
+                VizEngineModel model = (VizEngineModel) event.getData();
+                Collection<Node> selectedNodes = model.getGraphSelection().getSelectedNodes();
+
+                SelectionUIController selectionUIController = Lookup.getDefault().lookup(SelectionUIController.class);
+                if (selectionUIController != null) {
+                    selectionUIController.selectNodes(selectedNodes.toArray(new Node[0]));
+                }
+                return false;
+            }
+
+            @Override
+            public VisualizationEvent.Type getType() {
+                return VisualizationEvent.Type.MOUSE_MOVE;
+            }
+        };
+        addListener(mouseMoveListener);
+
+        SelectionUIController selectionUIController = Lookup.getDefault().lookup(SelectionUIController.class);
+        if (selectionUIController != null) {
+            selectionUIController.disableEdit();
+            selectionUIController.openWindow();
+        }
+    }
+
+    public void disableMouseHandler() {
+        if (mouseMoveListener != null) {
+            removeListener(mouseMoveListener);
+
+            SelectionUIController selectionUIController = Lookup.getDefault().lookup(SelectionUIController.class);
+            if (selectionUIController != null) {
+                selectionUIController.closeWindow();
+            }
+        }
     }
 
     @Override
@@ -172,11 +218,6 @@ public class VizController implements VisualizationController, Controller<VizMod
     public void setShowEdges(boolean showEdges) {
         final VizModel model = getModel();
         model.setShowEdges(showEdges);
-    }
-
-    private static float[] toColorArray(Color color) {
-        return new float[] {color.getRed() / 255f, color.getGreen() / 255f, color.getBlue() / 255f,
-            color.getAlpha() / 255f};
     }
 
     @Override
@@ -343,11 +384,6 @@ public class VizController implements VisualizationController, Controller<VizMod
         model.setEdgeLabelColumns(columns);
     }
 
-    public void destroy() {
-//        vizEventManager = null;
-//        textManager = null;
-        //TODO
-    }
 
     public StandardVizEventManager getVizEventManager() {
         return vizEventManager;
@@ -413,6 +449,7 @@ public class VizController implements VisualizationController, Controller<VizMod
         model.getSelectionModel().setCustomSelection(false);
         model.getSelectionModel().setSingleNodeSelection(false);
         model.getSelectionModel().setNodeSelection(false);
+        disableMouseHandler();
         setEngineSelectionMode(GraphSelection.GraphSelectionMode.NO_SELECTION);
         model.fireSelectionChange();
     }
@@ -450,6 +487,7 @@ public class VizController implements VisualizationController, Controller<VizMod
         model.getSelectionModel().setCustomSelection(false);
         model.getSelectionModel().setSingleNodeSelection(false);
         model.getSelectionModel().setNodeSelection(false);
+        disableMouseHandler();
         setEngineSelectionMode(GraphSelection.GraphSelectionMode.RECTANGLE_SELECTION);
         model.fireSelectionChange();
     }
@@ -465,6 +503,7 @@ public class VizController implements VisualizationController, Controller<VizMod
         model.getSelectionModel().setCustomSelection(false);
         model.getSelectionModel().setNodeSelection(false);
         model.getSelectionModel().setSingleNodeSelection(false);
+        enableMouseHandler();
         setEngineSelectionMode(GraphSelection.GraphSelectionMode.SIMPLE_MOUSE_SELECTION);
         model.fireSelectionChange();
     }
@@ -480,6 +519,7 @@ public class VizController implements VisualizationController, Controller<VizMod
         model.getSelectionModel().setCustomSelection(false);
         model.getSelectionModel().setNodeSelection(true);
         model.getSelectionModel().setSingleNodeSelection(singleNode);
+        disableMouseHandler();
         if (singleNode) {
             setEngineSelectionMode(GraphSelection.GraphSelectionMode.SINGLE_NODE_SELECTION);
         } else {
@@ -496,6 +536,7 @@ public class VizController implements VisualizationController, Controller<VizMod
         }
         model.getSelectionModel().setSelectionEnable(true);
         model.getSelectionModel().setCustomSelection(true);
+        disableMouseHandler();
         setEngineSelectionMode(GraphSelection.GraphSelectionMode.CUSTOM_SELECTION);
         model.fireSelectionChange();
     }
@@ -519,6 +560,7 @@ public class VizController implements VisualizationController, Controller<VizMod
                     setEngineSelectionMode(GraphSelection.GraphSelectionMode.MULTI_NODE_SELECTION);
                 }
             } else if (model.getSelectionModel().isDirectMouseSelection()) {
+                enableMouseHandler();
                 setEngineSelectionMode(GraphSelection.GraphSelectionMode.SIMPLE_MOUSE_SELECTION);
             } else {
                 setEngineSelectionMode(GraphSelection.GraphSelectionMode.NO_SELECTION);

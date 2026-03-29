@@ -748,6 +748,11 @@
                 <version>${project.version}</version>
             </dependency>
             <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>desktop-selection</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>io.sentry</groupId>
                 <artifactId>sentry</artifactId>
                 <version>${gephi.sentry.version}</version>
@@ -1429,5 +1434,6 @@
         <module>modules/UILibraryWrapper</module>
         <module>modules/DesktopIcons</module>
         <module>modules/DesktopSearch</module>
+        <module>modules/DesktopSelection</module>
     </modules>
 </project>

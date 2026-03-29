@@ -60,6 +60,7 @@ import org.gephi.graph.api.GraphModel;
 import org.gephi.graph.api.Node;
 import org.gephi.visualization.spi.GraphContextMenuItem;
 import org.gephi.viz.engine.VizEngine;
+import org.gephi.viz.engine.VizEngineModel;
 import org.gephi.viz.engine.status.GraphSelection;
 import org.openide.util.Lookup;
 
@@ -68,9 +69,9 @@ import org.openide.util.Lookup;
  */
 public class GraphContextMenu {
 
-    public JPopupMenu getMenu(VizEngine engine) {
-        GraphModel graphModel = Lookup.getDefault().lookup(GraphController.class).getGraphModel();
-        GraphSelection selection = engine.getGraphSelection();
+    public JPopupMenu getMenu(VizEngineModel model) {
+        GraphModel graphModel = model.getGraphModel();
+        GraphSelection selection = model.getGraphSelection();
         Graph graph = graphModel.getGraphVisible();
         Node[] selectedNodes = selection.getSelectedNodes().toArray(new Node[0]);
 
