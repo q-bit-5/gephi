@@ -48,6 +48,10 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.gephi.desktop.selection.api.SelectionUIController;
@@ -98,21 +102,21 @@ public class StandardVizEventManager {
     public StandardVizEventManager() {
         //Set handlers
         final ArrayList<VisualizationEventTypeHandler> handlersList = new ArrayList<>();
-        handlersList.add(new VisualizationEventTypeHandler(VisualizationEvent.Type.MOUSE_LEFT_CLICK, false));
-        handlersList.add(new VisualizationEventTypeHandler(VisualizationEvent.Type.MOUSE_LEFT_PRESS, false));
-        handlersList.add(new VisualizationEventTypeHandler(VisualizationEvent.Type.MOUSE_MIDDLE_CLICK, false));
-        handlersList.add(new VisualizationEventTypeHandler(VisualizationEvent.Type.MOUSE_MIDDLE_PRESS, false));
-        handlersList.add(new VisualizationEventTypeHandler(VisualizationEvent.Type.MOUSE_RIGHT_CLICK, false));
-        handlersList.add(new VisualizationEventTypeHandler(VisualizationEvent.Type.MOUSE_RIGHT_PRESS, false));
-        handlersList.add(new VisualizationEventTypeHandler(VisualizationEvent.Type.MOUSE_MOVE, true));
-        handlersList.add(new VisualizationEventTypeHandler(VisualizationEvent.Type.START_DRAG, false));
-        handlersList.add(new VisualizationEventTypeHandler(VisualizationEvent.Type.DRAG, true));
-        handlersList.add(new VisualizationEventTypeHandler(VisualizationEvent.Type.STOP_DRAG, false));
-        handlersList.add(new VisualizationEventTypeHandler(VisualizationEvent.Type.NODE_LEFT_CLICK, false));
-        handlersList.add(new VisualizationEventTypeHandler(VisualizationEvent.Type.MOUSE_LEFT_PRESSING, false));
-        handlersList.add(new VisualizationEventTypeHandler(VisualizationEvent.Type.MOUSE_RELEASED, false));
-        handlersList.add(new VisualizationEventTypeHandler(VisualizationEvent.Type.NODE_LEFT_PRESS, false));
-        handlersList.add(new VisualizationEventTypeHandler(VisualizationEvent.Type.NODE_LEFT_PRESSING, false));
+        handlersList.add(new VisualizationEventTypeHandler(VisualizationEvent.Type.MOUSE_LEFT_CLICK, 0));
+        handlersList.add(new VisualizationEventTypeHandler(VisualizationEvent.Type.MOUSE_LEFT_PRESS, 0));
+        handlersList.add(new VisualizationEventTypeHandler(VisualizationEvent.Type.MOUSE_MIDDLE_CLICK, 0));
+        handlersList.add(new VisualizationEventTypeHandler(VisualizationEvent.Type.MOUSE_MIDDLE_PRESS, 0));
+        handlersList.add(new VisualizationEventTypeHandler(VisualizationEvent.Type.MOUSE_RIGHT_CLICK, 0));
+        handlersList.add(new VisualizationEventTypeHandler(VisualizationEvent.Type.MOUSE_RIGHT_PRESS, 0));
+        handlersList.add(new VisualizationEventTypeHandler(VisualizationEvent.Type.MOUSE_MOVE, 10));
+        handlersList.add(new VisualizationEventTypeHandler(VisualizationEvent.Type.START_DRAG, 0));
+        handlersList.add(new VisualizationEventTypeHandler(VisualizationEvent.Type.DRAG, 10));
+        handlersList.add(new VisualizationEventTypeHandler(VisualizationEvent.Type.STOP_DRAG, 0));
+        handlersList.add(new VisualizationEventTypeHandler(VisualizationEvent.Type.NODE_LEFT_CLICK, 0));
+        handlersList.add(new VisualizationEventTypeHandler(VisualizationEvent.Type.MOUSE_LEFT_PRESSING, 0));
+        handlersList.add(new VisualizationEventTypeHandler(VisualizationEvent.Type.MOUSE_RELEASED, 0));
+        handlersList.add(new VisualizationEventTypeHandler(VisualizationEvent.Type.NODE_LEFT_PRESS, 0));
+        handlersList.add(new VisualizationEventTypeHandler(VisualizationEvent.Type.NODE_LEFT_PRESSING, 0));
         handlersList.sort((o1, o2) -> {
             VisualizationEvent.Type t1 = o1.type;
             VisualizationEvent.Type t2 = o2.type;
@@ -404,18 +408,25 @@ public class StandardVizEventManager {
 
     private static class VisualizationEventTypeHandler {
 
-        protected final VisualizationEvent.Type type;
-        //Settings
-        private final boolean limitRunning;
-        //Data
-        protected List<WeakReference<VisualizationEventListener>> listeners;
-        protected Runnable runnable;
-        //States
-        protected boolean running;
+        private static final ScheduledExecutorService THROTTLE_EXECUTOR =
+            Executors.newSingleThreadScheduledExecutor(r -> {
+                Thread t = new Thread(r, "VizEvent-Throttle");
+                t.setDaemon(true);
+                return t;
+            });
 
-        public VisualizationEventTypeHandler(VisualizationEvent.Type type, boolean limitRunning) {
-            this.limitRunning = limitRunning;
+        protected final VisualizationEvent.Type type;
+        private final long throttleIntervalNanos;
+        protected List<WeakReference<VisualizationEventListener>> listeners;
+
+        private long lastDispatchTimeNanos;
+        private Object pendingData;
+        private boolean hasPendingDispatch;
+        private ScheduledFuture<?> scheduledFlush;
+
+        public VisualizationEventTypeHandler(VisualizationEvent.Type type, long throttleIntervalMs) {
             this.type = type;
+            this.throttleIntervalNanos = TimeUnit.MILLISECONDS.toNanos(throttleIntervalMs);
             this.listeners = new ArrayList<>();
         }
 
@@ -433,47 +444,66 @@ public class StandardVizEventManager {
         }
 
         protected boolean dispatch() {
-            if (limitRunning && running) {
-                return false;
-            }
-
-            if (!listeners.isEmpty()) {
-                running = true;
-
-                final boolean consumed = fireVisualizationEvent(null);
-                running = false;
-
-                return consumed;
-            }
-
-            return false;
+            return dispatchInternal(null);
         }
 
         protected boolean dispatch(final Object data) {
-            if (limitRunning && running) {
+            return dispatchInternal(data);
+        }
+
+        private synchronized boolean dispatchInternal(final Object data) {
+            if (listeners.isEmpty()) {
                 return false;
             }
-            if (!listeners.isEmpty()) {
-                running = true;
 
+            if (throttleIntervalNanos <= 0) {
+                return fireVisualizationEvent(data);
+            }
+
+            final long now = System.nanoTime();
+            final long elapsed = now - lastDispatchTimeNanos;
+
+            if (elapsed >= throttleIntervalNanos) {
+                lastDispatchTimeNanos = now;
+                cancelScheduledFlush();
+                hasPendingDispatch = false;
+                return fireVisualizationEvent(data);
+            } else {
+                pendingData = data;
+                hasPendingDispatch = true;
+                if (scheduledFlush == null) {
+                    final long delayNanos = throttleIntervalNanos - elapsed;
+                    scheduledFlush = THROTTLE_EXECUTOR.schedule(
+                        this::flushPending, delayNanos, TimeUnit.NANOSECONDS
+                    );
+                }
+                return false;
+            }
+        }
+
+        private synchronized void flushPending() {
+            scheduledFlush = null;
+            if (hasPendingDispatch) {
+                lastDispatchTimeNanos = System.nanoTime();
+                hasPendingDispatch = false;
+                final Object data = pendingData;
+                pendingData = null;
                 try {
-                    final boolean consumed = fireVisualizationEvent(data);
-                    running = false;
-
-                    return consumed;
+                    fireVisualizationEvent(data);
                 } catch (Exception e) {
                     Logger.getLogger(VizEngine.class.getSimpleName()).log(Level.SEVERE, null, e);
                 }
             }
-
-            return false;
         }
 
-        protected boolean isRunning() {
-            return running;
+        private void cancelScheduledFlush() {
+            if (scheduledFlush != null) {
+                scheduledFlush.cancel(false);
+                scheduledFlush = null;
+            }
         }
 
-        private synchronized boolean fireVisualizationEvent(Object data) {
+        private boolean fireVisualizationEvent(Object data) {
             final VisualizationEvent event = new VizEvent(this, type, data);
             for (final WeakReference<VisualizationEventListener> weakListener : listeners) {
                 final VisualizationEventListener listener = weakListener.get();
