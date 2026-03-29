@@ -169,7 +169,7 @@ public abstract class AbstractEdgeData extends AbstractSelectionData {
         final EdgeWorldData data,
         final float[] mvpFloats
     ) {
-        final boolean renderingUnselectedEdges = layer.isBack();
+        final boolean renderingUnselectedEdges = layer.getLevel() == 1;
         if (!someSelection && renderingUnselectedEdges) {
             return 0;
         }
@@ -260,7 +260,7 @@ public abstract class AbstractEdgeData extends AbstractSelectionData {
                                                                 final RenderingLayer layer,
                                                                 final EdgeWorldData data,
                                                                 final float[] mvpFloats) {
-        final boolean renderingUnselectedEdges = layer.isBack();
+        final boolean renderingUnselectedEdges = layer.getLevel() == 1;
         if (!someSelection && renderingUnselectedEdges) {
             return 0;
         }
@@ -363,7 +363,7 @@ public abstract class AbstractEdgeData extends AbstractSelectionData {
                                                               final EdgeWorldData data,
                                                               final float[] mvpFloats) {
         final boolean someSelection = data.hasSomeSelection();
-        final boolean renderingUnselectedEdges = layer.isBack();
+        final boolean renderingUnselectedEdges = layer.getLevel() == 1;
 
         if (!someSelection && renderingUnselectedEdges) {
             return 0;
