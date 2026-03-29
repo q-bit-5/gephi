@@ -129,7 +129,7 @@ jobs:
         if: runner.os == 'Windows'
 
       - name: Retrieve modules output
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: modules-output
 
@@ -204,7 +204,7 @@ jobs:
           distribution: 'temurin'
 
       - name: Retrieve autoupdate output
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: autoupdate-output
           path: modules/application/target/autoupdate_site
