@@ -50,7 +50,7 @@ public class IndirectNodeData extends AbstractNodeData {
             return;
         }
 
-        final boolean renderingUnselectedNodes = layer.isBack();
+        final boolean renderingUnselectedNodes = layer.getLevel() == 1;
         final int instancesOffset = renderingUnselectedNodes ? 0 : instanceCounter.unselectedCountToDraw;
 
         commandsGLBuffer.bind(gl);

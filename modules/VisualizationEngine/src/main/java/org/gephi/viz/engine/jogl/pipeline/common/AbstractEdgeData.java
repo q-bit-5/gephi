@@ -45,6 +45,7 @@ import org.gephi.viz.engine.pipeline.common.InstanceCounter;
 import org.gephi.viz.engine.status.GraphRenderingOptions;
 import org.gephi.viz.engine.status.GraphSelection;
 import org.gephi.viz.engine.structure.GraphIndex;
+import org.gephi.viz.engine.util.gl.Constants;
 import org.gephi.viz.engine.util.gl.OpenGLOptions;
 import org.gephi.viz.engine.util.structure.EdgesCallback;
 import org.gephi.viz.engine.util.structure.NodesCallback;
@@ -168,7 +169,7 @@ public abstract class AbstractEdgeData extends AbstractSelectionData {
         final EdgeWorldData data,
         final float[] mvpFloats
     ) {
-        final boolean renderingUnselectedEdges = layer.isBack();
+        final boolean renderingUnselectedEdges = layer.getLevel() == 1;
         if (!someSelection && renderingUnselectedEdges) {
             return 0;
         }
@@ -259,7 +260,7 @@ public abstract class AbstractEdgeData extends AbstractSelectionData {
                                                                 final RenderingLayer layer,
                                                                 final EdgeWorldData data,
                                                                 final float[] mvpFloats) {
-        final boolean renderingUnselectedEdges = layer.isBack();
+        final boolean renderingUnselectedEdges = layer.getLevel() == 1;
         if (!someSelection && renderingUnselectedEdges) {
             return 0;
         }
@@ -268,7 +269,7 @@ public abstract class AbstractEdgeData extends AbstractSelectionData {
 
         final float[] backgroundColorFloats = data.getBackgroundColor();
         final float edgeScale = data.getEdgeScale();
-        final float nodeScale = data.getNodeScale();
+        final float nodeScale = data.getNodeScale() * (1f - Constants.getEdgeInset());
         float lightenNonSelectedFactor = data.getLightenNonSelectedFactor();
         final float minWeight = data.getMinWeight();
         final float maxWeight = data.getMaxWeight();
@@ -362,7 +363,7 @@ public abstract class AbstractEdgeData extends AbstractSelectionData {
                                                               final EdgeWorldData data,
                                                               final float[] mvpFloats) {
         final boolean someSelection = data.hasSomeSelection();
-        final boolean renderingUnselectedEdges = layer.isBack();
+        final boolean renderingUnselectedEdges = layer.getLevel() == 1;
 
         if (!someSelection && renderingUnselectedEdges) {
             return 0;
@@ -378,6 +379,8 @@ public abstract class AbstractEdgeData extends AbstractSelectionData {
         final float edgeRescaleMin = data.getEdgeRescaleMin();
         final float edgeRescaleMax = data.getEdgeRescaleMax();
 
+        final float edgeInset = Constants.getEdgeInset();
+
         final int instanceCount;
         if (renderingUnselectedEdges) {
             instanceCount = directedInstanceCounter.unselectedCountToDraw;
@@ -392,6 +395,7 @@ public abstract class AbstractEdgeData extends AbstractSelectionData {
                 backgroundColorFloats,
                 lightenNonSelectedFactor,
                 nodeScale,
+                edgeInset,
                 globalTime,
                 selectedTime
             );
@@ -411,7 +415,8 @@ public abstract class AbstractEdgeData extends AbstractSelectionData {
                 maxWeight,
                 edgeRescaleMin,
                 edgeRescaleMax,
-                nodeScale
+                nodeScale,
+                edgeInset
             );
 
             if (someSelection) {
@@ -424,7 +429,8 @@ public abstract class AbstractEdgeData extends AbstractSelectionData {
                         maxWeight,
                         edgeRescaleMin,
                         edgeRescaleMax,
-                        nodeScale
+                        nodeScale,
+                        edgeInset
 
                     );
                 } else {
@@ -437,6 +443,7 @@ public abstract class AbstractEdgeData extends AbstractSelectionData {
                         edgeRescaleMin,
                         edgeRescaleMax,
                         nodeScale,
+                        edgeInset,
                         globalTime,
                         selectedTime
 
@@ -451,7 +458,8 @@ public abstract class AbstractEdgeData extends AbstractSelectionData {
                     maxWeight,
                     edgeRescaleMin,
                     edgeRescaleMax,
-                    nodeScale
+                    nodeScale,
+                    edgeInset
                 );
             }
 

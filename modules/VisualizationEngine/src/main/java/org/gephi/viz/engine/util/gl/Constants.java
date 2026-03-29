@@ -46,6 +46,7 @@ public class Constants {
     public static final String UNIFORM_NAME_SELECTION_TIME = "selectionTime";
 
     public static final String UNIFORM_NAME_BORDER_SIZE = "borderSize";
+    public static final String UNIFORM_NAME_EDGE_INSET = "edgeInset";
     public static final String UNIFORM_NAME_DARKEN_FACTOR = "nodeBorderDarkenFactor";
     //Rendering order:
     public static final int RENDERING_ORDER_LABELS = 200;
@@ -57,6 +58,7 @@ public class Constants {
     // Customizable Constants : Might worth considering having a proper static class
     private static final float NODE_BORDER_SIZE = 0.16f;
     private static final float NODE_BORDER_DARKEN_FACTOR = 0.498f;
+    private static final float EDGE_INSET = 0.20f;
 
     public static float getNodeBorderSize() {
         return NODE_BORDER_SIZE;
@@ -64,5 +66,9 @@ public class Constants {
 
     public static float getNodeBorderDarkenFactor() {
         return NODE_BORDER_DARKEN_FACTOR;
+    }
+
+    public static float getEdgeInset() {
+        return EDGE_INSET;
     }
 }

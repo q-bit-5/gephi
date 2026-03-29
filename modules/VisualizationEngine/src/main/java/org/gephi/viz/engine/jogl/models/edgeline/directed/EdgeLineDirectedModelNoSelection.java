@@ -15,6 +15,7 @@ import static org.gephi.viz.engine.util.gl.Constants.SHADER_SIZE_LOCATION;
 import static org.gephi.viz.engine.util.gl.Constants.SHADER_SOURCE_SIZE_LOCATION;
 import static org.gephi.viz.engine.util.gl.Constants.SHADER_TARGET_SIZE_LOCATION;
 import static org.gephi.viz.engine.util.gl.Constants.SHADER_VERT_LOCATION;
+import static org.gephi.viz.engine.util.gl.Constants.UNIFORM_NAME_EDGE_INSET;
 import static org.gephi.viz.engine.util.gl.Constants.UNIFORM_NAME_EDGE_SCALE_MAX;
 import static org.gephi.viz.engine.util.gl.Constants.UNIFORM_NAME_EDGE_SCALE_MIN;
 import static org.gephi.viz.engine.util.gl.Constants.UNIFORM_NAME_MIN_WEIGHT;
@@ -54,6 +55,7 @@ public class EdgeLineDirectedModelNoSelection {
             .addUniformName(UNIFORM_NAME_MIN_WEIGHT)
             .addUniformName(UNIFORM_NAME_NODE_SCALE)
             .addUniformName(UNIFORM_NAME_WEIGHT_DIFFERENCE_DIVISOR)
+            .addUniformName(UNIFORM_NAME_EDGE_INSET)
             .addAttribLocation(ATTRIB_NAME_VERT, SHADER_VERT_LOCATION)
             .addAttribLocation(ATTRIB_NAME_POSITION, SHADER_POSITION_LOCATION)
             .addAttribLocation(ATTRIB_NAME_POSITION_TARGET, SHADER_POSITION_TARGET_LOCATION)
@@ -67,16 +69,18 @@ public class EdgeLineDirectedModelNoSelection {
 
 
     public void useProgram(GL2ES2 gl, float[] mvpFloats, float edgeScale, float minWeight, float maxWeight,
-                           float edgeRescaleMin, float edgeRescaleMax, float nodeScale) {
+                           float edgeRescaleMin, float edgeRescaleMax, float nodeScale, float edgeInset) {
         program.use(gl);
-        prepareProgramData(gl, mvpFloats, edgeScale, minWeight, maxWeight, nodeScale, edgeRescaleMin, edgeRescaleMax);
+        prepareProgramData(gl, mvpFloats, edgeScale, minWeight, maxWeight, nodeScale, edgeRescaleMin, edgeRescaleMax,
+            edgeInset);
     }
 
 
     private void prepareProgramData(GL2ES2 gl, float[] mvpFloats, float scale, float minWeight, float maxWeight,
-                                    float nodeScale, float edgeRescaleMin, float edgeRescaleMax) {
+                                    float nodeScale, float edgeRescaleMin, float edgeRescaleMax, float edgeInset) {
         gl.glUniformMatrix4fv(program.getUniformLocation(UNIFORM_NAME_MODEL_VIEW_PROJECTION), 1, false, mvpFloats, 0);
         gl.glUniform1f(program.getUniformLocation(UNIFORM_NAME_NODE_SCALE), nodeScale);
+        gl.glUniform1f(program.getUniformLocation(UNIFORM_NAME_EDGE_INSET), edgeInset);
         if (NumberUtils.equalsEpsilon(minWeight, maxWeight, 1e-3f)) {
             // All weights equal: rescaling is vacuous, fall back to raw weight × edgeScale
             gl.glUniform1f(program.getUniformLocation(UNIFORM_NAME_EDGE_SCALE_MIN), scale);

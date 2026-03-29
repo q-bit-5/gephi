@@ -158,7 +158,7 @@ public abstract class AbstractNodeData extends AbstractSelectionData {
                                                       final NodeWorldData data,
                                                       final float[] mvpFloats) {
         final boolean someSelection = data.hasSomeSelection();
-        final boolean renderingUnselectedNodes = layer.isBack();
+        final boolean renderingUnselectedNodes = layer.getLevel() == 1;
 
         if (!someSelection && renderingUnselectedNodes) {
             return 0;
