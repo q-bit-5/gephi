@@ -39,7 +39,7 @@ jobs:
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
 
       - name: Upload autoupdate output
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: autoupdate-output
           path: modules/application/target/autoupdate_site
@@ -50,7 +50,7 @@ jobs:
         run: tar -I 'zstd -9 -T0' -cf /tmp/modules.tar.zst -C ~/.m2/repository/org/gephi .
 
       - name: Upload modules output
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: modules-output
           path: /tmp/modules.tar.zst
