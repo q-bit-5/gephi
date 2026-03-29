@@ -43,6 +43,7 @@ Portions Copyrighted 2011 Gephi Consortium.
 package org.gephi.desktop.selection.edit;
 
 import javax.swing.JComponent;
+import org.gephi.desktop.selection.SelectionUIModelImpl;
 import org.gephi.graph.api.Edge;
 import org.gephi.graph.api.Node;
 import org.openide.explorer.propertysheet.PropertySheet;
@@ -64,12 +65,24 @@ public final class EditPanel extends JComponent {
         ((PropertySheet) propertySheet).setEnabled(enabled);
     }
 
-    public void editNode(Node node) {
-        ((PropertySheet) propertySheet).setNodes(new org.openide.nodes.Node[] {new EditNodes(node)});
+    public void refreshSelected(final SelectionUIModelImpl model) {
+        Node[] nodes = model.getSelectedNodes();
+        if (nodes != null) {
+            editNodes(nodes, model);
+            return;
+        }
+        Edge[] edges = model.getSelectedEdges();
+        if (edges != null) {
+            editEdges(edges, model);
+        }
     }
 
     public void editNodes(Node[] nodes) {
         ((PropertySheet) propertySheet).setNodes(new org.openide.nodes.Node[] {new EditNodes(nodes)});
+    }
+
+    public void editNodes(Node[] nodes, SelectionUIModelImpl model) {
+        ((PropertySheet) propertySheet).setNodes(new org.openide.nodes.Node[] {new EditNodes(nodes, model)});
     }
 
     public void editEdge(Edge edge) {
@@ -78,6 +91,10 @@ public final class EditPanel extends JComponent {
 
     public void editEdges(Edge[] edges) {
         ((PropertySheet) propertySheet).setNodes(new org.openide.nodes.Node[] {new EditEdges(edges)});
+    }
+
+    public void editEdges(Edge[] edges, SelectionUIModelImpl model) {
+        ((PropertySheet) propertySheet).setNodes(new org.openide.nodes.Node[] {new EditEdges(edges, model)});
     }
 
     public void disableEdit() {

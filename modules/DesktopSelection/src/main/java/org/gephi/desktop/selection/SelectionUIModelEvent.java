@@ -9,6 +9,7 @@ public class SelectionUIModelEvent extends PropertyChangeEvent {
     public static String HIDDEN_COLUMN_IDS = "hiddenColumnIds";
     public static String SELECTED_ELEMENTS = "selectedElements";
     public static String SHOW_NULL_COLUMNS = "showNullColumns";
+    public static String INCLUDE_PROPERTIES = "includeProperties";
 
     public SelectionUIModelEvent(Object source, String propertyName,
                                  Object oldValue, Object newValue) {

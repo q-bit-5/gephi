@@ -47,7 +47,7 @@ import java.beans.PropertyEditor;
 import java.beans.PropertyEditorManager;
 import java.time.ZoneId;
 import org.gephi.datalab.api.AttributeColumnsController;
-import org.gephi.desktop.selection.edit.EditWindowUtils.AttributeValueWrapper;
+import org.gephi.desktop.selection.SelectionUIModelImpl;
 import org.gephi.graph.api.Column;
 import org.gephi.graph.api.Edge;
 import org.gephi.graph.api.GraphController;
@@ -74,6 +74,7 @@ public class EditEdges extends AbstractNode {
     private final boolean multipleEdges;
     private final TimeFormat currentTimeFormat;
     private final ZoneId dateTimeZone;
+    private final SelectionUIModelImpl model;
     private PropertySet[] propertySets;
 
     /**
@@ -83,14 +84,7 @@ public class EditEdges extends AbstractNode {
      * @param edge
      */
     public EditEdges(Edge edge) {
-        super(Children.LEAF);
-        this.edges = new Edge[] {edge};
-        setName(edge.getLabel());
-        multipleEdges = false;
-
-        GraphController gc = Lookup.getDefault().lookup(GraphController.class);
-        currentTimeFormat = gc.getGraphModel().getTimeFormat();
-        dateTimeZone = gc.getGraphModel().getTimeZone();
+        this(new Edge[] {edge}, null);
     }
 
     /**
@@ -100,13 +94,18 @@ public class EditEdges extends AbstractNode {
      * @param edges
      */
     public EditEdges(Edge[] edges) {
+        this(edges, null);
+    }
+
+    public EditEdges(Edge[] edges, SelectionUIModelImpl model) {
         super(Children.LEAF);
         this.edges = edges;
+        this.model = model;
         multipleEdges = edges.length > 1;
         if (multipleEdges) {
             setName(NbBundle.getMessage(EditEdges.class, "EditEdges.multiple.elements"));
         } else {
-            setName(edges[0].getLabel());
+            setName(getLabelOrId(edges[0]));
         }
 
         GraphController gc = Lookup.getDefault().lookup(GraphController.class);
@@ -116,8 +115,27 @@ public class EditEdges extends AbstractNode {
 
     @Override
     public PropertySet[] getPropertySets() {
-        propertySets = new PropertySet[] {prepareEdgesProperties(), prepareEdgesAttributes()};
+        if (model != null && !model.isIncludeProperties()) {
+            propertySets = new PropertySet[] {prepareEdgesAttributes()};
+        } else {
+            propertySets = new PropertySet[] {prepareEdgesProperties(), prepareEdgesAttributes()};
+        }
         return propertySets;
+    }
+
+    /**
+     * Retrieves the label of the provided edge if available. If the label is null
+     * or empty, the edge's ID is converted to a string and returned instead.
+     *
+     * @param edge the edge object from which the label or ID will be retrieved
+     * @return the label of the edge if present and non-empty; otherwise, the string representation of the edge's ID
+     */
+    private static String getLabelOrId(Edge edge) {
+        String label = edge.getLabel();
+        if (label == null || label.isEmpty()) {
+            label = edge.getId().toString();
+        }
+        return label;
     }
 
     /**
@@ -127,10 +145,6 @@ public class EditEdges extends AbstractNode {
      */
     private Sheet.Set prepareEdgesAttributes() {
         try {
-//            DynamicModel dm=Lookup.getDefault().lookup(DynamicController.class).getModel();
-//            if(dm!=null){
-//                currentTimeFormat=dm.getTimeFormat();
-//            }
             AttributeColumnsController ac = Lookup.getDefault().lookup(AttributeColumnsController.class);
             Sheet.Set set = new Sheet.Set();
             set.setName("attributes");
@@ -138,12 +152,15 @@ public class EditEdges extends AbstractNode {
                 set.setDisplayName(NbBundle.getMessage(EditEdges.class, "EditEdges.attributes.text.multiple"));
             } else {
                 set.setDisplayName(
-                    NbBundle.getMessage(EditEdges.class, "EditEdges.attributes.text", edges[0].getLabel()));
+                    NbBundle.getMessage(EditEdges.class, "EditEdges.attributes.text", getLabelOrId(edges[0])));
             }
 
             Edge row = edges[0];
             AttributeValueWrapper wrap;
             for (Column column : row.getAttributeColumns()) {
+                if (model != null && !isAlwaysVisibleColumn(column) && !model.isColumnVisible(column)) {
+                    continue;
+                }
                 if (multipleEdges) {
                     wrap = new MultipleRowsAttributeValueWrapper(edges, column, currentTimeFormat, dateTimeZone);
                 } else {
@@ -223,7 +240,7 @@ public class EditEdges extends AbstractNode {
                 Edge edge = edges[0];
                 Sheet.Set set = new Sheet.Set();
                 set.setName("properties");
-                set.setDisplayName(NbBundle.getMessage(EditEdges.class, "EditEdges.properties.text", edge.getLabel()));
+                set.setDisplayName(NbBundle.getMessage(EditEdges.class, "EditEdges.properties.text", getLabelOrId(edge)));
 
                 Property p;
 
@@ -262,7 +279,12 @@ public class EditEdges extends AbstractNode {
         }
     }
 
-    public class SingleEdgePropertiesWrapper {
+    private static boolean isAlwaysVisibleColumn(Column column) {
+        return column.isProperty() &&
+            ("id".equalsIgnoreCase(column.getId()) || "label".equalsIgnoreCase(column.getId()));
+    }
+
+    public static class SingleEdgePropertiesWrapper {
 
         private final Edge edge;
 
@@ -271,27 +293,17 @@ public class EditEdges extends AbstractNode {
         }
 
         public Color getEdgeColor() {
-            if (edge.alpha() == 0) {
-                return null;//Not specific color for edge
-            }
-
-            return new Color(edge.r(), edge.g(), edge.b(), edge.alpha());
+            return edge.getColor();
         }
 
         public void setEdgeColor(Color c) {
             if (c != null) {
-                edge.setR(c.getRed() / 255f);
-                edge.setG(c.getGreen() / 255f);
-                edge.setB(c.getBlue() / 255f);
-                edge.setAlpha(c.getAlpha() / 255f);
+                edge.setColor(c);
             }
         }
 
         public Color getLabelColor() {
             TextProperties textProps = edge.getTextProperties();
-            if (textProps.getAlpha() == 0) {
-                return null;//Not specific color for label
-            }
 
             return textProps.getColor();
         }
@@ -304,7 +316,7 @@ public class EditEdges extends AbstractNode {
         }
     }
 
-    public class MultipleEdgesPropertiesWrapper {
+    public static class MultipleEdgesPropertiesWrapper {
 
         Edge[] edges;
         //Methods and fields for multiple edges editing:
@@ -325,10 +337,7 @@ public class EditEdges extends AbstractNode {
             if (c != null) {
                 edgesColor = c;
                 for (Edge edge : edges) {
-                    edge.setR(c.getRed() / 255f);
-                    edge.setG(c.getGreen() / 255f);
-                    edge.setB(c.getBlue() / 255f);
-                    edge.setAlpha(c.getAlpha() / 255f);
+                    edge.setColor(c);
                 }
             }
         }
@@ -342,10 +351,7 @@ public class EditEdges extends AbstractNode {
                 labelsColor = c;
                 for (Edge edge : edges) {
                     TextProperties textProps = edge.getTextProperties();
-                    textProps.setR(c.getRed() / 255f);
-                    textProps.setG(c.getGreen() / 255f);
-                    textProps.setB(c.getBlue() / 255f);
-                    textProps.setAlpha(c.getAlpha() / 255f);
+                    textProps.setColor(c);
                 }
             }
         }

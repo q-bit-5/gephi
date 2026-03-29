@@ -120,6 +120,9 @@ public class SelectionUIControllerImpl implements SelectionUIController, Control
         SelectionUIModelImpl model = getModel();
         if (model.isEditMode() != editMode) {
             model.setEditMode(editMode);
+            if (editMode) {
+                model.resetSelection();
+            }
             firePropertyChangeEvent(SelectionUIModelEvent.EDIT_MODE, !editMode, editMode);
         }
     }
@@ -207,12 +210,16 @@ public class SelectionUIControllerImpl implements SelectionUIController, Control
     }
 
     @Override
+    public void enableEdit() {
+            runAction(() -> {
+                setEditMode(true);
+            });
+    }
+
+    @Override
     public void disableEdit() {
         runAction(() -> {
-            setEditMode(true);
-//            SelectionTopComponent topComponent = findInstance();
-//            topComponent.showEditMode();
-//            topComponent.getEditPanel().disableEdit();
+            setEditMode(false);
         });
     }
 

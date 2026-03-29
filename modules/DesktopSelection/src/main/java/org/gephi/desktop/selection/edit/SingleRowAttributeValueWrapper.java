@@ -51,7 +51,7 @@ import org.gephi.graph.api.TimeFormat;
 /**
  * @author Eduardo Ramos
  */
-public class SingleRowAttributeValueWrapper implements EditWindowUtils.AttributeValueWrapper {
+public class SingleRowAttributeValueWrapper implements AttributeValueWrapper {
 
     private final Element row;
     private final Column column;

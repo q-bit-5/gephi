@@ -127,7 +127,8 @@ public final class SelectionTopComponent extends TopComponent implements Selecti
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt.getPropertyName().equals(SelectionUIModelEvent.SELECTED_ELEMENTS) ||
             evt.getPropertyName().equals(SelectionUIModelEvent.HIDDEN_COLUMN_IDS) ||
-            evt.getPropertyName().equals(SelectionUIModelEvent.SHOW_NULL_COLUMNS)) {
+            evt.getPropertyName().equals(SelectionUIModelEvent.SHOW_NULL_COLUMNS) ||
+            evt.getPropertyName().equals(SelectionUIModelEvent.INCLUDE_PROPERTIES)) {
             refreshSelection();
         } else if (evt.getPropertyName().equals(SelectionUIModelEvent.MODEL)) {
             if (evt.getNewValue() == null) {
@@ -141,7 +142,11 @@ public final class SelectionTopComponent extends TopComponent implements Selecti
     }
 
     private void refreshSelection() {
-        selectionPanel.refreshSelectedNodes(model);
+        if (model.isEditMode()) {
+            editPanel.refreshSelected(model);
+        } else {
+            selectionPanel.refreshSelectedNodes(model);
+        }
     }
 
     private void setup(SelectionUIModelImpl model) {
@@ -186,10 +191,29 @@ public final class SelectionTopComponent extends TopComponent implements Selecti
                     item.setSelected(model.isColumnVisible(column));
                     item.addActionListener(evt -> {
                         model.setColumnHidden(column, !item.isSelected());
+                        controller.firePropertyChangeEvent(
+                            SelectionUIModelEvent.HIDDEN_COLUMN_IDS, null, null);
                     });
                     return item;
                 })
                 .forEach(popup::add);
+
+            if (model.isEditMode()) {
+                popup.addSeparator();
+
+                JCheckBoxMenuItem includeProperties = new JCheckBoxMenuItem(
+                    NbBundle.getMessage(SelectionTopComponent.class,
+                        "SelectionTopComponent.includeProperties"));
+                includeProperties.setSelected(model.isIncludeProperties());
+                includeProperties.addActionListener(evt -> {
+                    model.setIncludeProperties(includeProperties.isSelected());
+                    controller.firePropertyChangeEvent(
+                        SelectionUIModelEvent.INCLUDE_PROPERTIES,
+                        !includeProperties.isSelected(),
+                        includeProperties.isSelected());
+                });
+                popup.add(includeProperties);
+            }
 
             popup.addSeparator();
 
@@ -199,7 +223,7 @@ public final class SelectionTopComponent extends TopComponent implements Selecti
             selectAll.addActionListener(evt -> {
                 columns.forEach(column -> model.setColumnHidden(column, false));
                 controller.firePropertyChangeEvent(
-                    SelectionUIModelEvent.HIDDEN_COLUMN_IDS, null, model.getHiddenColumnIds());
+                    SelectionUIModelEvent.HIDDEN_COLUMN_IDS, null, null);
             });
             popup.add(selectAll);
 
@@ -209,7 +233,7 @@ public final class SelectionTopComponent extends TopComponent implements Selecti
             unselectAll.addActionListener(evt -> {
                 columns.forEach(column -> model.setColumnHidden(column, true));
                 controller.firePropertyChangeEvent(
-                    SelectionUIModelEvent.HIDDEN_COLUMN_IDS, null, model.getHiddenColumnIds());
+                    SelectionUIModelEvent.HIDDEN_COLUMN_IDS, null, null);
             });
             popup.add(unselectAll);
         }

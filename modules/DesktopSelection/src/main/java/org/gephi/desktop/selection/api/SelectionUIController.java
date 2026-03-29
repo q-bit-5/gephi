@@ -65,6 +65,8 @@ public interface SelectionUIController {
 
     void editEdges(final Edge[] edges);
 
+    void enableEdit();
+
     void disableEdit();
 
     void selectNodes(final Node[] nodes);

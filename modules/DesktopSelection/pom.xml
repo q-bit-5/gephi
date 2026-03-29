@@ -29,6 +29,14 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
+            <artifactId>ui-utils</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>ui-library-wrapper</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
             <artifactId>visualization-api</artifactId>
         </dependency>
         <dependency>
@@ -54,6 +62,10 @@
         <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-openide-explorer</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-netbeans-modules-options-api</artifactId>
         </dependency>
         <dependency>
             <groupId>org.netbeans.api</groupId>

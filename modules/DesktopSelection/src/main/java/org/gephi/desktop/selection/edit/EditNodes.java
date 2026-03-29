@@ -47,8 +47,9 @@ import java.beans.PropertyEditor;
 import java.beans.PropertyEditorManager;
 import java.time.ZoneId;
 import org.gephi.datalab.api.AttributeColumnsController;
-import org.gephi.desktop.selection.edit.EditWindowUtils.AttributeValueWrapper;
+import org.gephi.desktop.selection.SelectionUIModelImpl;
 import org.gephi.graph.api.Column;
+import org.gephi.graph.api.Edge;
 import org.gephi.graph.api.GraphController;
 import org.gephi.graph.api.Node;
 import org.gephi.graph.api.TextProperties;
@@ -74,6 +75,7 @@ public class EditNodes extends AbstractNode {
     private final boolean multipleNodes;
     private final TimeFormat currentTimeFormat;
     private final ZoneId dateTimeZone;
+    private final SelectionUIModelImpl model;
     private PropertySet[] propertySets;
 
     /**
@@ -83,14 +85,7 @@ public class EditNodes extends AbstractNode {
      * @param node
      */
     public EditNodes(Node node) {
-        super(Children.LEAF);
-        this.nodes = new Node[] {node};
-        setName(node.getLabel());
-        multipleNodes = false;
-
-        GraphController gc = Lookup.getDefault().lookup(GraphController.class);
-        currentTimeFormat = gc.getGraphModel().getTimeFormat();
-        dateTimeZone = gc.getGraphModel().getTimeZone();
+        this(new Node[] {node}, null);
     }
 
     /**
@@ -100,13 +95,18 @@ public class EditNodes extends AbstractNode {
      * @param nodes
      */
     public EditNodes(Node[] nodes) {
+        this(nodes, null);
+    }
+
+    public EditNodes(Node[] nodes, SelectionUIModelImpl model) {
         super(Children.LEAF);
         this.nodes = nodes;
+        this.model = model;
         multipleNodes = nodes.length > 1;
         if (multipleNodes) {
             setName(NbBundle.getMessage(EditNodes.class, "EditNodes.multiple.elements"));
         } else {
-            setName(nodes[0].getLabel());
+            setName(getLabelOrId(nodes[0]));
         }
         GraphController gc = Lookup.getDefault().lookup(GraphController.class);
         currentTimeFormat = gc.getGraphModel().getTimeFormat();
@@ -115,8 +115,28 @@ public class EditNodes extends AbstractNode {
 
     @Override
     public PropertySet[] getPropertySets() {
-        propertySets = new PropertySet[] {prepareNodesProperties(), prepareNodesAttributes()};
+        if (model != null && !model.isIncludeProperties()) {
+            propertySets = new PropertySet[] {prepareNodesAttributes()};
+        } else {
+            propertySets = new PropertySet[] {prepareNodesProperties(), prepareNodesAttributes()};
+        }
         return propertySets;
+    }
+
+
+    /**
+     * Retrieves the label of the given node. If the label is null or empty,
+     * the node's ID is returned as a string instead.
+     *
+     * @param node the node from which the label or ID should be retrieved
+     * @return the label of the node if it exists and is not empty; otherwise, the string representation of the node's ID
+     */
+    private static String getLabelOrId(Node node) {
+        String label = node.getLabel();
+        if (label == null || label.isEmpty()) {
+            label = node.getId().toString();
+        }
+        return label;
     }
 
     /**
@@ -126,10 +146,6 @@ public class EditNodes extends AbstractNode {
      */
     private Sheet.Set prepareNodesAttributes() {
         try {
-//            DynamicModel dm=Lookup.getDefault().lookup(DynamicController.class).getModel();
-//            if(dm!=null){
-//                currentTimeFormat=dm.getTimeFormat();
-//            }
             AttributeColumnsController ac = Lookup.getDefault().lookup(AttributeColumnsController.class);
             Sheet.Set set = new Sheet.Set();
             set.setName("attributes");
@@ -137,12 +153,15 @@ public class EditNodes extends AbstractNode {
                 set.setDisplayName(NbBundle.getMessage(EditNodes.class, "EditNodes.attributes.text.multiple"));
             } else {
                 set.setDisplayName(
-                    NbBundle.getMessage(EditNodes.class, "EditNodes.attributes.text", nodes[0].getLabel()));
+                    NbBundle.getMessage(EditNodes.class, "EditNodes.attributes.text", getLabelOrId(nodes[0])));
             }
 
             Node row = nodes[0];
             AttributeValueWrapper wrap;
             for (Column column : row.getAttributeColumns()) {
+                if (model != null && !isAlwaysVisibleColumn(column) && !model.isColumnVisible(column)) {
+                    continue;
+                }
                 if (multipleNodes) {
                     wrap = new MultipleRowsAttributeValueWrapper(nodes, column, currentTimeFormat, dateTimeZone);
                 } else {
@@ -242,7 +261,6 @@ public class EditNodes extends AbstractNode {
                 //All position coordinates:
                 set.put(buildGeneralPositionProperty(node, "x"));
                 set.put(buildGeneralPositionProperty(node, "y"));
-                set.put(buildGeneralPositionProperty(node, "z"));
 
                 //Color:
                 SingleNodePropertiesWrapper nodeWrapper = new SingleNodePropertiesWrapper(node);
@@ -279,6 +297,11 @@ public class EditNodes extends AbstractNode {
         }
     }
 
+    private static boolean isAlwaysVisibleColumn(Column column) {
+        return column.isProperty() &&
+            ("id".equalsIgnoreCase(column.getId()) || "label".equalsIgnoreCase(column.getId()));
+    }
+
     /**
      * Used to build property for each position coordinate (x,y,z) in the same
      * way.
@@ -309,7 +332,7 @@ public class EditNodes extends AbstractNode {
         return p;
     }
 
-    public class SingleNodePropertiesWrapper {
+    public static class SingleNodePropertiesWrapper {
 
         private final Node node;
 
@@ -318,15 +341,12 @@ public class EditNodes extends AbstractNode {
         }
 
         public Color getNodeColor() {
-            return new Color(node.r(), node.g(), node.b(), node.alpha());
+            return node.getColor();
         }
 
         public void setNodeColor(Color c) {
             if (c != null) {
-                node.setR(c.getRed() / 255f);
-                node.setG(c.getGreen() / 255f);
-                node.setB(c.getBlue() / 255f);
-                node.setAlpha(c.getAlpha() / 255f);
+                node.setColor(c);
             }
         }
 
@@ -344,13 +364,12 @@ public class EditNodes extends AbstractNode {
         }
     }
 
-    public class MultipleNodesPropertiesWrapper {
+    public static class MultipleNodesPropertiesWrapper {
 
         private final Node[] nodes;
         //Methods and fields for multiple nodes editing:
         private Float nodesX = null;
         private Float nodesY = null;
-        private Float nodesZ = null;
         private Float nodesSize = null;
         private Color nodesColor = null;
         private Color labelsColor = null;
@@ -383,17 +402,6 @@ public class EditNodes extends AbstractNode {
             }
         }
 
-        public Float getNodesZ() {
-            return nodesZ;
-        }
-
-        public void setNodesZ(Float z) {
-            nodesZ = z;
-            for (Node node : nodes) {
-                node.setZ(z);
-            }
-        }
-
         public Color getNodesColor() {
             return nodesColor;
         }
@@ -402,10 +410,7 @@ public class EditNodes extends AbstractNode {
             if (c != null) {
                 nodesColor = c;
                 for (Node node : nodes) {
-                    node.setR(c.getRed() / 255f);
-                    node.setG(c.getGreen() / 255f);
-                    node.setB(c.getBlue() / 255f);
-                    node.setAlpha(c.getAlpha() / 255f);
+                    node.setColor(c);
                 }
             }
         }
@@ -430,10 +435,7 @@ public class EditNodes extends AbstractNode {
                 labelsColor = c;
                 for (Node node : nodes) {
                     TextProperties textProps = node.getTextProperties();
-                    textProps.setR(c.getRed() / 255f);
-                    textProps.setG(c.getGreen() / 255f);
-                    textProps.setB(c.getBlue() / 255f);
-                    textProps.setAlpha(c.getAlpha() / 255f);
+                    textProps.setColor(c);
                 }
             }
         }

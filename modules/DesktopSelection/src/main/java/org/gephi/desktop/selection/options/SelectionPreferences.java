@@ -1,13 +1,13 @@
 /*
- Copyright 2008-2011 Gephi
- Authors : Eduardo Ramos
+ Copyright 2008-2025 Gephi
+ Authors : Mathieu Bastian <mathieu.bastian@gephi.org>
  Website : http://www.gephi.org
 
  This file is part of Gephi.
 
  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
- Copyright 2011 Gephi Consortium. All rights reserved.
+ Copyright 2025 Gephi Consortium. All rights reserved.
 
  The contents of this file are subject to the terms of either the GNU
  General Public License Version 3 only ("GPL") or the Common
@@ -37,59 +37,31 @@
 
  Contributor(s):
 
- Portions Copyrighted 2011 Gephi Consortium.
+ Portions Copyrighted 2025 Gephi Consortium.
  */
 
-package org.gephi.desktop.selection.edit;
+package org.gephi.desktop.selection.options;
 
-/**
- * @author Eduardo Ramos
- */
-public class EditWindowUtils {
+import org.openide.util.NbPreferences;
 
-    interface AttributeValueWrapper {
+public final class SelectionPreferences {
 
-        public Byte getValueByte();
+    public static final String SHOW_NULL_COLUMNS = "Selection.showNullColumns";
+    public static final String INCLUDE_PROPERTIES = "Selection.includeProperties";
 
-        public void setValueByte(Byte object);
+    public static final boolean DEFAULT_SHOW_NULL_COLUMNS = false;
+    public static final boolean DEFAULT_INCLUDE_PROPERTIES = true;
 
-        public Short getValueShort();
+    private SelectionPreferences() {
+    }
 
-        public void setValueShort(Short object);
+    public static boolean isShowNullColumns() {
+        return NbPreferences.forModule(SelectionPreferences.class)
+            .getBoolean(SHOW_NULL_COLUMNS, DEFAULT_SHOW_NULL_COLUMNS);
+    }
 
-        public Character getValueCharacter();
-
-        public void setValueCharacter(Character object);
-
-        public String getValueString();
-
-        public void setValueString(String object);
-
-        public Double getValueDouble();
-
-        public void setValueDouble(Double object);
-
-        public Float getValueFloat();
-
-        public void setValueFloat(Float object);
-
-        public Integer getValueInteger();
-
-        public void setValueInteger(Integer object);
-
-        public Boolean getValueBoolean();
-
-        public void setValueBoolean(Boolean object);
-
-        public Long getValueLong();
-
-        public void setValueLong(Long object);
-
-        /**
-         * **** Other types are not supported by property editors by default so they are used and parsed as Strings *****
-         */
-        public String getValueAsString();
-
-        public void setValueAsString(String value);
+    public static boolean isIncludeProperties() {
+        return NbPreferences.forModule(SelectionPreferences.class)
+            .getBoolean(INCLUDE_PROPERTIES, DEFAULT_INCLUDE_PROPERTIES);
     }
 }

@@ -43,7 +43,6 @@
 package org.gephi.desktop.selection.edit;
 
 import java.time.ZoneId;
-import org.gephi.desktop.selection.edit.EditWindowUtils.AttributeValueWrapper;
 import org.gephi.graph.api.AttributeUtils;
 import org.gephi.graph.api.Column;
 import org.gephi.graph.api.Element;
