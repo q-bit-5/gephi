@@ -16,6 +16,7 @@ import static org.gephi.viz.engine.util.gl.Constants.SHADER_SOURCE_SIZE_LOCATION
 import static org.gephi.viz.engine.util.gl.Constants.SHADER_TARGET_SIZE_LOCATION;
 import static org.gephi.viz.engine.util.gl.Constants.SHADER_VERT_LOCATION;
 import static org.gephi.viz.engine.util.gl.Constants.UNIFORM_NAME_BACKGROUND_COLOR;
+import static org.gephi.viz.engine.util.gl.Constants.UNIFORM_NAME_EDGE_INSET;
 import static org.gephi.viz.engine.util.gl.Constants.UNIFORM_NAME_COLOR_LIGHTEN_FACTOR;
 import static org.gephi.viz.engine.util.gl.Constants.UNIFORM_NAME_EDGE_SCALE_MAX;
 import static org.gephi.viz.engine.util.gl.Constants.UNIFORM_NAME_EDGE_SCALE_MIN;
@@ -60,6 +61,7 @@ public class EdgeLineDirectedModelSelectionUnselected {
             .addUniformName(UNIFORM_NAME_MIN_WEIGHT)
             .addUniformName(UNIFORM_NAME_NODE_SCALE)
             .addUniformName(UNIFORM_NAME_WEIGHT_DIFFERENCE_DIVISOR)
+            .addUniformName(UNIFORM_NAME_EDGE_INSET)
             .addUniformName(UNIFORM_NAME_GLOBAL_TIME)
             .addUniformName(UNIFORM_NAME_SELECTION_TIME)
             .addAttribLocation(ATTRIB_NAME_VERT, SHADER_VERT_LOCATION)
@@ -76,19 +78,19 @@ public class EdgeLineDirectedModelSelectionUnselected {
     public void useProgram(GL2ES2 gl, float[] mvpFloats, float edgeScale, float minWeight,
                            float maxWeight, float edgeRescaleMin, float edgeRescaleMax,
                            float[] backgroundColorFloats,
-                           float colorLightenFactor, float nodeScale, float globalTime,
-                           float selectionTime) {
+                           float colorLightenFactor, float nodeScale, float edgeInset,
+                           float globalTime, float selectionTime) {
         program.use(gl);
         prepareProgramData(gl, mvpFloats, edgeScale, minWeight, maxWeight, edgeRescaleMin,
             edgeRescaleMax, backgroundColorFloats,
-            colorLightenFactor, nodeScale, globalTime, selectionTime);
+            colorLightenFactor, nodeScale, edgeInset, globalTime, selectionTime);
     }
 
     private void prepareProgramData(GL2ES2 gl, float[] mvpFloats, float scale, float minWeight,
                                     float maxWeight, float edgeRescaleMin, float edgeRescaleMax,
                                     float[] backgroundColorFloats,
-                                    float colorLightenFactor, float nodeScale, float globalTime,
-                                    float selectionTime) {
+                                    float colorLightenFactor, float nodeScale, float edgeInset,
+                                    float globalTime, float selectionTime) {
         gl.glUniformMatrix4fv(program.getUniformLocation(UNIFORM_NAME_MODEL_VIEW_PROJECTION), 1,
             false, mvpFloats, 0);
         gl.glUniform4fv(program.getUniformLocation(UNIFORM_NAME_BACKGROUND_COLOR), 1,
@@ -96,6 +98,7 @@ public class EdgeLineDirectedModelSelectionUnselected {
         gl.glUniform1f(program.getUniformLocation(UNIFORM_NAME_COLOR_LIGHTEN_FACTOR),
             colorLightenFactor);
         gl.glUniform1f(program.getUniformLocation(UNIFORM_NAME_NODE_SCALE), nodeScale);
+        gl.glUniform1f(program.getUniformLocation(UNIFORM_NAME_EDGE_INSET), edgeInset);
         gl.glUniform1f(program.getUniformLocation(UNIFORM_NAME_GLOBAL_TIME), globalTime);
         gl.glUniform1f(program.getUniformLocation(UNIFORM_NAME_SELECTION_TIME), selectionTime);
         if (NumberUtils.equalsEpsilon(minWeight, maxWeight, 1e-3f)) {
