@@ -211,9 +211,9 @@ public class SelectionUIControllerImpl implements SelectionUIController, Control
 
     @Override
     public void enableEdit() {
-            runAction(() -> {
-                setEditMode(true);
-            });
+        runAction(() -> {
+            setEditMode(true);
+        });
     }
 
     @Override

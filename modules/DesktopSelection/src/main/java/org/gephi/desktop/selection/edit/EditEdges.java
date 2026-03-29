@@ -240,7 +240,8 @@ public class EditEdges extends AbstractNode {
                 Edge edge = edges[0];
                 Sheet.Set set = new Sheet.Set();
                 set.setName("properties");
-                set.setDisplayName(NbBundle.getMessage(EditEdges.class, "EditEdges.properties.text", getLabelOrId(edge)));
+                set.setDisplayName(
+                    NbBundle.getMessage(EditEdges.class, "EditEdges.properties.text", getLabelOrId(edge)));
 
                 Property p;
 

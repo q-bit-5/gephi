@@ -49,7 +49,6 @@ import java.time.ZoneId;
 import org.gephi.datalab.api.AttributeColumnsController;
 import org.gephi.desktop.selection.SelectionUIModelImpl;
 import org.gephi.graph.api.Column;
-import org.gephi.graph.api.Edge;
 import org.gephi.graph.api.GraphController;
 import org.gephi.graph.api.Node;
 import org.gephi.graph.api.TextProperties;
