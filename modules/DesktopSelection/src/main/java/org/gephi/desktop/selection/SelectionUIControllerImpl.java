@@ -156,7 +156,9 @@ public class SelectionUIControllerImpl implements SelectionUIController, Control
     public void openWindow() {
         runAction(() -> {
             SelectionTopComponent topComponent = findInstance();
-            topComponent.open();
+            if (topComponent != null) {
+                topComponent.open();
+            }
         });
 
     }
@@ -165,8 +167,10 @@ public class SelectionUIControllerImpl implements SelectionUIController, Control
     public void openWindowAndRequestActive() {
         runAction(() -> {
             SelectionTopComponent topComponent = findInstance();
-            topComponent.open();
-            topComponent.requestActive();
+            if (topComponent != null) {
+                topComponent.open();
+                topComponent.requestActive();
+            }
         });
 
     }
@@ -176,8 +180,10 @@ public class SelectionUIControllerImpl implements SelectionUIController, Control
         runAction(() -> {
             resetSelection();
             SelectionTopComponent topComponent = findInstance();
-            topComponent.getEditPanel().disableEdit();
-            topComponent.close();
+            if (topComponent != null) {
+                topComponent.getEditPanel().disableEdit();
+                topComponent.close();
+            }
         });
     }
 
