@@ -181,15 +181,15 @@ jobs:
           [[ "$VERSION" != *SNAPSHOT* ]] && exit 0
           BASE="https://central.sonatype.com/repository/maven-snapshots/org/gephi/gephi/$VERSION"
           METADATA=$(curl -sf "$BASE/maven-metadata.xml")
-          SNAPSHOT_TS=$(echo "$METADATA" | grep -oP '<timestamp>\K[^<]+')
-          SNAPSHOT_BN=$(echo "$METADATA" | grep -oP '<buildNumber>\K[^<]+')
-          SNAP_VERSION="${VERSION%-SNAPSHOT}-${SNAPSHOT_TS}-${SNAPSHOT_BN}"
+          SNAPSHOT_TS=$(echo "$METADATA" | sed -n 's/.*<timestamp>\([^<]*\)<\/timestamp>.*/\1/p')
+          SNAPSHOT_BN=$(echo "$METADATA" | sed -n 's/.*<buildNumber>\([^<]*\)<\/buildNumber>.*/\1/p')
+          SNAP_SUFFIX="${SNAPSHOT_TS}-${SNAPSHOT_BN}"
           FILE=$(find ~/.m2/repository/org/gephi/gephi/$VERSION/ \
             -name "gephi-*-${{ matrix.arch }}.*" \
             ! -name "*.asc" ! -name "*.md5" ! -name "*.sha*" ! -name "*.pom" \
             | sort | tail -1)
           FILENAME=$(basename "$FILE")
-          REMOTE_FILENAME="${FILENAME/SNAPSHOT/$SNAP_VERSION}"
+          REMOTE_FILENAME="${FILENAME/SNAPSHOT/$SNAP_SUFFIX}"
           echo "- [$REMOTE_FILENAME]($BASE/$REMOTE_FILENAME)" >> $GITHUB_STEP_SUMMARY
 
   update-site:
