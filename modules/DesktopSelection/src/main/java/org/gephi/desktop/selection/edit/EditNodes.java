@@ -248,7 +248,7 @@ public class EditNodes extends AbstractNode {
                 Node node = nodes[0];
                 Sheet.Set set = new Sheet.Set();
                 set.setName("properties");
-                set.setDisplayName(NbBundle.getMessage(EditNodes.class, "EditNodes.properties.text", node.getLabel()));
+                set.setDisplayName(NbBundle.getMessage(EditNodes.class, "EditNodes.properties.text", getLabelOrId(node)));
 
                 Property p;
                 //Size:
