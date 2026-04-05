@@ -63,7 +63,7 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>desktop-selection</artifactId>
+            <artifactId>desktop-attributes</artifactId>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>

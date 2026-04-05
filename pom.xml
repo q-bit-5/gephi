@@ -749,7 +749,7 @@
             </dependency>
             <dependency>
                 <groupId>${project.groupId}</groupId>
-                <artifactId>desktop-selection</artifactId>
+                <artifactId>desktop-attributes</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -1434,6 +1434,6 @@
         <module>modules/UILibraryWrapper</module>
         <module>modules/DesktopIcons</module>
         <module>modules/DesktopSearch</module>
-        <module>modules/DesktopSelection</module>
+        <module>modules/DesktopAttributes</module>
     </modules>
 </project>

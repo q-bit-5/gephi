@@ -40,76 +40,36 @@ Contributor(s):
 Portions Copyrighted 2011 Gephi Consortium.
  */
 
-package org.gephi.datalab.plugin.manipulators.edges;
+package org.gephi.desktop.attributes.api;
 
-import javax.swing.Icon;
-import org.gephi.datalab.spi.ManipulatorUI;
 import org.gephi.graph.api.Edge;
-import org.gephi.desktop.attributes.api.AttributesUIController;
-import org.openide.util.ImageUtilities;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
+import org.gephi.graph.api.Node;
 
 /**
- * Opens the selected edge(s) one or various in Edit window.
+ * Controller API for requesting the opening and usage of edit window.
  *
  * @author Eduardo Ramos
  */
-public class OpenInEditEdgeWindow extends BasicEdgesManipulator {
-    Edge[] edges;
+public interface AttributesUIController {
+    void openWindow();
 
-    @Override
-    public void setup(Edge[] edges, Edge clickedEdge) {
-        this.edges = edges;
-    }
+    void openWindowAndRequestActive();
 
-    @Override
-    public void execute() {
-        AttributesUIController edc = Lookup.getDefault().lookup(AttributesUIController.class);
-        edc.openWindowAndRequestActive();
-        edc.editEdges(edges);
-    }
+    void closeWindow();
 
-    @Override
-    public String getName() {
-        if (edges.length > 1) {
-            return NbBundle.getMessage(OpenInEditEdgeWindow.class, "OpenInEditEdgeWindow.name.multiple");
-        } else {
-            return NbBundle.getMessage(OpenInEditEdgeWindow.class, "OpenInEditEdgeWindow.name");
-        }
-    }
+    boolean isOpen();
 
-    @Override
-    public String getDescription() {
-        if (edges.length > 1) {
-            return NbBundle.getMessage(OpenInEditEdgeWindow.class, "OpenInEditEdgeWindow.description.multiple");
-        } else {
-            return NbBundle.getMessage(OpenInEditEdgeWindow.class, "OpenInEditEdgeWindow.description");
-        }
-    }
+    void editNode(Node node);
 
-    @Override
-    public boolean canExecute() {
-        return true;
-    }
+    void editNodes(final Node[] nodes);
 
-    @Override
-    public ManipulatorUI getUI() {
-        return null;
-    }
+    void editEdge(final Edge edge);
 
-    @Override
-    public int getType() {
-        return 0;
-    }
+    void editEdges(final Edge[] edges);
 
-    @Override
-    public int getPosition() {
-        return 0;
-    }
+    void enableEdit();
 
-    @Override
-    public Icon getIcon() {
-        return ImageUtilities.loadImageIcon("DataLaboratoryPlugin/edit.svg", false);
-    }
+    void disableEdit();
+
+    void selectNodes(final Node[] nodes);
 }

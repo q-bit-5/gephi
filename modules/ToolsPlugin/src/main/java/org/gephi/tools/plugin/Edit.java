@@ -46,7 +46,7 @@ import java.awt.FlowLayout;
 import javax.swing.Icon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import org.gephi.desktop.selection.api.SelectionUIController;
+import org.gephi.desktop.attributes.api.AttributesUIController;
 import org.gephi.tools.spi.NodeClickEventListener;
 import org.gephi.tools.spi.Tool;
 import org.gephi.tools.spi.ToolEventListener;
@@ -65,7 +65,7 @@ public class Edit implements Tool {
 
     @Override
     public void select() {
-        SelectionUIController controller = Lookup.getDefault().lookup(SelectionUIController.class);
+        AttributesUIController controller = Lookup.getDefault().lookup(AttributesUIController.class);
         if (controller != null) {
             controller.enableEdit();
             controller.openWindowAndRequestActive();
@@ -74,7 +74,7 @@ public class Edit implements Tool {
 
     @Override
     public void unselect() {
-        SelectionUIController controller = Lookup.getDefault().lookup(SelectionUIController.class);
+        AttributesUIController controller = Lookup.getDefault().lookup(AttributesUIController.class);
         if (controller != null) {
             controller.disableEdit();
         }
@@ -83,7 +83,7 @@ public class Edit implements Tool {
     @Override
     public ToolEventListener[] getListeners() {
         return new ToolEventListener[] {(NodeClickEventListener) nodes -> {
-            SelectionUIController controller = Lookup.getDefault().lookup(SelectionUIController.class);
+            AttributesUIController controller = Lookup.getDefault().lookup(AttributesUIController.class);
             if (nodes != null && nodes.length > 0) {
                 controller.editNode(nodes[0]);
             } else {

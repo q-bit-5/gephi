@@ -49,7 +49,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import org.gephi.desktop.selection.api.SelectionUIController;
+import org.gephi.desktop.attributes.api.AttributesUIController;
 import org.gephi.graph.api.Column;
 import org.gephi.graph.api.Edge;
 import org.gephi.graph.api.Estimator;
@@ -105,9 +105,9 @@ public class VizController implements VisualizationController, Controller<VizMod
                 VizEngineModel model = (VizEngineModel) event.getData();
                 Collection<Node> selectedNodes = model.getGraphSelection().getSelectedNodes();
 
-                SelectionUIController selectionUIController = Lookup.getDefault().lookup(SelectionUIController.class);
-                if (selectionUIController != null) {
-                    selectionUIController.selectNodes(selectedNodes.toArray(new Node[0]));
+                AttributesUIController attributesUIController = Lookup.getDefault().lookup(AttributesUIController.class);
+                if (attributesUIController != null) {
+                    attributesUIController.selectNodes(selectedNodes.toArray(new Node[0]));
                 }
                 return false;
             }
@@ -119,10 +119,10 @@ public class VizController implements VisualizationController, Controller<VizMod
         };
         addListener(mouseMoveListener);
 
-        SelectionUIController selectionUIController = Lookup.getDefault().lookup(SelectionUIController.class);
-        if (selectionUIController != null) {
-            selectionUIController.disableEdit();
-            selectionUIController.openWindow();
+        AttributesUIController attributesUIController = Lookup.getDefault().lookup(AttributesUIController.class);
+        if (attributesUIController != null) {
+            attributesUIController.disableEdit();
+            attributesUIController.openWindow();
         }
     }
 
@@ -130,9 +130,9 @@ public class VizController implements VisualizationController, Controller<VizMod
         if (mouseMoveListener != null) {
             removeListener(mouseMoveListener);
 
-            SelectionUIController selectionUIController = Lookup.getDefault().lookup(SelectionUIController.class);
-            if (selectionUIController != null) {
-                selectionUIController.closeWindow();
+            AttributesUIController attributesUIController = Lookup.getDefault().lookup(AttributesUIController.class);
+            if (attributesUIController != null) {
+                attributesUIController.closeWindow();
             }
         }
     }
