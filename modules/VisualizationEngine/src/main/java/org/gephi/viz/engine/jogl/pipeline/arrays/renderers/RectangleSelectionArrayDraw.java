@@ -70,6 +70,7 @@ public class RectangleSelectionArrayDraw implements Renderer<JOGLRenderingTarget
 
         shaderProgram = new GLShaderProgram(SHADERS_ROOT, "rectangleSelection", "rectangleSelection")
             .addUniformName(UNIFORM_NAME_MODEL_VIEW_PROJECTION)
+            .addUniformName(UNIFORM_NAME_COLOR)
             .addAttribLocation(ATTRIB_NAME_VERT, SHADER_VERT_LOCATION)
             .init(gl);
 
@@ -125,6 +126,7 @@ public class RectangleSelectionArrayDraw implements Renderer<JOGLRenderingTarget
         final GL2ES2 gl = target.getDrawable().getGL().getGL2ES2();
 
         final GraphSelection graphSelection = model.getGraphSelection();
+        backgroundIsDark = model.getRenderingOptions().isBackgroundColorDark();
 
         if (graphSelection.getMode() != GraphSelection.GraphSelectionMode.RECTANGLE_SELECTION) {
             return VoidWorldData.INSTANCE;
@@ -174,7 +176,12 @@ public class RectangleSelectionArrayDraw implements Renderer<JOGLRenderingTarget
     }
 
     private static final String SHADERS_ROOT = Constants.SHADERS_ROOT + "rectangleSelection";
+    private static final String UNIFORM_NAME_COLOR = "color";
+    private static final float[] RECT_COLOR_DARK = {0f, 0.47f, 0.843f, 0.2f};
+    private static final float[] RECT_COLOR_LIGHT = {0.4f, 0.72f, 1.0f, 0.2f};
     private GLShaderProgram shaderProgram;
+
+    private boolean backgroundIsDark = false;
 
     private final int[] intData = new int[1];
     private final byte[] booleanData = new byte[1];
@@ -189,6 +196,9 @@ public class RectangleSelectionArrayDraw implements Renderer<JOGLRenderingTarget
 
             gl.glUniformMatrix4fv(shaderProgram.getUniformLocation(UNIFORM_NAME_MODEL_VIEW_PROJECTION), 1, false,
                 mvpFloats, 0);
+
+            final float[] rectColor = backgroundIsDark ? RECT_COLOR_LIGHT : RECT_COLOR_DARK;
+            gl.glUniform4fv(shaderProgram.getUniformLocation(UNIFORM_NAME_COLOR), 1, rectColor, 0);
 
             vao.use(gl);
 

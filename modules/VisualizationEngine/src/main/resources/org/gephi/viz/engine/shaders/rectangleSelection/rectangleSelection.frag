@@ -1,7 +1,9 @@
 //#include "../common.frag.glsl"
 
+uniform vec4 color;
+
 out vec4 fragColor;
 
 void main(void) {
-    fragColor = vec4(0, 0.47, 0.843, 0.2);
+    fragColor = color;
 }

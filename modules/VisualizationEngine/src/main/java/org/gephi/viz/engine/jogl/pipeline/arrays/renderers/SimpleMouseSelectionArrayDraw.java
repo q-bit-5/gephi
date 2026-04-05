@@ -52,8 +52,12 @@ public class SimpleMouseSelectionArrayDraw implements Renderer<JOGLRenderingTarg
     private boolean render = false;
 
     private static final String SHADERS_ROOT = Constants.SHADERS_ROOT + "simpleMouseSelection";
+    private static final String UNIFORM_NAME_COLOR = "color";
+    private static final float[] CIRCLE_COLOR_DARK = {0.3f, 0.3f, 0.3f, 0.2f};
+    private static final float[] CIRCLE_COLOR_LIGHT = {0.85f, 0.85f, 0.85f, 0.2f};
     private GLShaderProgram shaderProgram;
 
+    private boolean backgroundIsDark = false;
     private final int[] intData = new int[1];
     private final byte[] booleanData = new byte[1];
 
@@ -69,6 +73,7 @@ public class SimpleMouseSelectionArrayDraw implements Renderer<JOGLRenderingTarg
         final GL2ES2 gl = target.getDrawable().getGL().getGL2ES2();
 
         final GraphSelection graphSelection = model.getGraphSelection();
+        backgroundIsDark = model.getRenderingOptions().isBackgroundColorDark();
 
         if (graphSelection.getMode() != GraphSelection.GraphSelectionMode.SIMPLE_MOUSE_SELECTION &&
             graphSelection.getMode() != GraphSelection.GraphSelectionMode.MULTI_NODE_SELECTION) {
@@ -124,6 +129,9 @@ public class SimpleMouseSelectionArrayDraw implements Renderer<JOGLRenderingTarg
 
             gl.glUniformMatrix4fv(shaderProgram.getUniformLocation(UNIFORM_NAME_MODEL_VIEW_PROJECTION), 1, false,
                 mvpFloats, 0);
+
+            final float[] circleColor = backgroundIsDark ? CIRCLE_COLOR_LIGHT : CIRCLE_COLOR_DARK;
+            gl.glUniform4fv(shaderProgram.getUniformLocation(UNIFORM_NAME_COLOR), 1, circleColor, 0);
 
             vao.use(gl);
 
@@ -185,6 +193,7 @@ public class SimpleMouseSelectionArrayDraw implements Renderer<JOGLRenderingTarg
 
         shaderProgram = new GLShaderProgram(SHADERS_ROOT, "simpleMouseSelection", "simpleMouseSelection")
             .addUniformName(UNIFORM_NAME_MODEL_VIEW_PROJECTION)
+            .addUniformName(UNIFORM_NAME_COLOR)
             .addAttribLocation(ATTRIB_NAME_VERT, SHADER_VERT_LOCATION)
             .init(gl);
 
