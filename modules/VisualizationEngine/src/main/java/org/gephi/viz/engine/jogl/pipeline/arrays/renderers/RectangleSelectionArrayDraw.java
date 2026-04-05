@@ -1,7 +1,8 @@
 package org.gephi.viz.engine.jogl.pipeline.arrays.renderers;
 
 import static com.jogamp.opengl.GL.GL_BLEND;
-import static com.jogamp.opengl.GL.GL_BLEND_DST_ALPHA;
+import static com.jogamp.opengl.GL.GL_BLEND_DST_RGB;
+import static com.jogamp.opengl.GL.GL_BLEND_SRC_RGB;
 import static com.jogamp.opengl.GL.GL_FLOAT;
 import static com.jogamp.opengl.GL.GL_ONE_MINUS_SRC_ALPHA;
 import static com.jogamp.opengl.GL.GL_SRC_ALPHA;
@@ -204,18 +205,16 @@ public class RectangleSelectionArrayDraw implements Renderer<JOGLRenderingTarget
 
 
             gl.glGetBooleanv(GL_BLEND, booleanData, 0);
-            gl.glGetIntegerv(GL_BLEND_DST_ALPHA, intData, 0);
-
+            gl.glGetIntegerv(GL_BLEND_SRC_RGB, intData, 0);
             final boolean blendEnabled = booleanData[0] > 0;
-            final int blendFunc = intData[0];
+            final int savedBlendSrc = intData[0];
+            gl.glGetIntegerv(GL_BLEND_DST_RGB, intData, 0);
+            final int savedBlendDst = intData[0];
 
             if (!blendEnabled) {
                 gl.glEnable(GL_BLEND);
             }
-
-            if (blendFunc != GL_ONE_MINUS_SRC_ALPHA) {
-                gl.glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-            }
+            gl.glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
             gl.glDrawArrays(GL_TRIANGLES, 0, VERTEX_COUNT);
 
@@ -223,9 +222,7 @@ public class RectangleSelectionArrayDraw implements Renderer<JOGLRenderingTarget
             if (!blendEnabled) {
                 gl.glDisable(GL_BLEND);
             }
-            if (blendFunc != GL_ONE_MINUS_SRC_ALPHA) {
-                gl.glBlendFunc(GL_SRC_ALPHA, blendFunc);
-            }
+            gl.glBlendFunc(savedBlendSrc, savedBlendDst);
 
             vao.stopUsing(gl);
 
