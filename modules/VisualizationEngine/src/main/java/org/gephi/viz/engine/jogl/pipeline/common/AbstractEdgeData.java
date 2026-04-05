@@ -481,7 +481,7 @@ public abstract class AbstractEdgeData extends AbstractSelectionData {
                 1f,
             model.getRenderingOptions().getNodeScale(),
             model.getRenderingOptions().getEdgeScale(),
-            model.getRenderingOptions().getLightenNonSelectedFactor(),
+            model.getRenderingOptions().isLightenNonSelected() ? model.getRenderingOptions().getLightenNonSelectedFactor() : 0f,
             engine.getOpenGLOptions()
         );
     }
@@ -499,7 +499,7 @@ public abstract class AbstractEdgeData extends AbstractSelectionData {
 
         //Selection:
         this.someSelection = selection.someNodesOrEdgesSelection();
-        final float lightenNonSelectedFactor = renderingOptions.getLightenNonSelectedFactor();
+        final float lightenNonSelectedFactor = renderingOptions.isLightenNonSelected() ? renderingOptions.getLightenNonSelectedFactor() : 0f;
         final boolean hideNonSelectedFlag = renderingOptions.isHideNonSelectedEdges();
         // If hide-non-selected is enabled but there is no active selection, hide all edges
         if (!someSelection && hideNonSelectedFlag) {

@@ -42,7 +42,7 @@ public class NodeLabelUpdater extends AbstractLabelUpdater<Node> {
         // Rendering parameters
         final GraphRenderingOptions.LabelColorMode labelColorMode = options.getNodeLabelColorMode();
         final GraphRenderingOptions.LabelSizeMode labelSizeMode = options.getNodeLabelSizeMode();
-        final float lightenNonSelectedFactor = options.getLightenNonSelectedFactor();
+        final float lightenNonSelectedFactor = options.isLightenNonSelected() ? options.getLightenNonSelectedFactor() : 0f;
         final float nodeLabelScale = options.getNodeLabelScale();
         final float fitNodeLabelsToNodeSizeFactor = options.getNodeLabelFitToNodeSizeFactor();
         final boolean fitToNodeSize = options.isNodeLabelFitToNodeSize();
