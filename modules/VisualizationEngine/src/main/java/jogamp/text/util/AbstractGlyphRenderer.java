@@ -409,7 +409,7 @@ abstract class AbstractGlyphRenderer implements GlyphRenderer, QuadPipeline.Even
         // Store the color
         this.r = r;
         this.g = g;
-        this.b = g;
+        this.b = b;
         this.a = a;
 
         // Change the color
