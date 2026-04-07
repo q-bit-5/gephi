@@ -201,7 +201,7 @@ public class SelectionPanel extends JPanel {
     }
 
     private Icon getTypeIcon(Column column) {
-        if (column.isDynamicAttribute()) {
+        if (column.isDynamicAttribute() || column.isDynamic()) {
             return ImageUtilities.loadImageIcon("DesktopAttributes/dynamic.svg", false);
         } else if (column.isNumber()) {
             return ImageUtilities.loadImageIcon("DesktopAttributes/number.svg", false);
