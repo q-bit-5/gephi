@@ -68,6 +68,7 @@ import org.gephi.desktop.visualization.tools.PropertiesBar;
 import org.gephi.project.api.ProjectController;
 import org.gephi.project.api.Workspace;
 import org.gephi.project.api.WorkspaceListener;
+import org.gephi.visualization.VizConfig;
 import org.gephi.visualization.VizController;
 import org.gephi.visualization.VizModel;
 import org.netbeans.api.settings.ConvertAsProperties;
@@ -106,7 +107,6 @@ public class GraphTopComponent extends TopComponent implements AWTEventListener 
         controller = Lookup.getDefault().lookup(VizController.class);
         setName(NbBundle.getMessage(GraphTopComponent.class, "CTL_GraphTopComponent"));
         initComponents();
-        initKeyEventContextMenuActionMappings();
 
         // Start executor for viz engine tasks
         vizExecutor = Executors.newSingleThreadExecutor(r -> {
@@ -259,10 +259,6 @@ public class GraphTopComponent extends TopComponent implements AWTEventListener 
         });
     }
 
-    private void initKeyEventContextMenuActionMappings() {
-//        mapItems(Lookup.getDefault().lookupAll(GraphContextMenuItem.class).toArray(new GraphContextMenuItem[0]));
-    }
-
     private void initToolPanels() {
         JPanel westPanel = new JPanel(new BorderLayout(0, 0));
         westPanel.add(toolbar, BorderLayout.CENTER);
@@ -271,34 +267,6 @@ public class GraphTopComponent extends TopComponent implements AWTEventListener 
         add(propertiesBar, BorderLayout.NORTH);
 
         add(westPanel, BorderLayout.WEST);
-
-//        final ProjectController projectController = Lookup.getDefault().lookup(ProjectController.class);
-//        projectController.addWorkspaceListener(new WorkspaceListener() {
-//            @Override
-//            public void initialize(Workspace workspace) {
-//            }
-//
-//            @Override
-//            public void select(Workspace workspace) {
-//            }
-//
-//            @Override
-//            public void unselect(Workspace workspace) {
-//
-//            }
-//
-//            @Override
-//            public void close(Workspace workspace) {
-//
-//            }
-//
-//            @Override
-//            public void disable() {
-//                if (tc != null) {
-//                    tc.select(null);//Unselect any selected tool
-//                }
-//            }
-//        });
     }
 
     /**
@@ -308,17 +276,9 @@ public class GraphTopComponent extends TopComponent implements AWTEventListener 
     public void eventDispatched(AWTEvent event) {
         KeyEvent evt = (KeyEvent) event;
 
-        if (evt.getID() == KeyEvent.KEY_RELEASED
+        if (VizConfig.isEnableContextMenu() && evt.getID() == KeyEvent.KEY_RELEASED
             && (evt.getModifiersEx() & KeyEvent.CTRL_DOWN_MASK) == KeyEvent.CTRL_DOWN_MASK) {
-//            final ContextMenuItemManipulator item = keyActionMappings.get(evt.getKeyCode());
-//            if (item != null) {
-//                ((GraphContextMenuItem) item).setup(eventBridge.getGraph(), eventBridge.getSelectedNodes());
-//                if (item.isAvailable() && item.canExecute()) {
-//                    DataLaboratoryHelper.getDefault().executeManipulator(item);
-//                }
-//                evt.consume();
-//            }
-            //TODO
+            //TODO, we currently don't support mnemonics execution without first the right click
         }
     }
 
@@ -344,7 +304,8 @@ public class GraphTopComponent extends TopComponent implements AWTEventListener 
     @Override
     protected void componentActivated() {
         super.componentActivated();
-        java.awt.Toolkit.getDefaultToolkit().addAWTEventListener(this, AWTEvent.KEY_EVENT_MASK);
+        // TODO, not supported yet
+//        java.awt.Toolkit.getDefaultToolkit().addAWTEventListener(this, AWTEvent.KEY_EVENT_MASK);
     }
 
     @Override
