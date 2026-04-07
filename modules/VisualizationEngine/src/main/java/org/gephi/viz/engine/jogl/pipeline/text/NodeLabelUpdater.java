@@ -130,20 +130,23 @@ public class NodeLabelUpdater extends AbstractLabelUpdater<Node> {
             final float r = (rgba >> 16 & 255) / 255.0F;
             final float g = (rgba >> 8 & 255) / 255.0F;
             final float b = (rgba & 255) / 255.0F;
-            final float a = ((rgba >> 24) & 0xFF) / 255f;
+            final float a = (rgba >> 24 & 255) / 255f;
 
+            // The blend mode is GL_ONE, GL_ONE_MINUS_SRC_ALPHA (premultiplied alpha), so RGB
+            // must be premultiplied by the effective alpha for correct blending on any background.
+            // Without premultiplication, a non-black color at reduced alpha is still added at
+            // full RGB strength, making the lightening effect invisible on dark backgrounds.
             final float finalR, finalG, finalB, finalA;
             if (someSelection && !selected) {
-                float lightColorFactor = 1 - lightenNonSelectedFactor;
-                finalR = r;
-                finalG = g;
-                finalB = b;
-                finalA = lightColorFactor;
+                finalA = a * (1 - lightenNonSelectedFactor);
+                finalR = r * finalA;
+                finalG = g * finalA;
+                finalB = b * finalA;
             } else {
-                finalR = r;
-                finalG = g;
-                finalB = b;
                 finalA = a;
+                finalR = r * a;
+                finalG = g * a;
+                finalB = b * a;
             }
 
             // Update batch first - this computes dimensions and glyphs
