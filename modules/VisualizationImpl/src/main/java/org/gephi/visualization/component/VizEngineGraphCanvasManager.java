@@ -11,6 +11,8 @@ import com.jogamp.opengl.GLCapabilities;
 import com.jogamp.opengl.GLContext;
 import com.jogamp.opengl.GLProfile;
 import java.awt.BorderLayout;
+import java.awt.EventQueue;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -35,7 +37,6 @@ import org.gephi.viz.engine.spi.InputListener;
 import org.gephi.viz.engine.util.gl.OpenGLOptions;
 
 public class VizEngineGraphCanvasManager {
-
     private final VizController vizController;
     private GLWindow glWindow;
     private NewtCanvasAWT glCanvas;
@@ -160,13 +161,16 @@ public class VizEngineGraphCanvasManager {
             }
         });
 
-        glCanvas = new NewtCanvasAWT(glWindow);
+        runOnEdtAndWait(() -> {
+            glCanvas = new NewtCanvasAWT(glWindow);
 
-        component.add(glCanvas, BorderLayout.CENTER);
+            component.add(glCanvas, BorderLayout.CENTER);
+
+            component.revalidate();
+            component.repaint();
+        });
 
         engine.start();
-
-        component.revalidate();
 
         return engine;
     }
@@ -206,8 +210,12 @@ public class VizEngineGraphCanvasManager {
 
     public synchronized void destroy(JComponent component) {
         if (glCanvas != null) {
-            component.remove(glCanvas);
-            component.revalidate();
+            final NewtCanvasAWT canvasToRemove = glCanvas;
+            runOnEdtAndWait(() -> {
+                component.remove(canvasToRemove);
+                component.revalidate();
+                component.repaint();
+            });
         }
 
         if (glWindow != null) {
@@ -222,5 +230,21 @@ public class VizEngineGraphCanvasManager {
 
     public synchronized boolean isInitialized() {
         return initialized;
+    }
+
+    private static void runOnEdtAndWait(final Runnable runnable) {
+        if (EventQueue.isDispatchThread()) {
+            runnable.run();
+            return;
+        }
+
+        try {
+            javax.swing.SwingUtilities.invokeAndWait(runnable);
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException("Interrupted while waiting for EDT task", ex);
+        } catch (InvocationTargetException ex) {
+            throw new RuntimeException("EDT task failed", ex.getCause());
+        }
     }
 }
