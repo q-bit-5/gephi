@@ -38,6 +38,10 @@ public class AttributesUIModelImpl implements AttributesUIModel, Model, Workspac
         this.workspace = workspace;
         this.graphModel = workspace.getLookup().lookup(GraphModel.class);
 
+        if (graphModel == null) {
+            return;
+        }
+
         // Hidden by default
         hiddenNodeColumnIds.add(craftColumnId(graphModel.defaultColumns().nodeTimeSet()));
         hiddenNodeColumnIds.add(craftColumnId(graphModel.defaultColumns().degree()));
