@@ -1080,8 +1080,9 @@ public class NewtCanvasAWT extends java.awt.Canvas
                     // We cannot consume AWT mouse click, since it would disable focus via mouse click!
                     // awtMouseAdapter.setConsumeAWTEvent(true);
                     awtKeyAdapter.setDownstream(newtChild);
-                    // We manually transfer the focus via NEWT KeyListener, hence we can mark AWT keys as consumed!
-                    awtKeyAdapter.setConsumeAWTEvent(true);
+                    // Keep AWT key events unconsumed so NetBeans global shortcuts can still process them
+                    // while NEWT receives the translated event in the macOS CALayer/offscreen path.
+                    awtKeyAdapter.setConsumeAWTEvent(false);
                 }
             } else {
                 newtChild.removeWindowListener(clearAWTMenusOnNewtFocus);
