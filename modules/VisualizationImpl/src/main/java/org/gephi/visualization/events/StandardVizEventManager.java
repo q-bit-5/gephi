@@ -203,6 +203,10 @@ public class StandardVizEventManager {
         final GraphIndex graphIndex = model.getGraphIndex();
         final GraphSelection graphSelection = model.getGraphSelection();
 
+        if (graphSelection == null) {
+            return false;
+        }
+
         Node[] clickedNodes = null;
         if (!graphSelection.getMode().equals(GraphSelection.GraphSelectionMode.CUSTOM_SELECTION)) {
             clickedNodes = graphSelection.getSelectedNodes().toArray(new Node[0]);
@@ -245,6 +249,10 @@ public class StandardVizEventManager {
     public boolean mouseLeftPress(VizEngineModel model) {
         final GraphSelection selectionIndex = model.getGraphSelection();
 
+        if (selectionIndex == null) {
+            return false;
+        }
+
         final VisualizationEventTypeHandler nodeLefPressingHandler =
             handlers[VisualizationEvent.Type.NODE_LEFT_PRESSING.ordinal()];
         if (nodeLefPressingHandler.hasListeners()) {
@@ -271,6 +279,9 @@ public class StandardVizEventManager {
 
     private void startPressingThread(final VizEngineModel model) {
         final GraphSelection selectionIndex = model.getGraphSelection();
+        if (selectionIndex == null) {
+            return;
+        }
         synchronized (pressingLock) {
             // Stop any existing pressing thread
             stopPressingThread();
@@ -336,7 +347,7 @@ public class StandardVizEventManager {
     public boolean mouseRightClick(Component parentComponent, VizEngineGraphCanvasManager canvasManager,
                                    VizEngineModel model) {
         VizController controller = Lookup.getDefault().lookup(VizController.class);
-        if (controller != null && controller.getModel() != null && VizConfig.isEnableContextMenu()) {
+        if (controller != null && controller.getModel() != null && VizConfig.isEnableContextMenu() && model.getGraphSelection() != null) {
             GraphContextMenu popupMenu = new GraphContextMenu();
             float globalScale = canvasManager.getSurfaceScale().orElse(1.0f);
             int x = (int) (mouseScreenPosition.x / globalScale);
