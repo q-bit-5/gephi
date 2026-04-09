@@ -193,97 +193,129 @@ public class VizController implements VisualizationController, Controller<VizMod
     @Override
     public void setZoom(float zoom) {
         final VizModel model = getModel();
-        model.setZoom(zoom);
+        if (model != null) {
+            model.setZoom(zoom);
+        }
     }
 
     @Override
     public void setAutoSelectNeighbors(boolean autoSelectNeighbors) {
         final VizModel model = getModel();
-        model.setAutoSelectNeighbors(autoSelectNeighbors);
+        if (model != null) {
+            model.setAutoSelectNeighbors(autoSelectNeighbors);
+        }
     }
 
     @Override
     public void setBackgroundColor(Color color) {
         final VizModel model = getModel();
-        model.setBackgroundColor(color);
+        if (model != null) {
+            model.setBackgroundColor(color);
+        }
     }
 
     @Override
     public void setNodeScale(float nodeScale) {
         final VizModel model = getModel();
-        model.setNodeScale(nodeScale);
+        if (model != null) {
+            model.setNodeScale(nodeScale);
+        }
     }
 
     @Override
     public void setShowEdges(boolean showEdges) {
         final VizModel model = getModel();
-        model.setShowEdges(showEdges);
+        if (model != null) {
+            model.setShowEdges(showEdges);
+        }
     }
 
     @Override
     public void setHideNonSelectedEdges(boolean hideNonSelectedEdges) {
         final VizModel model = getModel();
-        model.setHideNonSelectedEdges(hideNonSelectedEdges);
+        if (model != null) {
+            model.setHideNonSelectedEdges(hideNonSelectedEdges);
+        }
     }
 
     @Override
     public void setEdgeWeightEstimator(Estimator estimator) {
         final VizModel model = getModel();
-        model.setEdgeWeightEstimator(estimator);
+        if (model != null) {
+            model.setEdgeWeightEstimator(estimator);
+        }
     }
 
     @Override
     public void setLightenNonSelectedAuto(boolean lightenNonSelectedAuto) {
         final VizModel model = getModel();
-        model.setLightenNonSelectedAuto(lightenNonSelectedAuto);
+        if (model != null) {
+            model.setLightenNonSelectedAuto(lightenNonSelectedAuto);
+        }
     }
 
     @Override
     public void setEdgeColorMode(EdgeColorMode mode) {
         final VizModel model = getModel();
-        model.setEdgeColorMode(mode);
+        if (model != null) {
+            model.setEdgeColorMode(mode);
+        }
     }
 
     @Override
     public void setEdgeSelectionColor(boolean edgeSelectionColor) {
         final VizModel model = getModel();
-        model.setEdgeSelectionColor(edgeSelectionColor);
+        if (model != null) {
+            model.setEdgeSelectionColor(edgeSelectionColor);
+        }
     }
 
     @Override
     public void setEdgeInSelectionColor(Color edgeInSelectionColor) {
         final VizModel model = getModel();
-        model.setEdgeInSelectionColor(edgeInSelectionColor);
+        if (model != null) {
+            model.setEdgeInSelectionColor(edgeInSelectionColor);
+        }
     }
 
     @Override
     public void setEdgeOutSelectionColor(Color edgeOutSelectionColor) {
         final VizModel model = getModel();
-        model.setEdgeOutSelectionColor(edgeOutSelectionColor);
+        if (model != null) {
+            model.setEdgeOutSelectionColor(edgeOutSelectionColor);
+        }
     }
 
     @Override
     public void setEdgeBothSelectionColor(Color edgeBothSelectionColor) {
         final VizModel model = getModel();
-        model.setEdgeBothSelectionColor(edgeBothSelectionColor);
+        if (model != null) {
+            model.setEdgeBothSelectionColor(edgeBothSelectionColor);
+        }
     }
 
     @Override
     public void setEdgeScale(float edgeScale) {
         final VizModel model = getModel();
-        model.setEdgeScale(edgeScale);
+        if (model != null) {
+            model.setEdgeScale(edgeScale);
+        }
     }
 
     @Override
     public void setUseEdgeWeight(boolean useEdgeWeight) {
         final VizModel model = getModel();
-        model.setUseEdgeWeight(useEdgeWeight);
+        if (model != null) {
+            model.setUseEdgeWeight(useEdgeWeight);
+        }
     }
 
     @Override
     public void setRescaleEdgeWeight(boolean rescaleEdgeWeight) {
         final VizModel model = getModel();
-        model.setEdgeRescaleWeightEnabled(rescaleEdgeWeight);
+        if (model != null) {
+            model.setEdgeRescaleWeightEnabled(rescaleEdgeWeight);
+        }
     }
 
     // TEXT
@@ -291,97 +323,129 @@ public class VizController implements VisualizationController, Controller<VizMod
     @Override
     public void setShowNodeLabels(boolean showNodeLabels) {
         final VizModel model = getModel();
-        model.setShowNodeLabels(showNodeLabels);
+        if (model != null) {
+            model.setShowNodeLabels(showNodeLabels);
+        }
     }
 
     @Override
     public void setShowEdgeLabels(boolean showEdgeLabels) {
         final VizModel model = getModel();
-        model.setShowEdgeLabels(showEdgeLabels);
+        if (model != null) {
+            model.setShowEdgeLabels(showEdgeLabels);
+        }
     }
 
     @Override
     public void setNodeLabelFont(Font font) {
         final VizModel model = getModel();
-        model.setNodeLabelFont(font);
+        if (model != null) {
+            model.setNodeLabelFont(font);
+        }
     }
 
     @Override
     public void setEdgeLabelFont(Font font) {
         final VizModel model = getModel();
-        model.setEdgeLabelFont(font);
+        if (model != null) {
+            model.setEdgeLabelFont(font);
+        }
     }
 
     @Override
     public void setNodeLabelScale(float scale) {
         final VizModel model = getModel();
-        model.setNodeLabelScale(scale);
+        if (model != null) {
+            model.setNodeLabelScale(scale);
+        }
     }
 
     @Override
     public void setEdgeLabelScale(float scale) {
         final VizModel model = getModel();
-        model.setEdgeLabelScale(scale);
+        if (model != null) {
+            model.setEdgeLabelScale(scale);
+        }
     }
 
     @Override
     public void setEdgeLabelColorMode(LabelColorMode mode) {
         final VizModel model = getModel();
-        model.setEdgeLabelColorMode(mode);
+        if (model != null) {
+            model.setEdgeLabelColorMode(mode);
+        }
     }
 
     @Override
     public void setEdgeLabelSizeMode(LabelSizeMode mode) {
         final VizModel model = getModel();
-        model.setEdgeLabelSizeMode(mode);
+        if (model != null) {
+            model.setEdgeLabelSizeMode(mode);
+        }
     }
 
     @Override
     public void setNodeLabelColorMode(LabelColorMode mode) {
         final VizModel model = getModel();
-        model.setNodeLabelColorMode(mode);
+        if (model != null) {
+            model.setNodeLabelColorMode(mode);
+        }
     }
 
     @Override
     public void setNodeLabelSizeMode(LabelSizeMode mode) {
         final VizModel model = getModel();
-        model.setNodeLabelSizeMode(mode);
+        if (model != null) {
+            model.setNodeLabelSizeMode(mode);
+        }
     }
 
     @Override
     public void setHideNonSelectedNodeLabels(boolean hideNonSelected) {
         final VizModel model = getModel();
-        model.setHideNonSelectedNodeLabels(hideNonSelected);
+        if (model != null) {
+            model.setHideNonSelectedNodeLabels(hideNonSelected);
+        }
     }
 
     @Override
     public void setHideNonSelectedEdgeLabels(boolean hideNonSelected) {
         final VizModel model = getModel();
-        model.setHideNonSelectedEdgeLabels(hideNonSelected);
+        if (model != null) {
+            model.setHideNonSelectedEdgeLabels(hideNonSelected);
+        }
     }
 
     @Override
     public void setNodeLabelFitToNodeSize(boolean fitToNodeSize) {
         final VizModel model = getModel();
-        model.setNodeLabelFitToNodeSize(fitToNodeSize);
+        if (model != null) {
+            model.setNodeLabelFitToNodeSize(fitToNodeSize);
+        }
     }
 
     @Override
     public void setAvoidNodeLabelOverlap(boolean avoidOverlap) {
         final VizModel model = getModel();
-        model.setAvoidNodeLabelOverlap(avoidOverlap);
+        if (model != null) {
+            model.setAvoidNodeLabelOverlap(avoidOverlap);
+        }
     }
 
     @Override
     public void setNodeLabelColumns(Column[] columns) {
         final VizModel model = getModel();
-        model.setNodeLabelColumns(columns);
+        if (model != null) {
+            model.setNodeLabelColumns(columns);
+        }
     }
 
     @Override
     public void setEdgeLabelColumns(Column[] columns) {
         final VizModel model = getModel();
-        model.setEdgeLabelColumns(columns);
+        if (model != null) {
+            model.setEdgeLabelColumns(columns);
+        }
     }
 
 
