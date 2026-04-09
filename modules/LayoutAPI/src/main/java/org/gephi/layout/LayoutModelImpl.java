@@ -50,6 +50,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.XMLStreamWriter;
@@ -212,7 +214,10 @@ public class LayoutModelImpl implements LayoutModel, Model {
                         .put(new LayoutPropertyKey(p.getCanonicalName(), layout.getClass().getName()), value);
                 }
             } catch (Exception e) {
-                Exceptions.printStackTrace(e);
+                Logger.getLogger("").log(
+                    Level.WARNING,
+                    String.format("Error while saving layout '%s' property '%s' from saved properties", layout.getBuilder().getName(), p.getCanonicalName()),
+                    e);
             }
         }
     }
@@ -244,7 +249,10 @@ public class LayoutModelImpl implements LayoutModel, Model {
                             onlyDefaults = false;
                         }
                     } catch (Exception e) {
-                        Exceptions.printStackTrace(e);
+                        Logger.getLogger("").log(
+                            Level.WARNING,
+                            String.format("Error while loading layout '%s' property '%s' from saved properties", layout.getBuilder().getName(), property.getCanonicalName()),
+                            e);
                     }
                 }
             }
