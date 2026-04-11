@@ -1,9 +1,10 @@
 package org.gephi.viz.engine.status;
 
+import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.List;
 import org.gephi.graph.api.Edge;
 import org.gephi.graph.api.EdgeIterable;
 import org.gephi.graph.api.Graph;
@@ -16,7 +17,7 @@ public class GraphSelectionImpl implements GraphSelection {
     private final BitSet nodes = new BitSet();
     private final BitSet nodesWithNeighbours = new BitSet();
     private final BitSet edges = new BitSet();
-    private final Collection<Node> nodesList = new ConcurrentLinkedQueue<>();
+    private final List<Node> nodesList = new ArrayList<>();
 
     private GraphSelection.GraphSelectionMode selectionMode;
     private float simpleMouseSelectionDiameter = 1f;
@@ -119,7 +120,7 @@ public class GraphSelectionImpl implements GraphSelection {
 
         graph.readLock();
         graph.getSpatialIndex().spatialIndexReadLock();
-        nodesIterable.parallelStream().forEach(node -> {
+        nodesIterable.stream().forEach(node -> {
             int storeId = node.getStoreId();
             nodes.set(storeId);
             nodesList.add(node);
@@ -145,10 +146,12 @@ public class GraphSelectionImpl implements GraphSelection {
     public void setSelectedNodes(Node[] nodes) {
         this.nodes.clear();
         this.nodesWithNeighbours.clear();
+        this.nodesList.clear();
         if (nodes != null) {
             for (Node node : nodes) {
                 this.nodes.set(node.getStoreId());
                 this.nodesWithNeighbours.set(node.getStoreId());
+                this.nodesList.add(node);
             }
         }
     }
@@ -157,6 +160,7 @@ public class GraphSelectionImpl implements GraphSelection {
     public void clearSelectedNodes() {
         this.nodes.clear();
         this.nodesWithNeighbours.clear();
+        this.nodesList.clear();
     }
 
     @Override
