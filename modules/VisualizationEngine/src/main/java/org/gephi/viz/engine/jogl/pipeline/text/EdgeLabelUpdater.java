@@ -219,7 +219,7 @@ public class EdgeLabelUpdater extends AbstractLabelUpdater<Edge> {
     private float edgeThickness(float edgeScaleMin, float edgeScaleMax, float weight,
                                 float minWeight, float maxWeight) {
         if (Math.abs(edgeScaleMin - edgeScaleMax) < 1e-3f) {
-            return weight * edgeScaleMin;
+            return edgeScaleMin;
         }
         float weightDivisor = maxWeight - minWeight;
         if (Math.abs(weightDivisor) < 1e-3f) {
