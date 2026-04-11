@@ -214,7 +214,8 @@ public class DefaultJOGLEventListener implements InputListener<JOGLRenderingTarg
             mouseRightButtonPressed = false;
         }
 
-        if (model.getGraphSelection().getMode() == GraphSelection.GraphSelectionMode.RECTANGLE_SELECTION) {
+        if (e.getButton() == MOUSE_LEFT_BUTTON &&
+            model.getGraphSelection().getMode() == GraphSelection.GraphSelectionMode.RECTANGLE_SELECTION) {
             model.getGraphSelection()
                 .stopRectangleSelection(engine.screenCoordinatesToWorldCoordinates(e.getX(), e.getY()));
         }
