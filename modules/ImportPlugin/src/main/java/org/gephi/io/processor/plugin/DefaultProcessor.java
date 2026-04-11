@@ -223,6 +223,29 @@ public class DefaultProcessor extends AbstractProcessor {
                     Progress.progress(progressTicket);
                     continue;
                 }
+            } else if (edge == null) {
+                //No direct match, but a reverse-direction conflict may still prevent creating this edge:
+                final Edge incompatibleEdge = findIncompatibleEdge(graph, source, target, createDirected, edgeType);
+                if (incompatibleEdge != null) {
+                    String message = NbBundle.getMessage(
+                        DefaultProcessor.class, "DefaultProcessor.warning.incompatibleEdgeDirectedness",
+                        String.format(
+                            "[%s -> %s; %s, type %s]",
+                            sourceId, targetId, createDirected ? "Directed" : "Undirected", type
+                        ),
+                        String.format(
+                            "[%s -> %s; %s; type: %s; id: %s]",
+                            incompatibleEdge.getSource().getId(), incompatibleEdge.getTarget().getId(),
+                            incompatibleEdge.isDirected() ? "Directed" : "Undirected",
+                            incompatibleEdge.getTypeLabel(),
+                            incompatibleEdge.getId()
+                        )
+                    );
+                    report.logIssue(new Issue(message, Issue.Level.WARNING));
+
+                    Progress.progress(progressTicket);
+                    continue;
+                }
             }
 
             boolean newEdge = edge == null;
@@ -249,7 +272,9 @@ public class DefaultProcessor extends AbstractProcessor {
         //Report
         int touchedNodes = container.getNodeCount();
         int touchedEdges = container.getEdgeCount();
-        if (touchedNodes != addedNodes || touchedEdges != addedEdges) {
+        int overlappedNodes = touchedNodes - addedNodes;
+        int overlappedEdges = touchedEdges - addedEdges;
+        if (overlappedNodes != 0 || overlappedEdges != 0) {
             Logger.getLogger(getClass().getSimpleName())
                 .log(Level.INFO, "# Nodes loaded: {0} ({1} added)", new Object[] {touchedNodes, addedNodes});
             Logger.getLogger(getClass().getSimpleName())
@@ -260,20 +285,32 @@ public class DefaultProcessor extends AbstractProcessor {
             Logger.getLogger(getClass().getSimpleName())
                 .log(Level.INFO, "# Edges loaded: {0}", new Object[] {touchedEdges});
         }
+        if (overlappedNodes > 0) {
+            report.logIssue(new Issue(NbBundle.getMessage(
+                DefaultProcessor.class, "DefaultProcessor.info.overlappingNodes", overlappedNodes), Issue.Level.INFO));
+        }
+        if (overlappedEdges > 0) {
+            report.logIssue(new Issue(NbBundle.getMessage(
+                DefaultProcessor.class, "DefaultProcessor.info.overlappingEdges", overlappedEdges), Issue.Level.INFO));
+        }
     }
 
     private Edge findIncompatibleEdge(Graph graph, Node source, Node target, boolean directed, int edgeType) {
         Edge edge = graph.getEdge(source, target, edgeType);
 
         if (edge == null) {
-            if (directed) {
-                //The edge may exist with opposite source-target but undirected. In that case we can't create a directed one:
-                edge = graph.getEdge(target, source, edgeType);
-
-                if (edge != null && edge.isDirected()) {
-                    //Actually it's directed so we can create the opposite directed edge, not incompatible
+            //Check reverse direction for potential directedness conflicts
+            edge = graph.getEdge(target, source, edgeType);
+            if (edge != null) {
+                if (directed && edge.isDirected()) {
+                    //Two directed edges in opposite directions can coexist
+                    edge = null;
+                } else if (!directed && !edge.isDirected()) {
+                    //Undirected edges are symmetric — already found as forward, would be merged not conflicting
                     edge = null;
                 }
+                //directed=false + existing directed: incompatible (return it)
+                //directed=true + existing undirected: incompatible (return it)
             }
         } else {
             if (edge.isDirected() == directed) {
