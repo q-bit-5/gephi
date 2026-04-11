@@ -975,7 +975,6 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <argLine>--add-opens java.base/java.net=ALL-UNNAMED</argLine>
-                    <skipTests>true</skipTests>
                     <trimStackTrace>false</trimStackTrace>                                                              
                 </configuration>
             </plugin>
@@ -1114,9 +1113,9 @@
     <!-- Profiles -->
     <profiles>
 
-        <!-- Profile to enable tests (disabled by default in non-deployment) -->
+        <!-- Profile to skip tests -->
         <profile>
-            <id>enableTests</id>
+            <id>skipTests</id>
             
             <build>
                 <plugins>
@@ -1124,7 +1123,7 @@
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
                         <configuration>
-                            <skipTests>false</skipTests>
+                            <skipTests>true</skipTests>
                         </configuration>
                     </plugin>
                 </plugins>
@@ -1198,15 +1197,6 @@
 
             <build>
                 <plugins>
-                    <!-- Enable tests -->
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                        <configuration>
-                            <skipTests>false</skipTests>
-                        </configuration>
-                    </plugin>
-
                     <!-- Enable checkstyle -->
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>

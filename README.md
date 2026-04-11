@@ -67,6 +67,10 @@ Consult the [**Javadoc**](https://javadoc.io/doc/org.gephi/gephi/latest/index.ht
 
         mvn -T 4 clean install
 
+- To skip tests and speed up the build, use the `skipTests` profile
+
+        mvn -T 4 clean install -P skipTests
+
 - Once built, one can test running Gephi
 
 		cd modules/application
