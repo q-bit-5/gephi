@@ -99,6 +99,10 @@ public class VizController implements VisualizationController, Controller<VizMod
     }
 
     public void enableMouseHandler() {
+        if (mouseMoveListener != null) {
+            removeListener(mouseMoveListener);
+        }
+
         mouseMoveListener = new VisualizationEventListener() {
             @Override
             public boolean handleEvent(VisualizationEvent event) {
@@ -129,6 +133,7 @@ public class VizController implements VisualizationController, Controller<VizMod
     public void disableMouseHandler() {
         if (mouseMoveListener != null) {
             removeListener(mouseMoveListener);
+            mouseMoveListener = null;
 
             AttributesUIController attributesUIController = Lookup.getDefault().lookup(AttributesUIController.class);
             if (attributesUIController != null) {
