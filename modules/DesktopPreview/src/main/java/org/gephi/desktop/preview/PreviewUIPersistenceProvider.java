@@ -37,8 +37,7 @@ public class PreviewUIPersistenceProvider implements WorkspaceXMLPersistenceProv
         }
         if (model == null) {
             PreviewUIController previewUIController = Lookup.getDefault().lookup(PreviewUIController.class);
-            model = new PreviewUIModelImpl(previewModel, previewUIController.getDefaultPresets(),
-                previewUIController.getUserPresets());
+            model = new PreviewUIModelImpl(previewModel, previewUIController);
             workspace.add(model);
         }
         try {

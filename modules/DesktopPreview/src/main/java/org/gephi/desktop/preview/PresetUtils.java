@@ -78,6 +78,7 @@ public class PresetUtils {
     private List<PreviewPreset> presets;
 
     public void removePreset(PreviewPreset preset) {
+        getPresets();
         presets.remove(preset);
 
         try {
@@ -95,6 +96,7 @@ public class PresetUtils {
     }
 
     public void savePreset(PreviewPreset preset) {
+        getPresets();
         int exist = -1;
         for (int i = 0; i < presets.size(); i++) {
             PreviewPreset p = presets.get(i);
