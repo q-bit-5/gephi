@@ -140,6 +140,10 @@ public class SelectionModelImpl {
                         rectangleSelection = Boolean.parseBoolean(reader.getAttributeValue(null, "value"));
                     } else if ("selectionEnable".equalsIgnoreCase(name)) {
                         selectionEnable = Boolean.parseBoolean(reader.getAttributeValue(null, "value"));
+                    } else if ("nodeSelection".equalsIgnoreCase(name)) {
+                        nodeSelection = Boolean.parseBoolean(reader.getAttributeValue(null, "value"));
+                    } else if ("singleNodeSelection".equalsIgnoreCase(name)) {
+                        singleNodeSelection = Boolean.parseBoolean(reader.getAttributeValue(null, "value"));
                     }
                     break;
                 case XMLStreamReader.END_ELEMENT:
@@ -166,6 +170,14 @@ public class SelectionModelImpl {
 
         writer.writeStartElement("selectionEnable");
         writer.writeAttribute("value", String.valueOf(selectionEnable));
+        writer.writeEndElement();
+
+        writer.writeStartElement("nodeSelection");
+        writer.writeAttribute("value", String.valueOf(nodeSelection));
+        writer.writeEndElement();
+
+        writer.writeStartElement("singleNodeSelection");
+        writer.writeAttribute("value", String.valueOf(singleNodeSelection));
         writer.writeEndElement();
     }
 }

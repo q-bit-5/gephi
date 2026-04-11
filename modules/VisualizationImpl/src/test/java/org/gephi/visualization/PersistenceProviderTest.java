@@ -161,6 +161,18 @@ public class PersistenceProviderTest {
     }
 
     @Test
+    public void testSelectionModelNodeSelection() throws Exception {
+        VizModel model = vizController.getModel(GraphGenerator.build().generateTinyGraph().getWorkspace());
+        model.getSelectionModel().setSelectionEnable(true);
+        model.getSelectionModel().setNodeSelection(true);
+        model.getSelectionModel().setSingleNodeSelection(true);
+
+        VizModel read = roundTrip(provider, model.getWorkspace());
+        Assert.assertTrue(read.getSelectionModel().isNodeSelection());
+        Assert.assertTrue(read.getSelectionModel().isSingleNodeSelection());
+    }
+
+    @Test
     public void testLegacyScreenshotMakerBackwardCompatibility() throws Exception {
         // Simulate a <vizmodel> from Gephi 0.10 with the old self-closing <screenshotMaker> element.
         // width/height/antialiasing have no equivalent in the new model and must be gracefully ignored.
