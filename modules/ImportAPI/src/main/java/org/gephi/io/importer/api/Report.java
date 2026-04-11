@@ -71,6 +71,7 @@ public final class Report {
     private Issue.Level exceptionLevel = Issue.Level.CRITICAL;
     private Writer writer;
     private boolean empty = true;
+    private boolean hasIssues = false;
 
     public Report() {
         this("tempreport");
@@ -90,6 +91,10 @@ public final class Report {
 
     public boolean isEmpty() {
         return empty;
+    }
+
+    public boolean hasIssues() {
+        return hasIssues;
     }
 
     /**
@@ -152,6 +157,9 @@ public final class Report {
                 ReportEntry re = r.next();
                 writer.append(re);
                 empty = false;
+                if (re.level != null) {
+                    hasIssues = true;
+                }
             }
         } catch (IOException ex) {
             if (r != null) {
@@ -178,6 +186,7 @@ public final class Report {
             }
             writer.append(new ReportEntry(issue));
             empty = false;
+            hasIssues = true;
 
             if (issue.getLevel().toInteger() >= exceptionLevel.toInteger()) {
                 writer.close();
