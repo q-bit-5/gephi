@@ -6,7 +6,7 @@ abstract public class AbstractSelectionData {
     protected float globalTime = 0f;
     protected float selectedTime = 0f;
 
-    protected boolean someSelection;
+    protected volatile boolean someSelection;
 
     protected void refreshTime() {
         globalTime = (System.currentTimeMillis() - this.startedTime) / 1000.0f;

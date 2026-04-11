@@ -6,10 +6,10 @@ package org.gephi.viz.engine.pipeline.common;
  */
 public class InstanceCounter {
 
-    public int unselectedCount = 0;
-    public int selectedCount = 0;
-    public int unselectedCountToDraw = 0;
-    public int selectedCountToDraw = 0;
+    public volatile int unselectedCount = 0;
+    public volatile int selectedCount = 0;
+    public volatile int unselectedCountToDraw = 0;
+    public volatile int selectedCountToDraw = 0;
 
 
     public void promoteCountToDraw() {

@@ -517,7 +517,7 @@ public class StandardVizEventManager {
             return false;
         }
 
-        public boolean hasListeners() {
+        public synchronized boolean hasListeners() {
             return !listeners.isEmpty();
         }
 

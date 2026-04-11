@@ -212,7 +212,7 @@ public abstract class AbstractEdgeData extends AbstractSelectionData {
             instanceCount = selfLoopCounter.selectedCountToDraw;
 
             if (someSelection) {
-                if (edgeSelectionColor) {
+                if (data.isEdgeSelectionColor()) {
                     edgeCircleSelfLoopNoSelection.useProgram(
                         gl,
                         mvpFloats,
@@ -313,7 +313,7 @@ public abstract class AbstractEdgeData extends AbstractSelectionData {
             );
 
             if (someSelection) {
-                if (edgeSelectionColor) {
+                if (data.isEdgeSelectionColor()) {
                     lineUndirectedModelNoSelection.useProgram(
                         gl,
                         mvpFloats,
@@ -419,7 +419,7 @@ public abstract class AbstractEdgeData extends AbstractSelectionData {
             );
 
             if (someSelection) {
-                if (someSelection && edgeSelectionColor) {
+                if (data.isEdgeSelectionColor()) {
                     lineDirectedModelNoSelection.useProgram(
                         gl,
                         mvpFloats,
@@ -472,6 +472,7 @@ public abstract class AbstractEdgeData extends AbstractSelectionData {
         return new EdgeWorldData(
             model.getRenderingOptions().getBackgroundColor(),
             someSelection,
+            edgeSelectionColor,
             edgeWeightEnabled ? edgesCallback.getMinWeight() : 0f,
             edgeWeightEnabled ? edgesCallback.getMaxWeight() : 1f,
             model.getRenderingOptions().isEdgeRescaleWeightEnabled() ? model.getRenderingOptions().getEdgeRescaleMin() :

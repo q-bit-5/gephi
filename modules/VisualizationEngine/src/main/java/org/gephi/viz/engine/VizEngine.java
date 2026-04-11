@@ -60,7 +60,7 @@ public class VizEngine<R extends RenderingTarget, I> {
     private final R renderingTarget;
     private boolean isSetUp = false;
     private boolean isDestroyed = false;
-    private boolean updating = true;
+    private volatile boolean updating = true;
 
     //State
     private int width = 0;

@@ -7,6 +7,7 @@ public class EdgeWorldData implements WorldData {
 
     private final float[] backgroundColor;
     private final boolean someSelection;
+    private final boolean edgeSelectionColor;
     private final float minWeight;
     private final float maxWeight;
     private final float edgeRescaleMin;
@@ -18,6 +19,7 @@ public class EdgeWorldData implements WorldData {
 
     public EdgeWorldData(float[] backgroundColor,
                          boolean someSelection,
+                         boolean edgeSelectionColor,
                          float minWeight,
                          float maxWeight,
                          float edgeRescaleMin,
@@ -28,6 +30,7 @@ public class EdgeWorldData implements WorldData {
                          OpenGLOptions openGLOptions) {
         this.backgroundColor = backgroundColor;
         this.someSelection = someSelection;
+        this.edgeSelectionColor = edgeSelectionColor;
         this.minWeight = minWeight;
         this.maxWeight = maxWeight;
         this.edgeRescaleMin = edgeRescaleMin;
@@ -72,6 +75,10 @@ public class EdgeWorldData implements WorldData {
 
     public boolean hasSomeSelection() {
         return someSelection;
+    }
+
+    public boolean isEdgeSelectionColor() {
+        return edgeSelectionColor;
     }
 
     public OpenGLOptions getOpenGLOptions() {

@@ -45,9 +45,9 @@ package org.gephi.visualization;
 import com.jogamp.newt.event.NEWTEvent;
 import java.awt.Color;
 import java.awt.Font;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.Optional;
 import org.gephi.desktop.attributes.api.AttributesUIController;
 import org.gephi.graph.api.Column;
@@ -84,7 +84,7 @@ import org.openide.util.lookup.ServiceProviders;
 public class VizController implements VisualizationController, Controller<VizModel> {
 
     //Architecture
-    protected final List<VisualizationPropertyChangeListener> listeners = new ArrayList<>();
+    protected final List<VisualizationPropertyChangeListener> listeners = new CopyOnWriteArrayList<>();
     private final VizEngineGraphCanvasManager canvasManager;
     private final StandardVizEventManager vizEventManager;
     private final ScreenshotControllerImpl screenshotController;

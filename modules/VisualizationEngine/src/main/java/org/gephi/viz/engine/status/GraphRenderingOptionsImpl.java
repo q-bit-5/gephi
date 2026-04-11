@@ -17,9 +17,9 @@ public class GraphRenderingOptionsImpl implements GraphRenderingOptions {
     private boolean showEdgeLabels = DEFAULT_SHOW_EDGE_LABELS;
 
     //Global
-    private float[] backgroundColor = DEFAULT_BACKGROUND_COLOR;
+    private volatile float[] backgroundColor = DEFAULT_BACKGROUND_COLOR;
     private float zoom = DEFAULT_ZOOM;
-    private final Vector2f pan = new Vector2f(DEFAULT_PAN_X, DEFAULT_PAN_Y);
+    private volatile Vector2f pan = new Vector2f(DEFAULT_PAN_X, DEFAULT_PAN_Y);
 
     //Edges
     private float edgeScale = DEFAULT_EDGE_SCALE;
@@ -84,7 +84,7 @@ public class GraphRenderingOptionsImpl implements GraphRenderingOptions {
         float[] otherBg = other.getBackgroundColor();
         this.backgroundColor = otherBg.clone();
         this.zoom = other.getZoom();
-        this.pan.set(other.getPan());
+        this.pan = new Vector2f(other.getPan());
 
         // Edges
         this.edgeScale = other.getEdgeScale();
@@ -167,7 +167,7 @@ public class GraphRenderingOptionsImpl implements GraphRenderingOptions {
 
     @Override
     public void setPan(Vector2fc value) {
-        pan.set(value);
+        pan = new Vector2f(value);
     }
 
     @Override
