@@ -258,7 +258,7 @@ public class GraphRenderingOptionsImpl implements GraphRenderingOptions {
     @Override
     public void setEdgeScale(float edgeScale) {
         if (Float.isNaN(edgeScale) || Float.isInfinite(edgeScale)) {
-            nodeScale = DEFAULT_NODE_SCALE;
+            edgeScale = DEFAULT_EDGE_SCALE;
         }
 
         if (edgeScale <= 0) {
