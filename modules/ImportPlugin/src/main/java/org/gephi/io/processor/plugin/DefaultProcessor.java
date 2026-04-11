@@ -274,24 +274,19 @@ public class DefaultProcessor extends AbstractProcessor {
         int touchedEdges = container.getEdgeCount();
         int overlappedNodes = touchedNodes - addedNodes;
         int overlappedEdges = touchedEdges - addedEdges;
-        if (overlappedNodes != 0 || overlappedEdges != 0) {
+        if (overlappedNodes != 0) {
             Logger.getLogger(getClass().getSimpleName())
                 .log(Level.INFO, "# Nodes loaded: {0} ({1} added)", new Object[] {touchedNodes, addedNodes});
+        } else {
+            Logger.getLogger(getClass().getSimpleName())
+                .log(Level.INFO, "# Nodes loaded: {0}", new Object[] {touchedNodes});
+        }
+        if (overlappedEdges != 0) {
             Logger.getLogger(getClass().getSimpleName())
                 .log(Level.INFO, "# Edges loaded: {0} ({1} added)", new Object[] {touchedEdges, addedEdges});
         } else {
             Logger.getLogger(getClass().getSimpleName())
-                .log(Level.INFO, "# Nodes loaded: {0}", new Object[] {touchedNodes});
-            Logger.getLogger(getClass().getSimpleName())
                 .log(Level.INFO, "# Edges loaded: {0}", new Object[] {touchedEdges});
-        }
-        if (overlappedNodes > 0) {
-            report.logIssue(new Issue(NbBundle.getMessage(
-                DefaultProcessor.class, "DefaultProcessor.info.overlappingNodes", overlappedNodes), Issue.Level.INFO));
-        }
-        if (overlappedEdges > 0) {
-            report.logIssue(new Issue(NbBundle.getMessage(
-                DefaultProcessor.class, "DefaultProcessor.info.overlappingEdges", overlappedEdges), Issue.Level.INFO));
         }
     }
 

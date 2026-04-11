@@ -42,6 +42,8 @@
 
 package org.gephi.io.processor.plugin;
 
+import org.gephi.graph.api.Graph;
+import org.gephi.graph.api.GraphController;
 import org.gephi.graph.api.Configuration;
 import org.gephi.io.importer.api.ContainerUnloader;
 import org.gephi.io.processor.spi.Processor;
@@ -81,7 +83,13 @@ public class AppendProcessor extends DefaultProcessor implements Processor {
                 pc.openWorkspace(workspace);
             }
 
+            GraphController graphController = Lookup.getDefault().lookup(GraphController.class);
+            Graph graph = graphController.getGraphModel(workspace).getGraph();
+            int existingNodeCount = graph.getNodeCount();
+            int existingEdgeCount = graph.getEdgeCount();
+
             Progress.start(progressTicket, calculateWorkUnits());
+            int totalAddedNodes = 0, totalAddedEdges = 0, totalTouchedNodes = 0, totalTouchedEdges = 0;
             for (ContainerUnloader container : containers) {
                 Configuration config = createConfiguration(container);
                 if(configurationMatchesExisting(config, workspace)) {
@@ -92,11 +100,28 @@ public class AppendProcessor extends DefaultProcessor implements Processor {
                     }
 
                     process(container, workspace);
+                    totalTouchedNodes += container.getNodeCount();
+                    totalTouchedEdges += container.getEdgeCount();
                 } else {
                     Progress.progress(progressTicket, AbstractProcessor.calculateWorkUnits(container));
                 }
             }
             Progress.finish(progressTicket);
+
+            totalAddedNodes = graph.getNodeCount() - existingNodeCount;
+            totalAddedEdges = graph.getEdgeCount() - existingEdgeCount;
+            int overlappedNodes = totalTouchedNodes - totalAddedNodes;
+            int overlappedEdges = totalTouchedEdges - totalAddedEdges;
+            if (existingNodeCount > 0 || existingEdgeCount > 0) {
+                if (overlappedNodes > 0) {
+                    report.log(NbBundle.getMessage(
+                        AppendProcessor.class, "AppendProcessor.info.overlappingNodes", overlappedNodes));
+                }
+                if (overlappedEdges > 0) {
+                    report.log(NbBundle.getMessage(
+                        AppendProcessor.class, "AppendProcessor.info.overlappingEdges", overlappedEdges));
+                }
+            }
         } finally {
             clean();
         }
