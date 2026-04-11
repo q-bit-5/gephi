@@ -107,7 +107,7 @@ public class PreviewUIControllerImpl implements PreviewUIController {
             public void initialize(Workspace workspace) {
                 PreviewModel previewModel = previewController.getModel(workspace);
                 if (workspace.getLookup().lookup(PreviewUIModelImpl.class) == null) {
-                    workspace.add(new PreviewUIModelImpl(previewModel));
+                    workspace.add(new PreviewUIModelImpl(previewModel, getDefaultPresets(), getUserPresets()));
                 }
                 enableRefresh();
             }
@@ -119,7 +119,7 @@ public class PreviewUIControllerImpl implements PreviewUIController {
                 PreviewModel previewModel = previewController.getModel(workspace);
                 model = workspace.getLookup().lookup(PreviewUIModelImpl.class);
                 if (model == null) {
-                    model = new PreviewUIModelImpl(previewModel);
+                    model = new PreviewUIModelImpl(previewModel, getDefaultPresets(), getUserPresets());
                     workspace.add(model);
                 }
                 Float visibilityRatio = previewModel.getProperties().getFloatValue(PreviewProperty.VISIBILITY_RATIO);
@@ -152,7 +152,7 @@ public class PreviewUIControllerImpl implements PreviewUIController {
             model = pc.getCurrentWorkspace().getLookup().lookup(PreviewUIModelImpl.class);
             if (model == null) {
                 PreviewModel previewModel = previewController.getModel(pc.getCurrentWorkspace());
-                model = new PreviewUIModelImpl(previewModel);
+                model = new PreviewUIModelImpl(previewModel, getDefaultPresets(), getUserPresets());
                 pc.getCurrentWorkspace().add(model);
             }
             Float visibilityRatio =

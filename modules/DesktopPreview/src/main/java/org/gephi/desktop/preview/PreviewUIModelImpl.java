@@ -55,7 +55,6 @@ import org.gephi.preview.presets.BlackBackground;
 import org.gephi.preview.presets.DefaultPreset;
 import org.gephi.project.api.Workspace;
 import org.gephi.ui.utils.UIUtils;
-import org.openide.util.Lookup;
 import org.openide.util.NbPreferences;
 
 /**
@@ -72,34 +71,29 @@ public class PreviewUIModelImpl implements PreviewUIModel {
     private PreviewPreset currentPreset;
     private boolean refreshing;
 
-    public PreviewUIModelImpl(PreviewModel model) {
+    public PreviewUIModelImpl(PreviewModel model, PreviewPreset[] defaultPresets, PreviewPreset[] userPresets) {
         previewModel = model;
-        currentPreset = resolveDefaultPreset();
+        currentPreset = resolveDefaultPreset(defaultPresets, userPresets);
         model.getProperties().applyPreset(currentPreset);
     }
 
-    private PreviewPreset resolveDefaultPreset() {
+    private PreviewPreset resolveDefaultPreset(PreviewPreset[] defaultPresets, PreviewPreset[] userPresets) {
         String presetClass = NbPreferences.forModule(PreviewUIModelImpl.class).get(DEFAULT_PRESET_CLASS, "");
         String presetName = NbPreferences.forModule(PreviewUIModelImpl.class).get(DEFAULT_PRESET_NAME, "");
 
-        if (!presetClass.isEmpty() || !presetName.isEmpty()) {
-            PreviewUIController controller = Lookup.getDefault().lookup(PreviewUIController.class);
-            if (controller != null) {
-                if (!presetClass.isEmpty()) {
-                    Optional<PreviewPreset> found = Arrays.stream(controller.getDefaultPresets())
-                        .filter(p -> p.getClass().getName().equals(presetClass))
-                        .findFirst();
-                    if (found.isPresent()) {
-                        return found.get();
-                    }
-                } else {
-                    Optional<PreviewPreset> found = Arrays.stream(controller.getUserPresets())
-                        .filter(p -> p.getName().equals(presetName))
-                        .findFirst();
-                    if (found.isPresent()) {
-                        return found.get();
-                    }
-                }
+        if (!presetClass.isEmpty()) {
+            Optional<PreviewPreset> found = Arrays.stream(defaultPresets)
+                .filter(p -> p.getClass().getName().equals(presetClass))
+                .findFirst();
+            if (found.isPresent()) {
+                return found.get();
+            }
+        } else if (!presetName.isEmpty()) {
+            Optional<PreviewPreset> found = Arrays.stream(userPresets)
+                .filter(p -> p.getName().equals(presetName))
+                .findFirst();
+            if (found.isPresent()) {
+                return found.get();
             }
         }
 
