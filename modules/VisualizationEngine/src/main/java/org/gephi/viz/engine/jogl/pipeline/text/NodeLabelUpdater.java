@@ -155,7 +155,7 @@ public class NodeLabelUpdater extends AbstractLabelUpdater<Node> {
 
             // Check for overlap if enabled (after dimensions are computed)
             boolean shouldRender = true;
-            if (avoidOverlap && gridOccupancy != null && batch.isWriteValid()) {
+            if (avoidOverlap && gridOccupancy != null && batch.isWriteValid() && !selected) {
                 // Get label dimensions from node text properties (set by updateBatch)
                 float width = node.getTextProperties().getWidth();
                 float height = node.getTextProperties().getHeight();
