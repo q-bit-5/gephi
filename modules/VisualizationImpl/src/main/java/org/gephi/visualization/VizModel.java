@@ -415,7 +415,6 @@ public class VizModel implements VisualizationModel {
             getRenderingOptions().ifPresent(options -> options.setLightenNonSelected(lightenNonSelectedAuto));
             firePropertyChange("lightenNonSelectedAuto", oldValue, lightenNonSelectedAuto);
         }
-        firePropertyChange("lightenNonSelectedAuto", oldValue, lightenNonSelectedAuto);
     }
 
     public float getLightenNonSelectedFactor() {
@@ -429,7 +428,6 @@ public class VizModel implements VisualizationModel {
             getRenderingOptions().ifPresent(options -> options.setLightenNonSelectedFactor(lightenNonSelectedFactor));
             firePropertyChange("lightenNonSelectedFactor", oldValue, lightenNonSelectedFactor);
         }
-        firePropertyChange("lightenNonSelectedFactor", oldValue, lightenNonSelectedFactor);
     }
 
     @Override
@@ -444,8 +442,6 @@ public class VizModel implements VisualizationModel {
             getRenderingOptions().ifPresent(options -> options.setEdgeSelectionColor(edgeSelectionColor));
             firePropertyChange("edgeSelectionColor", oldValue, edgeSelectionColor);
         }
-
-        firePropertyChange("edgeSelectionColor", oldValue, edgeSelectionColor);
     }
 
     @Override
