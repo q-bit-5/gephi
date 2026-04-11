@@ -35,6 +35,8 @@ public class GraphSelectionImpl implements GraphSelection {
             this.simpleMouseSelectionDiameter = other.getMouseSelectionDiameter();
             this.simpleMouseSelectionMVPScale = other.getSimpleMouseSelectionMVPScale();
             this.mouseSelectionDiameterZoomProportional = other.getMouseSelectionDiameterZoomProportional();
+        } else {
+            this.selectionMode = GraphSelectionMode.SIMPLE_MOUSE_SELECTION;
         }
     }
 
