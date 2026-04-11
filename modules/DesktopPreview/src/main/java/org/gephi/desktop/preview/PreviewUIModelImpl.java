@@ -55,6 +55,7 @@ import org.gephi.preview.presets.BlackBackground;
 import org.gephi.preview.presets.DefaultPreset;
 import org.gephi.project.api.Workspace;
 import org.gephi.ui.utils.UIUtils;
+import org.openide.util.Lookup;
 import org.openide.util.NbPreferences;
 
 /**
