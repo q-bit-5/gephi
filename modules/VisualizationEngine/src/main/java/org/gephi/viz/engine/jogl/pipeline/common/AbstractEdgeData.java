@@ -169,11 +169,11 @@ public abstract class AbstractEdgeData extends AbstractSelectionData {
         final EdgeWorldData data,
         final float[] mvpFloats
     ) {
+        final boolean someSelection = data.hasSomeSelection();
         final boolean renderingUnselectedEdges = layer.getLevel() == 1;
         if (!someSelection && renderingUnselectedEdges) {
             return 0;
         }
-        final boolean someSelection = data.hasSomeSelection();
 
         final float[] backgroundColorFloats = data.getBackgroundColor();
         final float edgeScale = data.getEdgeScale();
@@ -260,12 +260,11 @@ public abstract class AbstractEdgeData extends AbstractSelectionData {
                                                                 final RenderingLayer layer,
                                                                 final EdgeWorldData data,
                                                                 final float[] mvpFloats) {
+        final boolean someSelection = data.hasSomeSelection();
         final boolean renderingUnselectedEdges = layer.getLevel() == 1;
         if (!someSelection && renderingUnselectedEdges) {
             return 0;
         }
-
-        final boolean someSelection = data.hasSomeSelection();
 
         final float[] backgroundColorFloats = data.getBackgroundColor();
         final float edgeScale = data.getEdgeScale();
@@ -560,7 +559,7 @@ public abstract class AbstractEdgeData extends AbstractSelectionData {
                     final float weight = edgeWeightEnabled ? edgeWeightsArray[i] : 1f;
 
 
-                    fillSelfLoopEdgeAttributesDataWithSelection(attribs, e, index, weight);
+                    fillSelfLoopEdgeAttributesDataWithSelection(attribs, e, index, true, weight);
                     index += ATTRIBS_STRIDE_SELFLOOP;
 
                     if (directBuffer != null && index == attribs.length) {
@@ -585,7 +584,7 @@ public abstract class AbstractEdgeData extends AbstractSelectionData {
                     unselectedSelfLoopEdgeIndex++;
                     final float weight = edgeWeightEnabled ? edgeWeightsArray[i] : 1f;
 
-                    fillSelfLoopEdgeAttributesDataWithSelection(attribs, e, index, weight);
+                    fillSelfLoopEdgeAttributesDataWithSelection(attribs, e, index, false, weight);
                     index += ATTRIBS_STRIDE_SELFLOOP;
 
                     if (directBuffer != null && index == attribs.length) {
@@ -610,7 +609,7 @@ public abstract class AbstractEdgeData extends AbstractSelectionData {
                     final float weight = edgeWeightEnabled ? edgeWeightsArray[i] : 1f;
 
 
-                    fillSelfLoopEdgeAttributesDataWithSelection(attribs, e, index, weight);
+                    fillSelfLoopEdgeAttributesDataWithSelection(attribs, e, index, true, weight);
                     index += ATTRIBS_STRIDE_SELFLOOP;
 
                     if (directBuffer != null && index == attribs.length) {
@@ -1021,12 +1020,8 @@ public abstract class AbstractEdgeData extends AbstractSelectionData {
                 boolean sourceSelected = nodesCallback.isSelected(source.getStoreId());
                 boolean targetSelected = nodesCallback.isSelected(target.getStoreId());
 
-                if (sourceSelected && targetSelected) {
-                    buffer[index + 5] = edgeBothSelectionColor;//Color
-                } else if (sourceSelected) {
-                    buffer[index + 5] = edgeOutSelectionColor;//Color
-                } else if (targetSelected) {
-                    buffer[index + 5] = edgeInSelectionColor;//Color
+                if (sourceSelected || targetSelected) {
+                    buffer[index + 5] = edgeBothSelectionColor;//Color — undirected has no in/out
                 } else {
                     buffer[index + 5] = computeElementColor(edge);//Color
                 }
@@ -1076,7 +1071,8 @@ public abstract class AbstractEdgeData extends AbstractSelectionData {
     }
 
     protected void fillSelfLoopEdgeAttributesDataWithSelection(final float[] buffer, final Edge edge,
-                                                               final int index, final float weight) {
+                                                               final int index, final boolean selected,
+                                                               final float weight) {
         final Node source = edge.getSource();
 
         // Self loop for the moment are just circle like nodes so let's try to have same buffer
@@ -1089,14 +1085,28 @@ public abstract class AbstractEdgeData extends AbstractSelectionData {
         buffer[index] = sourceX;
         buffer[index + 1] = sourceY;
         //Color:
-        buffer[index + 2] = computeElementColor(edge);
-        //Color
+        if (selected) {
+            if (someSelection && edgeSelectionColor) {
+                // Self-loop: source == target, so always "both" selection color
+                if (nodesCallback.isSelected(source.getStoreId())) {
+                    buffer[index + 2] = edgeBothSelectionColor;
+                } else {
+                    buffer[index + 2] = computeElementColor(edge);
+                }
+            } else if (someSelection && nodesCallback.isSelected(source.getStoreId())) {
+                // Color by node (source == target for self-loops)
+                buffer[index + 2] = Float.intBitsToFloat(source.getRGBA());
+            } else {
+                buffer[index + 2] = computeElementColor(edge);
+            }
+        } else {
+            buffer[index + 2] = computeElementColor(edge);
+        }
 
         //Size (weight or constant):
         buffer[index + 3] = weight;
 
-
-        //Source and target size , here it's use for an offest to be applied to the circle :
+        //Source and target size, here it's used for an offset to be applied to the circle:
         // so that it's not right under the node.
         buffer[index + 4] = source.size();
     }
@@ -1116,13 +1126,11 @@ public abstract class AbstractEdgeData extends AbstractSelectionData {
         buffer[index + 1] = sourceY;
         //Color:
         buffer[index + 2] = computeElementColor(edge);
-        //Color
 
         //Size (weight or constant):
         buffer[index + 3] = weight;
 
-
-        //Source and target size , here it's use for an offest to be applied to the circle :
+        //Source and target size, here it's used for an offset to be applied to the circle:
         // so that it's not right under the node.
         buffer[index + 4] = source.size();
     }
