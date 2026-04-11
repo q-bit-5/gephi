@@ -271,8 +271,14 @@ public class VizEngine<R extends RenderingTarget, I> {
     public void centerOnGraph() {
         final Rect2D visibleGraphBoundaries = engineModel.getGraphIndex().getGraphBoundaries();
 
+        final float width = visibleGraphBoundaries.width();
+        final float height = visibleGraphBoundaries.height();
+        if (Float.isInfinite(width) || Float.isInfinite(height)) {
+            return;
+        }
+
         final float[] center = visibleGraphBoundaries.center();
-        centerOn(new Vector2f(center[0], center[1]), visibleGraphBoundaries.width(), visibleGraphBoundaries.height());
+        centerOn(new Vector2f(center[0], center[1]), width, height);
     }
 
     public void centerOn(Vector2fc center, float width, float height) {
