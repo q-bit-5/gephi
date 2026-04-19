@@ -18,7 +18,6 @@ public class MirrorLayout extends AbstractLayout {
     }
 
 
-    private Graph graph;
     private boolean xAxis;
     private final MirrorTransformation xAxisTransformation = new MirrorTransformation(Node::y, Node::setY, "X axis");
     private final MirrorTransformation yAxisTransformation = new MirrorTransformation(Node::x, Node::setX, "Y axis");
@@ -39,7 +38,7 @@ public class MirrorLayout extends AbstractLayout {
 
     @Override
     public void goAlgo() {
-        graph = graphModel.getGraphVisible();
+        Graph graph = graphModel.getGraphVisible();
         graph.readLock();
         try {
             float xMean = 0.f, yMean = 0.f;
