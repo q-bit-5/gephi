@@ -60,7 +60,6 @@ import org.openide.util.NbBundle;
 public abstract class AbstractScaleLayout extends AbstractLayout {
 
     private float scale;
-    private Graph graph;
 
     public AbstractScaleLayout(LayoutBuilder layoutBuilder, float scale) {
         super(layoutBuilder);
@@ -74,7 +73,7 @@ public abstract class AbstractScaleLayout extends AbstractLayout {
 
     @Override
     public void goAlgo() {
-        graph = graphModel.getGraphVisible();
+        Graph graph = graphModel.getGraphVisible();
         graph.readLock();
         try {
             float xMean = 0, yMean = 0;
@@ -132,5 +131,10 @@ public abstract class AbstractScaleLayout extends AbstractLayout {
      */
     public void setScale(Float scale) {
         this.scale = scale;
+    }
+
+    // Backward compatibility
+    public void setScale(Double scale) {
+        setScale(scale.floatValue());
     }
 }

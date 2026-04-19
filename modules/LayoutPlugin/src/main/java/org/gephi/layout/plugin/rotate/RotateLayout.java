@@ -60,7 +60,6 @@ import org.openide.util.NbBundle;
 public class RotateLayout extends AbstractLayout {
 
     private float angle;
-    private Graph graph;
 
     public RotateLayout(LayoutBuilder layoutBuilder, float angle) {
         super(layoutBuilder);
@@ -74,7 +73,7 @@ public class RotateLayout extends AbstractLayout {
 
     @Override
     public void goAlgo() {
-        graph = graphModel.getGraphVisible();
+        Graph graph = graphModel.getGraphVisible();
         graph.readLock();
         try {
             float sin = (float) Math.sin(-getAngle() * Math.PI / 180f);
@@ -133,5 +132,10 @@ public class RotateLayout extends AbstractLayout {
      */
     public void setAngle(Float angle) {
         this.angle = angle;
+    }
+
+    // Backward compatibility
+    public void setAngle(Double angle) {
+        setAngle(angle.floatValue());
     }
 }
