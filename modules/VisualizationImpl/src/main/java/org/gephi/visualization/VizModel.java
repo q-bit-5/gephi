@@ -265,11 +265,12 @@ public class VizModel implements VisualizationModel {
     }
 
     public Optional<VizEngine<JOGLRenderingTarget, NEWTEvent>> getEngine() {
-        return vizController.getCanvasManager().getEngine();
+        return vizController.getCanvasManager().getEngine()
+            .filter(e -> e.getGraphModel() == graphModel);
     }
 
     private Optional<GraphRenderingOptions> getRenderingOptions() {
-        return vizController.getCanvasManager().getEngine().map(VizEngine::getRenderingOptions);
+        return getEngine().map(VizEngine::getRenderingOptions);
     }
 
     @Override
