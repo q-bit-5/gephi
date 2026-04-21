@@ -122,6 +122,9 @@ public final class AttributesTopComponent extends TopComponent implements Attrib
     }
 
     private void refreshSelection() {
+        if (model == null) {
+            return;
+        }
         if (model.isEditMode()) {
             editPanel.refreshSelected(model);
         } else {

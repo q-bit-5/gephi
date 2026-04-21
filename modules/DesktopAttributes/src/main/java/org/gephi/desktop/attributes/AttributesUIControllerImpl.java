@@ -138,6 +138,9 @@ public class AttributesUIControllerImpl implements AttributesUIController, Contr
 
     private void setSelectedNodes(Node[] nodes) {
         AttributesUIModelImpl model = getModel();
+        if (model == null) {
+            return;
+        }
         if (model.getSelectedNodes() != nodes) {
             model.setSelectedNodes(nodes);
             firePropertyChangeEvent(AttributesUIModelEvent.SELECTED_ELEMENTS, null, nodes);
@@ -146,6 +149,9 @@ public class AttributesUIControllerImpl implements AttributesUIController, Contr
 
     private void setSelectedEdges(Edge[] edges) {
         AttributesUIModelImpl model = getModel();
+        if (model == null) {
+            return;
+        }
         if (model.getSelectedEdges() != edges) {
             model.setSelectedEdges(edges);
             firePropertyChangeEvent(AttributesUIModelEvent.SELECTED_ELEMENTS, null, edges);
@@ -253,7 +259,9 @@ public class AttributesUIControllerImpl implements AttributesUIController, Contr
         AttributesUIModelImpl model = getModel();
         if (model != null && !model.isEditMode()) {
             runAction(() -> {
-                setSelectedNodes(nodes);
+                if (model == getModel()) {
+                    setSelectedNodes(nodes);
+                }
             });
         }
 
