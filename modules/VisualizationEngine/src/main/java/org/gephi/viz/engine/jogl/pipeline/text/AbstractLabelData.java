@@ -146,8 +146,12 @@ public abstract class AbstractLabelData<E extends Element> {
         // Check if we need to recompute bounds (expensive)
         boolean sizeFactorChanged = Math.abs(sizeFactor - batch.writeScale) > 0.0001f;
 
+        // Treat dimensions as invalid if they were never set (e.g. after a workspace switch where
+        // the new element at the same storeId has the same text but uninitialized text properties).
+        boolean dimensionsValid = batch.writeWidth > 0 && batch.writeHeight > 0;
+
         float width, height, ascent;
-        if (textChanged || sizeFactorChanged) {
+        if (textChanged || sizeFactorChanged || !dimensionsValid) {
             // Recompute bounds
             final Rectangle2D bounds = getTextBounds(text);
             if (bounds == null) {
@@ -159,13 +163,18 @@ public abstract class AbstractLabelData<E extends Element> {
             height = (float) bounds.getHeight() * sizeFactor;
             ascent = (float) (-bounds.getY());
 
-            element.getTextProperties().setDimensions(width, height);
+            batch.writeWidth = width;
+            batch.writeHeight = height;
         } else {
-            // Use cached bounds
-            width = element.getTextProperties().getWidth();
-            height = element.getTextProperties().getHeight();
+            // Use bounds cached in the batch (safe across workspace switches)
+            width = batch.writeWidth;
+            height = batch.writeHeight;
             ascent = batch.writeAscent;
         }
+
+        // Always sync dimensions to the element so that overlap detection in NodeLabelUpdater
+        // reads correct values regardless of which branch was taken above.
+        element.getTextProperties().setDimensions(width, height);
 
         // Compute centered draw position using cached bounds
         final float descentPx = (height / sizeFactor) - ascent;
@@ -276,6 +285,8 @@ public abstract class AbstractLabelData<E extends Element> {
         private List<Glyph> writeGlyphs;
         private String writeText = null;
         private float writeAscent;
+        private float writeWidth;
+        private float writeHeight;
         private float writeX;
         private float writeY;
         private float writeScale;
@@ -327,6 +338,8 @@ public abstract class AbstractLabelData<E extends Element> {
         public void invalidateGlyphs() {
             writeText = null;
             writeGlyphs = null;
+            writeWidth = 0;
+            writeHeight = 0;
         }
 
         // Renderer read methods
