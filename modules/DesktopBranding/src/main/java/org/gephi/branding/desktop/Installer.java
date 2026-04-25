@@ -42,6 +42,9 @@
 
 package org.gephi.branding.desktop;
 
+import io.sentry.Sentry;
+import io.sentry.SentryLevel;
+import io.sentry.util.UUIDGenerator;
 import java.awt.Color;
 import java.awt.Desktop;
 import java.io.BufferedReader;
@@ -54,11 +57,13 @@ import java.lang.module.ModuleDescriptor;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.UUID;
 import java.util.logging.Formatter;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import javax.swing.JCheckBox;
 import javax.swing.JOptionPane;
 import javax.swing.UIManager;
@@ -83,6 +88,8 @@ import org.openide.windows.WindowManager;
  */
 public class Installer extends ModuleInstall {
 
+    private static final String POST_URL =
+        "https://d007fbbdeb6241b5b2c542a6bc548cf3@o43889.ingest.sentry.io/85815";
     private static final String LATEST_GEPHI_VERSION_URL =
         "https://raw.githubusercontent.com/gephi/gephi/gh-pages/latest";
 
@@ -98,6 +105,9 @@ public class Installer extends ModuleInstall {
     public void restored() {
         //Init
         initGephi();
+
+        //Init Sentry
+        initSession();
 
         //GTK Slider issue #529913
         UIManager.put("Slider.paintValue", Boolean.FALSE);
@@ -130,6 +140,11 @@ public class Installer extends ModuleInstall {
         installOutputLogger();
     }
 
+    @Override
+    public void close() {
+        closeSession();
+    }
+
     private void initGephi() {
         WindowManager.getDefault().invokeWhenUIReady(new Runnable() {
             @Override
@@ -146,6 +161,35 @@ public class Installer extends ModuleInstall {
                     .log(Level.WARNING, "Can't setup OpenFilesHandler", e);
             }
         }
+    }
+
+    private void initSession() {
+        Sentry.init(options -> {
+            String gephiVersion = System.getProperty("netbeans.productversion");
+            if (!gephiVersion.contains("SNAPSHOT")) {
+                // Strip build
+                gephiVersion = gephiVersion.substring(0, gephiVersion.length() - 13);
+            }
+
+            options.setDsn(POST_URL);
+            options.setRelease(gephiVersion);
+            options.setDistinctId(SentryIdentity.getOrCreateDistinctId());
+            options.setDiagnosticLevel(SentryLevel.ERROR);
+            options.setServerName("Gephi Desktop");
+            options.setEnvironment(gephiVersion.contains("SNAPSHOT") ? "development" : "production");
+        });
+        Sentry.startSession();
+    }
+
+    private void closeSession() {
+        Sentry.endSession();
+        try {
+            Sentry.endSession();
+            Sentry.flush(500);
+        } finally {
+            Sentry.close();
+        }
+        Sentry.close();
     }
 
     private void checkForNewMajorRelease() {
@@ -274,6 +318,20 @@ public class Installer extends ModuleInstall {
                 return String
                     .format(outputFormat, record.getLevel().getName(), formattedMessage, throwable);
             }
+        }
+    }
+
+    public static final class SentryIdentity {
+        private static final String KEY = "sentry.distinctId";
+
+        public static String getOrCreateDistinctId() {
+            Preferences prefs = NbPreferences.forModule(SentryIdentity.class);
+            String id = prefs.get(KEY, null);
+            if (id == null || id.isBlank()) {
+                id = UUIDGenerator.randomUUID().toString();
+                prefs.put(KEY, id);
+            }
+            return id;
         }
     }
 }

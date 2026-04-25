@@ -86,23 +86,8 @@ import org.w3c.dom.Document;
  */
 public class ReportController {
 
-    private static final String POST_URL =
-        "https://d007fbbdeb6241b5b2c542a6bc548cf3@o43889.ingest.sentry.io/85815";
-
     public ReportController() {
-        Sentry.init(options -> {
-            String gephiVersion = System.getProperty("netbeans.productversion");
-            if (!gephiVersion.contains("SNAPSHOT")) {
-                // Strip build
-                gephiVersion = gephiVersion.substring(0, gephiVersion.length() - 13);
-            }
 
-            options.setDsn(POST_URL);
-            options.setRelease(gephiVersion);
-            options.setDiagnosticLevel(SentryLevel.ERROR);
-            options.setServerName("Gephi Desktop");
-            options.setEnvironment(gephiVersion.contains("SNAPSHOT") ? "development" : "production");
-        });
     }
 
     public void sendReport(final Report report) {
