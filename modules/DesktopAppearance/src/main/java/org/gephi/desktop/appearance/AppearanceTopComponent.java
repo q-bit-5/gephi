@@ -258,11 +258,12 @@ public class AppearanceTopComponent extends TopComponent implements Lookup.Provi
     }
 
     private void refreshCombo() {
-        if (model != null && model.getSelectedTransformerUI() != null &&
-            model.isAttributeTransformerUI(model.getSelectedTransformerUI())) {
+        final AppearanceUIModel currentModel = model;
+        if (currentModel != null && currentModel.getSelectedTransformerUI() != null &&
+            currentModel.isAttributeTransformerUI(currentModel.getSelectedTransformerUI())) {
 
 
-            final List<Function> rows = new ArrayList<>(model.getFunctions());
+            final List<Function> rows = new ArrayList<>(currentModel.getFunctions());
 
             Collections.sort(rows, (o1, o2) -> {
                 if (o1.isAttribute() && !o2.isAttribute()) {
@@ -277,7 +278,7 @@ public class AppearanceTopComponent extends TopComponent implements Lookup.Provi
                 final DefaultComboBoxModel comboBoxModel = new DefaultComboBoxModel();
 
                 //Ranking
-                Function selectedColumn = model.getSelectedFunction();
+                Function selectedColumn = currentModel.getSelectedFunction();
                 attibuteBox.removeItemListener(attributeListener);
 
                 comboBoxModel.addElement(NO_SELECTION);
