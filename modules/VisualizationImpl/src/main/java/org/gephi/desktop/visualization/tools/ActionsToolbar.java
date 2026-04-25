@@ -49,11 +49,6 @@ import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
-import org.gephi.graph.api.Edge;
-import org.gephi.graph.api.Graph;
-import org.gephi.graph.api.GraphController;
-import org.gephi.graph.api.GraphModel;
-import org.gephi.graph.api.Node;
 import org.gephi.ui.utils.UIUtils;
 import org.gephi.visualization.api.VisualizationController;
 import org.openide.util.ImageUtilities;
@@ -106,26 +101,6 @@ public class ActionsToolbar extends JToolBar {
         });
         add(centerOnZeroButton);
 
-        //Reset label visible
-        final JButton resetLabelVisibleButton = new JButton();
-        resetLabelVisibleButton.setIcon(ImageUtilities.loadImageIcon("VisualizationImpl/resetLabelVisible.svg", false));
-        resetLabelVisibleButton
-            .setToolTipText(NbBundle.getMessage(ActionsToolbar.class, "ActionsToolbar.resetLabelVisible"));
-        resetLabelVisibleButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent evt) {
-                GraphController gc = Lookup.getDefault().lookup(GraphController.class);
-                GraphModel gm = gc.getGraphModel();
-                Graph graph = gm.getGraphVisible();
-                for (Node n : graph.getNodes()) {
-                    n.getTextProperties().setVisible(true);
-                }
-                for (Edge e : graph.getEdges()) {
-                    e.getTextProperties().setVisible(true);
-                }
-            }
-        });
-        add(resetLabelVisibleButton);
     }
 
     private void initDesign() {

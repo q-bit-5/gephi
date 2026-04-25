@@ -57,6 +57,11 @@ import org.gephi.desktop.filters.query.QueryExplorer;
 import org.gephi.filters.api.FilterController;
 import org.gephi.filters.api.FilterModel;
 import org.gephi.filters.api.Query;
+import org.gephi.graph.api.Edge;
+import org.gephi.graph.api.Graph;
+import org.gephi.graph.api.GraphController;
+import org.gephi.graph.api.GraphModel;
+import org.gephi.graph.api.Node;
 import org.gephi.ui.utils.UIUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -78,6 +83,7 @@ public class FiltersPanel extends javax.swing.JPanel implements ExplorerManager.
     private FilterModel filterModel;
     private FilterUIModel uiModel;
     private QueryExplorer queriesExplorer;
+    private javax.swing.JButton resetLabelVisibleButton;
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel buttonsPanel;
     private javax.swing.JButton exportColumnButton;
@@ -105,6 +111,14 @@ public class FiltersPanel extends javax.swing.JPanel implements ExplorerManager.
             toolbar.setBackground(UIManager.getColor("NbExplorerView.background"));
             setBackground(UIManager.getColor("NbExplorerView.background"));
         }
+
+        resetLabelVisibleButton = new javax.swing.JButton();
+        resetLabelVisibleButton.setIcon(ImageUtilities.loadImageIcon("DesktopFilters/resetLabelVisible.svg", false));
+        resetLabelVisibleButton.setToolTipText(NbBundle.getMessage(FiltersPanel.class, "FiltersPanel.resetLabelVisible.toolTipText"));
+        resetLabelVisibleButton.setFocusable(false);
+        resetLabelVisibleButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        resetLabelVisibleButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        toolbar.add(resetLabelVisibleButton);
 
         //Components
         queriesPanel = new QueriesPanel();
@@ -209,6 +223,21 @@ public class FiltersPanel extends javax.swing.JPanel implements ExplorerManager.
                 }
             }
         });
+        resetLabelVisibleButton.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                GraphController gc = Lookup.getDefault().lookup(GraphController.class);
+                GraphModel gm = gc.getGraphModel();
+                Graph graph = gm.getGraphVisible();
+                for (Node n : graph.getNodes()) {
+                    n.getTextProperties().setVisible(true);
+                }
+                for (Edge edge : graph.getEdges()) {
+                    edge.getTextProperties().setVisible(true);
+                }
+            }
+        });
 
         updateEnabled(false);
     }
@@ -238,6 +267,7 @@ public class FiltersPanel extends javax.swing.JPanel implements ExplorerManager.
             @Override
             public void run() {
                 resetButton.setEnabled(enabled);
+                resetLabelVisibleButton.setEnabled(enabled);
                 selectButton.setEnabled(enabled && currentUiModel != null && currentUiModel.getSelectedQuery() != null);
                 filterButton.setEnabled(enabled && currentUiModel != null && currentUiModel.getSelectedQuery() != null);
                 /*autoRefreshButton.setEnabled(enabled);*/
