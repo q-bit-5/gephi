@@ -251,10 +251,12 @@ public class TimelineControllerImpl implements TimelineController, Controller<Ti
             if (dynamicQuery == null) {
                 DynamicRangeBuilder rangeBuilder =
                     filterModel.getLibrary().getLookup().lookup(DynamicRangeBuilder.class);
-                FilterBuilder[] fb = rangeBuilder.getBuilders(filterModel.getWorkspace());
-                if (fb.length > 0) {
-                    dynamicQuery = filterController.createQuery(fb[0]);
-                    filterController.add(dynamicQuery);
+                if (rangeBuilder != null) {
+                    FilterBuilder[] fb = rangeBuilder.getBuilders(filterModel.getWorkspace());
+                    if (fb.length > 0) {
+                        dynamicQuery = filterController.createQuery(fb[0]);
+                        filterController.add(dynamicQuery);
+                    }
                 }
             }
             if (dynamicQuery != null) {
