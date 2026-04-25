@@ -178,18 +178,21 @@ public class Installer extends ModuleInstall {
             options.setServerName("Gephi Desktop");
             options.setEnvironment(gephiVersion.contains("SNAPSHOT") ? "development" : "production");
         });
-        Sentry.startSession();
+        try {
+            Sentry.startSession();
+        } catch (Exception e) {
+            Logger.getLogger(Installer.class.getName())
+                .log(Level.WARNING, "Can't start Sentry session", e);
+        }
     }
 
     private void closeSession() {
-        Sentry.endSession();
         try {
             Sentry.endSession();
             Sentry.flush(500);
         } finally {
             Sentry.close();
         }
-        Sentry.close();
     }
 
     private void checkForNewMajorRelease() {
