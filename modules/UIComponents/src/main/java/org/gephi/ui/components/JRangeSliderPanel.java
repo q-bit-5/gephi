@@ -51,6 +51,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.MathContext;
 import java.math.RoundingMode;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -350,11 +351,14 @@ public class JRangeSliderPanel extends javax.swing.JPanel {
             BigDecimal minBigDecimal = new BigDecimal(min.toString());
             BigDecimal maxBigDecimal = new BigDecimal(max.toString());
 
+            // Use MathContext.DECIMAL64 so that integer-typed ranges (e.g. degree)
+            // don't get the result truncated to scale 0 (yielding only 0 or 1) when
+            // dividing two BigDecimals that share the dividend's scale.
             double normalizedLow = (lowerBoundBigDecimal.subtract(minBigDecimal))
-                .divide(maxBigDecimal.subtract(minBigDecimal), RoundingMode.HALF_UP)
+                .divide(maxBigDecimal.subtract(minBigDecimal), MathContext.DECIMAL64)
                 .doubleValue();
             double normalizedUp = (upperBoundBigDecimal.subtract(minBigDecimal))
-                .divide(maxBigDecimal.subtract(minBigDecimal), RoundingMode.HALF_UP)
+                .divide(maxBigDecimal.subtract(minBigDecimal), MathContext.DECIMAL64)
                 .doubleValue();
 
             sliderLowValue = (int) (normalizedLow * SLIDER_MAXIMUM);
