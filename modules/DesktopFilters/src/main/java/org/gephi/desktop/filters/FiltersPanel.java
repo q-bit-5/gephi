@@ -231,20 +231,25 @@ public class FiltersPanel extends javax.swing.JPanel implements ExplorerManager.
     }
 
     private void updateEnabled(final boolean enabled) {
+        final FilterUIModel currentUiModel = uiModel;
+        final FilterModel currentFilterModel = filterModel;
         SwingUtilities.invokeLater(new Runnable() {
 
             @Override
             public void run() {
                 resetButton.setEnabled(enabled);
-                selectButton.setEnabled(enabled && uiModel.getSelectedQuery() != null);
-                filterButton.setEnabled(enabled && uiModel.getSelectedQuery() != null);
+                selectButton.setEnabled(enabled && currentUiModel != null && currentUiModel.getSelectedQuery() != null);
+                filterButton.setEnabled(enabled && currentUiModel != null && currentUiModel.getSelectedQuery() != null);
                 /*autoRefreshButton.setEnabled(enabled);*/
                 exportColumnButton
-                    .setEnabled(enabled && uiModel.getSelectedQuery() != null && filterModel.getCurrentQuery() != null);
+                    .setEnabled(enabled && currentUiModel != null && currentUiModel.getSelectedQuery() != null
+                        && currentFilterModel != null && currentFilterModel.getCurrentQuery() != null);
                 exportWorkspaceButton
-                    .setEnabled(enabled && uiModel.getSelectedQuery() != null && filterModel.getCurrentQuery() != null);
+                    .setEnabled(enabled && currentUiModel != null && currentUiModel.getSelectedQuery() != null
+                        && currentFilterModel != null && currentFilterModel.getCurrentQuery() != null);
                 exportLabelVisible
-                    .setEnabled(enabled && uiModel.getSelectedQuery() != null && filterModel.getCurrentQuery() != null);
+                    .setEnabled(enabled && currentUiModel != null && currentUiModel.getSelectedQuery() != null
+                        && currentFilterModel != null && currentFilterModel.getCurrentQuery() != null);
             }
         });
     }
