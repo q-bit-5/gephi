@@ -92,6 +92,8 @@ public abstract class ElementDraftImpl implements ElementDraft {
 
     abstract ColumnDraft getColumn(String key, Class type);
 
+    abstract String getElementClassName();
+
     @Override
     public Double getGraphTimestamp() {
         return container.getTimestamp();
@@ -133,7 +135,7 @@ public abstract class ElementDraftImpl implements ElementDraft {
         if (cl != null) {
             setColor(cl);
         } else {
-            String message = NbBundle.getMessage(ElementDraftImpl.class, "ElementDraftException_ColorParse", color, id);
+            String message = NbBundle.getMessage(ElementDraftImpl.class, "ElementDraftException_ColorParse", color, id, getElementClassName());
             container.getReport().logIssue(new Issue(message, Issue.Level.WARNING));
         }
     }
@@ -175,7 +177,7 @@ public abstract class ElementDraftImpl implements ElementDraft {
             setLabelColor(cl);
         } else {
             String message =
-                NbBundle.getMessage(ElementDraftImpl.class, "ElementDraftException_LabelColorParse", color, id);
+                NbBundle.getMessage(ElementDraftImpl.class, "ElementDraftException_LabelColorParse", color, id, getElementClassName());
             container.getReport().logIssue(new Issue(message, Issue.Level.WARNING));
         }
     }
@@ -241,7 +243,7 @@ public abstract class ElementDraftImpl implements ElementDraft {
         } catch (Exception ex) {
             String message = NbBundle
                 .getMessage(ElementDraftImpl.class, "ElementDraftException_SetValueError", value.toString(), id,
-                    ex.getMessage());
+                    ex.getMessage(), getElementClassName());
             container.getReport().logIssue(new Issue(message, Issue.Level.SEVERE));
         }
     }
@@ -262,13 +264,13 @@ public abstract class ElementDraftImpl implements ElementDraft {
             if (!setAttributeValue(column, value, timestamp)) {
                 String message = NbBundle
                     .getMessage(ElementDraftImpl.class, "ElementDraftException_SetValueTimestampDuplicate", value.toString(),
-                        id, timestamp);
+                        id, timestamp, getElementClassName());
                 container.getReport().logIssue(new Issue(message, Issue.Level.WARNING));
             }
         } catch (Exception ex) {
             String message = NbBundle
                 .getMessage(ElementDraftImpl.class, "ElementDraftException_SetValueTimestampError", value.toString(),
-                    id, timestamp, ex.getMessage());
+                    id, timestamp, ex.getMessage(), getElementClassName());
             container.getReport().logIssue(new Issue(message, Issue.Level.SEVERE));
         }
     }
@@ -307,14 +309,14 @@ public abstract class ElementDraftImpl implements ElementDraft {
                 String interval = "[" + start + "," + end + "]";
                 String message = NbBundle
                     .getMessage(ElementDraftImpl.class, "ElementDraftException_SetValueIntervalDuplicate", value.toString(),
-                        id, interval);
+                        id, interval, getElementClassName());
                 container.getReport().logIssue(new Issue(message, Issue.Level.WARNING));
             }
         } catch (Exception ex) {
             String interval = "[" + start + "," + end + "]";
             String message = NbBundle
                 .getMessage(ElementDraftImpl.class, "ElementDraftException_SetValueIntervalError", value.toString(), id,
-                    interval, ex.getMessage());
+                    interval, ex.getMessage(), getElementClassName());
             container.getReport().logIssue(new Issue(message, Issue.Level.SEVERE));
         }
     }
@@ -393,7 +395,7 @@ public abstract class ElementDraftImpl implements ElementDraft {
     public void addTimestamp(double timestamp) {
         if (!container.getTimeRepresentation().equals(TimeRepresentation.TIMESTAMP)) {
             String message =
-                NbBundle.getMessage(ElementDraftImpl.class, "ElementDraftException_NotTimestampRepresentation", id);
+                NbBundle.getMessage(ElementDraftImpl.class, "ElementDraftException_NotTimestampRepresentation", id, getElementClassName());
             container.getReport().logIssue(new Issue(message, Issue.Level.SEVERE));
             return;
         }
@@ -407,7 +409,7 @@ public abstract class ElementDraftImpl implements ElementDraft {
     public void addTimestamps(String timestamps) {
         if (!container.getTimeRepresentation().equals(TimeRepresentation.TIMESTAMP)) {
             String message =
-                NbBundle.getMessage(ElementDraftImpl.class, "ElementDraftException_NotTimestampRepresentation", id);
+                NbBundle.getMessage(ElementDraftImpl.class, "ElementDraftException_NotTimestampRepresentation", id, getElementClassName());
             container.getReport().logIssue(new Issue(message, Issue.Level.SEVERE));
             return;
         }
@@ -450,7 +452,7 @@ public abstract class ElementDraftImpl implements ElementDraft {
     public void addIntervals(String intervals) {
         if (!container.getTimeRepresentation().equals(TimeRepresentation.INTERVAL)) {
             String message =
-                NbBundle.getMessage(ElementDraftImpl.class, "ElementDraftException_NotIntervalRepresentation", id);
+                NbBundle.getMessage(ElementDraftImpl.class, "ElementDraftException_NotIntervalRepresentation", id, getElementClassName());
             container.getReport().logIssue(new Issue(message, Issue.Level.SEVERE));
             return;
         }
@@ -468,7 +470,7 @@ public abstract class ElementDraftImpl implements ElementDraft {
     public void addInterval(double intervalStart, double intervalEnd) {
         if (!container.getTimeRepresentation().equals(TimeRepresentation.INTERVAL)) {
             String message =
-                NbBundle.getMessage(ElementDraftImpl.class, "ElementDraftException_NotIntervalRepresentation", id);
+                NbBundle.getMessage(ElementDraftImpl.class, "ElementDraftException_NotIntervalRepresentation", id, getElementClassName());
             container.getReport().logIssue(new Issue(message, Issue.Level.SEVERE));
             return;
         }
@@ -482,7 +484,7 @@ public abstract class ElementDraftImpl implements ElementDraft {
             String interval = "[" + intervalStart + "," + intervalEnd + "]";
             String message = NbBundle
                 .getMessage(ElementDraftImpl.class, "ElementDraftException_IntervalSetError", interval, id,
-                    e.getMessage());
+                    e.getMessage(), getElementClassName());
             container.getReport().logIssue(new Issue(message, Issue.Level.SEVERE));
         }
     }
