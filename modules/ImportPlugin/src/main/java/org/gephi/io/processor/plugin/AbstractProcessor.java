@@ -194,6 +194,11 @@ public abstract class AbstractProcessor implements Processor, LongTask {
             node.setSize(10f);
         }
 
+        //Fixed
+        if(nodeDraft.isFixed()) {
+            node.setFixed(true);
+        }
+
         //Timeset
         if (nodeDraft.getTimeSet() != null) {
             flushTimeSet(nodeDraft.getTimeSet(), node);
