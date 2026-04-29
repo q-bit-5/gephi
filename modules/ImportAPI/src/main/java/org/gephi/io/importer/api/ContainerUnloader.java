@@ -140,4 +140,23 @@ public interface ContainerUnloader {
     boolean isFillLabelWithId();
 
     EdgeMergeStrategy getEdgesMergeStrategy();
+
+    /**
+     * Returns true if this container contains a dynamic graph.
+     * <p>
+     * A dynamic graph has elements that appear or disappear over time.
+     *
+     * @return true if dynamic, false otherwise
+     */
+    boolean isDynamicGraph();
+
+    /**
+     * Returns true if this container contains elements that have dynamic
+     * attributes.
+     * <p>
+     * Dynamic attributes are attributes with different values over time.
+     *
+     * @return true if dynamic attributes, false otherwise
+     */
+    boolean hasDynamicAttributes();
 }
