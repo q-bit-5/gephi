@@ -46,6 +46,7 @@ import java.awt.Color;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import org.gephi.datalab.api.GraphElementsController;
 import org.gephi.graph.api.Edge;
 import org.gephi.graph.api.GraphController;
@@ -89,12 +90,12 @@ public class EdgePencil implements Tool {
         Lookup.getDefault().lookup(ProjectController.class).addWorkspaceListener(new WorkspaceListener() {
             @Override
             public void initialize(Workspace workspace) {
-                updatePanel();
+                SwingUtilities.invokeLater(() -> updatePanel());
             }
 
             @Override
             public void select(Workspace workspace) {
-                updatePanel();
+                SwingUtilities.invokeLater(() -> updatePanel());
             }
 
             @Override

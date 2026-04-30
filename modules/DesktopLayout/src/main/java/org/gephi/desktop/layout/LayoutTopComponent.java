@@ -43,6 +43,7 @@
 package org.gephi.desktop.layout;
 
 import java.awt.BorderLayout;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import org.gephi.layout.api.LayoutModel;
 import org.gephi.project.api.ProjectController;
@@ -94,7 +95,7 @@ public final class LayoutTopComponent extends TopComponent {
             @Override
             public void select(Workspace workspace) {
                 model = workspace.getLookup().lookup(LayoutModel.class);
-                refreshModel();
+                SwingUtilities.invokeLater(() -> refreshModel());
             }
 
             @Override
@@ -111,7 +112,7 @@ public final class LayoutTopComponent extends TopComponent {
             @Override
             public void disable() {
                 model = null;
-                refreshModel();
+                SwingUtilities.invokeLater(() -> refreshModel());
             }
         });
 

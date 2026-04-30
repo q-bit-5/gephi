@@ -118,11 +118,11 @@ public class FilterControllerImpl implements FilterController, PropertyExecutor,
             public void close(Workspace workspace) {
                 FilterModelImpl m = (FilterModelImpl) workspace.getLookup().lookup(FilterModel.class);
                 if (m != null) {
-                    m.destroy();
                     if (m.getCurrentResult() != null && m.getGraphModel() != null) {
                         m.getGraphModel().destroyView(m.getCurrentResult());
                         m.setCurrentResult(null);
                     }
+                    m.destroy();
                 }
             }
 

@@ -107,6 +107,7 @@ public class TimelineControllerImpl implements TimelineController, Controller<Ti
 
             @Override
             public void unselect(Workspace workspace) {
+                stopPlay();
                 if (observerThread != null) {
                     observerThread.stopThread();
                     observerThread = null;
@@ -119,6 +120,7 @@ public class TimelineControllerImpl implements TimelineController, Controller<Ti
 
             @Override
             public void disable() {
+                stopPlay();
                 if (observerThread != null) {
                     observerThread.stopThread();
                     observerThread = null;
