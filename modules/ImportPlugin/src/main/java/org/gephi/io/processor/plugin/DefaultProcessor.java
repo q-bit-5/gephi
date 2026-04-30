@@ -80,7 +80,7 @@ public class DefaultProcessor extends AbstractProcessor {
     }
 
     @Override
-    public void process() {
+    public Workspace[] process() {
         try {
             if (containers.length > 1) {
                 throw new RuntimeException("This processor can only handle single containers");
@@ -94,9 +94,8 @@ public class DefaultProcessor extends AbstractProcessor {
             ProjectController pc = Lookup.getDefault().lookup(ProjectController.class);
             if (workspace == null) {
                 workspace = pc.openNewWorkspace(config);
-            } else if(!configurationMatchesExisting(config, workspace)) {
-                // The configuration check failed, stop processing
-                return;
+            } else {
+                validateConfigurationMatchesExisting(container, config, workspace);
             }
             processMeta(container, workspace);
 
@@ -110,6 +109,7 @@ public class DefaultProcessor extends AbstractProcessor {
             Progress.start(progressTicket, calculateWorkUnits());
             process(container, workspace);
             Progress.finish(progressTicket);
+            return new Workspace[] {workspace};
         } finally {
             clean();
         }

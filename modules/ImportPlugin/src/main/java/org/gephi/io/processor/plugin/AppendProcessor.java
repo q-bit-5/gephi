@@ -42,12 +42,13 @@
 
 package org.gephi.io.processor.plugin;
 
+import org.gephi.graph.api.Configuration;
 import org.gephi.graph.api.Graph;
 import org.gephi.graph.api.GraphController;
-import org.gephi.graph.api.Configuration;
 import org.gephi.io.importer.api.ContainerUnloader;
 import org.gephi.io.processor.spi.Processor;
 import org.gephi.project.api.ProjectController;
+import org.gephi.project.api.Workspace;
 import org.gephi.utils.progress.Progress;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -67,8 +68,10 @@ public class AppendProcessor extends DefaultProcessor implements Processor {
     }
 
     @Override
-    public void process() {
+    public Workspace[] process() {
         try {
+
+
             ProjectController pc = Lookup.getDefault().lookup(ProjectController.class);
             if (workspace == null) {
                 workspace = pc.getCurrentWorkspace();
@@ -92,19 +95,17 @@ public class AppendProcessor extends DefaultProcessor implements Processor {
             int totalAddedNodes = 0, totalAddedEdges = 0, totalTouchedNodes = 0, totalTouchedEdges = 0;
             for (ContainerUnloader container : containers) {
                 Configuration config = createConfiguration(container);
-                if(configurationMatchesExisting(config, workspace)) {
-                    processMeta(container, workspace);
+                validateConfigurationMatchesExisting(container, config, workspace);
 
-                    if (container.getSource() != null) {
-                        pc.setSource(workspace, container.getSource());
-                    }
+                processMeta(container, workspace);
 
-                    process(container, workspace);
-                    totalTouchedNodes += container.getNodeCount();
-                    totalTouchedEdges += container.getEdgeCount();
-                } else {
-                    Progress.progress(progressTicket, AbstractProcessor.calculateWorkUnits(container));
+                if (container.getSource() != null) {
+                    pc.setSource(workspace, container.getSource());
                 }
+
+                process(container, workspace);
+                totalTouchedNodes += container.getNodeCount();
+                totalTouchedEdges += container.getEdgeCount();
             }
             Progress.finish(progressTicket);
 
@@ -122,6 +123,7 @@ public class AppendProcessor extends DefaultProcessor implements Processor {
                         AppendProcessor.class, "AppendProcessor.info.overlappingEdges", overlappedEdges));
                 }
             }
+            return new Workspace[] {workspace};
         } finally {
             clean();
         }

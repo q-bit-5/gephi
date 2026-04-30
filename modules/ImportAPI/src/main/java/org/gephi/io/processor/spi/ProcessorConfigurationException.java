@@ -40,67 +40,20 @@ Contributor(s):
 Portions Copyrighted 2011 Gephi Consortium.
  */
 
-package org.gephi.io.importer.api;
+package org.gephi.io.processor.spi;
 
 /**
- * File type definition.
+ * Exception thrown by a {@link Processor} when the graph configuration of an import container is incompatible
+ * with the existing workspace's graph model configuration.
  * <p>
- * A simple class which contains a <b>name</b> and <b>extension</b> for a file
- * type.
+ * This exception is a {@link RuntimeException} to maintain backward compatibility. The error is also logged
+ * as a {@link org.gephi.io.importer.api.Issue.Level#SEVERE} issue in the processor's report.
  *
  * @author Mathieu Bastian
  */
-public final class FileType {
+public class ProcessorConfigurationException extends RuntimeException {
 
-    private final String[] extensions;
-    private final String name;
-
-    /**
-     * Creates a file type with a single extension.
-     *
-     * @param extension file extension (e.g. {@code ".gexf"})
-     * @param name      human-readable name of the file type
-     */
-    public FileType(String extension, String name) {
-        this.extensions = new String[] {extension};
-        this.name = name;
-    }
-
-    /**
-     * Creates a file type with multiple extensions.
-     *
-     * @param extensions file extensions (e.g. {@code {".gexf", ".xml"}})
-     * @param name       human-readable name of the file type
-     */
-    public FileType(String[] extensions, String name) {
-        this.extensions = extensions;
-        this.name = name;
-    }
-
-    /**
-     * Returns the first (primary) file extension for this file type.
-     *
-     * @return primary file extension
-     */
-    public String getExtension() {
-        return extensions[0];
-    }
-
-    /**
-     * Returns all file extensions for this file type.
-     *
-     * @return array of file extensions
-     */
-    public String[] getExtensions() {
-        return extensions;
-    }
-
-    /**
-     * Returns the human-readable name of this file type.
-     *
-     * @return file type name
-     */
-    public String getName() {
-        return name;
+    public ProcessorConfigurationException(String message) {
+        super(message);
     }
 }
