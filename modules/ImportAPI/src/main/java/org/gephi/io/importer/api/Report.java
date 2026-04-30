@@ -89,10 +89,20 @@ public final class Report {
         }
     }
 
+    /**
+     * Returns true if this report has no entries at all (neither messages nor issues).
+     *
+     * @return true if the report is empty, false otherwise
+     */
     public boolean isEmpty() {
         return empty;
     }
 
+    /**
+     * Returns true if at least one issue has been logged in this report.
+     *
+     * @return true if the report contains issues, false otherwise
+     */
     public boolean hasIssues() {
         return hasIssues;
     }
