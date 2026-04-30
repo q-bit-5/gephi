@@ -324,6 +324,12 @@ public abstract class ElementDraftImpl implements ElementDraft {
     @Override
     public void parseAndSetValue(String key, String value) {
         ColumnDraft column = getColumn(key);
+        if (column == null) {
+            String message = NbBundle.getMessage(ElementDraftImpl.class,
+                "ElementDraftException_ColumnNotFound", key, id, getElementClassName());
+            container.getReport().logIssue(new Issue(message, Issue.Level.SEVERE));
+            return;
+        }
         if (column.isDynamic()) {
             if (container.getTimeRepresentation().equals(TimeRepresentation.INTERVAL)) {
                 if (container.getInterval() != null) {
@@ -356,6 +362,12 @@ public abstract class ElementDraftImpl implements ElementDraft {
     @Override
     public void parseAndSetValue(String key, String value, double timestamp) {
         ColumnDraft column = getColumn(key);
+        if (column == null) {
+            String message = NbBundle.getMessage(ElementDraftImpl.class,
+                "ElementDraftException_ColumnNotFound", key, id, getElementClassName());
+            container.getReport().logIssue(new Issue(message, Issue.Level.SEVERE));
+            return;
+        }
         setValue(key, parseValue(value, column.getTypeClass()), timestamp);
     }
 
@@ -382,6 +394,12 @@ public abstract class ElementDraftImpl implements ElementDraft {
     @Override
     public void parseAndSetValue(String key, String value, double start, double end) {
         ColumnDraft column = getColumn(key);
+        if (column == null) {
+            String message = NbBundle.getMessage(ElementDraftImpl.class,
+                "ElementDraftException_ColumnNotFound", key, id, getElementClassName());
+            container.getReport().logIssue(new Issue(message, Issue.Level.SEVERE));
+            return;
+        }
         setValue(key, parseValue(value, column.getTypeClass()), start, end);
     }
 
