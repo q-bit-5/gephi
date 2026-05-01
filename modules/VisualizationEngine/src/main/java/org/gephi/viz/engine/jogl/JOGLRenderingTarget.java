@@ -20,6 +20,8 @@ import java.awt.Frame;
 import java.awt.image.BufferedImage;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BooleanSupplier;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.gephi.viz.engine.VizEngine;
 import org.gephi.viz.engine.jogl.util.ScreenshotTaker;
 import org.gephi.viz.engine.jogl.util.gl.capabilities.GLCapabilitiesSummary;
@@ -110,6 +112,14 @@ public class JOGLRenderingTarget implements RenderingTarget, GLEventListener, co
     @Override
     public synchronized void init(GLAutoDrawable drawable) {
         final GL gl = drawable.getGL();
+
+        Logger.getLogger(VizEngine.class.getSimpleName()).log(Level.INFO,
+            "OpenGL Vendor: {0}, Renderer: {1}, Version: {2}",
+            new Object[] {
+                gl.glGetString(GL.GL_VENDOR),
+                gl.glGetString(GL.GL_RENDERER),
+                gl.glGetString(GL.GL_VERSION)
+            });
 
         engine.getOpenGLOptions().setGlCapabilitiesSummary(new GLCapabilitiesSummary(gl, Profile.CORE));
 
