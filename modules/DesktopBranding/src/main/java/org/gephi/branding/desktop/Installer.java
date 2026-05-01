@@ -44,7 +44,6 @@ package org.gephi.branding.desktop;
 
 import io.sentry.Sentry;
 import io.sentry.SentryLevel;
-import io.sentry.util.UUIDGenerator;
 import java.awt.Color;
 import java.awt.Desktop;
 import java.io.BufferedReader;
@@ -57,22 +56,16 @@ import java.lang.module.ModuleDescriptor;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.UUID;
 import java.util.logging.Formatter;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import java.util.prefs.Preferences;
 import javax.swing.JCheckBox;
 import javax.swing.JOptionPane;
 import javax.swing.UIManager;
 import org.gephi.branding.desktop.reporter.ReporterHandler;
-import org.gephi.project.api.ProjectController;
-import org.gephi.ui.utils.UIUtils;
-import org.openide.awt.Actions;
 import org.openide.modules.ModuleInstall;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
@@ -89,7 +82,7 @@ import org.openide.windows.WindowManager;
 public class Installer extends ModuleInstall {
 
     private static final String POST_URL =
-        "https://d007fbbdeb6241b5b2c542a6bc548cf3@o43889.ingest.sentry.io/85815";
+        "https://d007fbbdeb6241b5b2c542a6bc548cf3@o43889.ingest.us.sentry.io/85815";
     private static final String LATEST_GEPHI_VERSION_URL =
         "https://raw.githubusercontent.com/gephi/gephi/gh-pages/latest";
 
@@ -177,12 +170,24 @@ public class Installer extends ModuleInstall {
             options.setDiagnosticLevel(SentryLevel.ERROR);
             options.setServerName("Gephi Desktop");
             options.setEnvironment(gephiVersion.contains("SNAPSHOT") ? "development" : "production");
+            // Gephi has its own ReporterHandler/ReportController for user-initiated exception
+            // reporting with full context. Disabling automatic capture prevents Sentry from
+            // sending a context-free event that would then deduplicate (and drop) the enriched
+            // manual report submitted by the user.
+            options.setEnableUncaughtExceptionHandler(false);
+            options.setEnableDeduplication(false);
         });
         try {
             Sentry.startSession();
         } catch (Exception e) {
             Logger.getLogger(Installer.class.getName())
                 .log(Level.WARNING, "Can't start Sentry session", e);
+        }
+        try {
+            Sentry.metrics().count("start", 1.0);
+        } catch (Exception e) {
+            Logger.getLogger(Installer.class.getName())
+                .log(Level.WARNING, "Can't count Sentry metric", e);
         }
     }
 
@@ -321,20 +326,6 @@ public class Installer extends ModuleInstall {
                 return String
                     .format(outputFormat, record.getLevel().getName(), formattedMessage, throwable);
             }
-        }
-    }
-
-    public static final class SentryIdentity {
-        private static final String KEY = "sentry.distinctId";
-
-        public static String getOrCreateDistinctId() {
-            Preferences prefs = NbPreferences.forModule(SentryIdentity.class);
-            String id = prefs.get(KEY, null);
-            if (id == null || id.isBlank()) {
-                id = UUIDGenerator.randomUUID().toString();
-                prefs.put(KEY, id);
-            }
-            return id;
         }
     }
 }
