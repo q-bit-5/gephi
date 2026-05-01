@@ -194,11 +194,16 @@ public final class WelcomeTopComponent extends JPanel {
 
         MostRecentFiles mru = Lookup.getDefault().lookup(MostRecentFiles.class);
         boolean hasRecent = false;
+        int recentCount = 0;
         for (String filePath : mru.getMRUFileList()) {
+            if (recentCount >= 3) {
+                break;
+            }
             JXHyperlink fileLink = new JXHyperlink(openFileAction);
             File file = new File(filePath);
             if (file.exists()) {
                 hasRecent = true;
+                recentCount++;
                 fileLink.setText(file.getName());
                 fileLink.setToolTipText(file.getPath());
                 fileLink.putClientProperty(LINK_PATH, file);
