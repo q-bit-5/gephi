@@ -143,6 +143,8 @@ public class EdgeSettingsPanel extends javax.swing.JPanel implements Visualizati
                 Lookup.getDefault().lookup(UniqueElementColorTransformerUI.class);
             appearanceUIController.setSelectedTransformerUI(transformerUI);
         });
+        selfColorLink.setToolTipText(org.openide.util.NbBundle.getMessage(EdgeSettingsPanel.class,
+            "EdgeSettingsPanel.selfColorLink.toolTipText"));
 
         showEdgesCheckbox.addItemListener(e -> {
             vizController.setShowEdges(showEdgesCheckbox.isSelected());

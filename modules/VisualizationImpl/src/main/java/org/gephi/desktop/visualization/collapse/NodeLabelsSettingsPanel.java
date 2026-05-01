@@ -144,6 +144,8 @@ public class NodeLabelsSettingsPanel extends javax.swing.JPanel implements Visua
                 Lookup.getDefault().lookup(UniqueLabelColorTransformerUI.class);
             appearanceUIController.setSelectedTransformerUI(transformerUI);
         });
+        selfColorLink.setToolTipText(org.openide.util.NbBundle.getMessage(NodeLabelsSettingsPanel.class,
+            "NodeLabelsSettingsPanel.selfColorLink.toolTipText"));
 
         // Size node
         final DefaultComboBoxModel<LabelSizeMode> sizeModeModel = new DefaultComboBoxModel<>(LabelSizeMode.values());
