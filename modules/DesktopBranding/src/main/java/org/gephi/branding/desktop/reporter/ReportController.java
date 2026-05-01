@@ -43,6 +43,9 @@ Portions Copyrighted 2011 Gephi Consortium.
 package org.gephi.branding.desktop.reporter;
 
 import io.sentry.Attachment;
+import io.sentry.Hint;
+import io.sentry.UserFeedback;
+import io.sentry.protocol.SentryId;
 import io.sentry.protocol.User;
 import java.awt.Dimension;
 import java.awt.GraphicsEnvironment;
@@ -56,19 +59,14 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.lang.management.OperatingSystemMXBean;
 import java.nio.charset.StandardCharsets;
-import java.text.MessageFormat;
-import java.util.Collections;
-import java.util.MissingResourceException;
 import java.util.logging.Handler;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-
 import io.sentry.Sentry;
-import io.sentry.SentryEvent;
-import io.sentry.SentryLevel;
-import io.sentry.protocol.SentryException;
+import org.gephi.branding.desktop.Installer;
+import org.gephi.branding.desktop.SentryIdentity;
+import org.openide.util.NbPreferences;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.openide.DialogDisplayer;
@@ -86,9 +84,8 @@ import org.w3c.dom.Document;
  */
 public class ReportController {
 
-    public ReportController() {
-
-    }
+    public static final String SEND_CRASH_REPORTS = "send_crash_reports";
+    public static final boolean DEFAULT_SEND_CRASH_REPORTS = true;
 
     public void sendReport(final Report report) {
         Thread thread = new Thread(new Runnable() {
@@ -123,40 +120,61 @@ public class ReportController {
     }
 
     private void sendSentryReport(Report report) {
-        final User user = !report.getUserEmail().isEmpty() ? new User() : null;
-        if (user != null) {
-            user.setEmail(report.getUserEmail());
+        SentryId eventId = report.getSentryEventId();
+        if (eventId == null) {
+            captureExceptionToSentry(report);
         }
 
-        Sentry.withScope(scope -> {
-            // Main
-            scope.setLevel(SentryLevel.ERROR);
+        // The exception was already sent to Sentry when the report dialog opened
+        // (see captureExceptionToSentry). Here we only attach the user-provided details
+        // as User Feedback linked to that event, visible as a "Feedback" tab in Sentry.
+        UserFeedback feedback = new UserFeedback(eventId);
 
-            // Extra
-            scope.setContexts("OS", report.getOs());
+        String username = report.getUserGitHubUsername();
+        if (!username.isEmpty()) {
+            // Prefix with @ so it's clearly a GitHub handle in the Sentry feedback view
+            feedback.setName("@" + username.replace("@", ""));
+            NbPreferences.forModule(Installer.class).put("github_username", username);
+        }
+        if (!report.getUserDescription().isEmpty()) {
+            feedback.setComments(report.getUserDescription());
+        }
+        Sentry.captureUserFeedback(feedback);
+    }
+
+    /**
+     * Captures the exception to Sentry immediately with all available system context and the
+     * log attachment. Called from {@link #buildReportDocument} so the event is sent as soon as
+     * the report dialog opens, before the user fills in their details. The returned
+     * {@link SentryId} is stored on the {@link Report} and later used by
+     * {@link #sendSentryReport} to attach user feedback.
+     */
+    private void captureExceptionToSentry(Report report) {
+        Attachment log =
+            new Attachment(anonymizeLog(report.getLog()).getBytes(StandardCharsets.UTF_8), "messages.log",
+                "text/plain");
+        Hint hint = Hint.withAttachment(log);
+
+        final User user = new User();
+        user.setId(SentryIdentity.getOrCreateDistinctId());
+
+        final SentryId[] eventId = {SentryId.EMPTY_ID};
+        Sentry.withIsolationScope(scope -> {
+            scope.setUser(user);
+            scope.setTag("OS", report.getOs());
             scope.setContexts("Heap memory usage", report.getHeapMemoryUsage());
             scope.setContexts("Non heap memory usage", report.getNonHeapMemoryUsage());
             scope.setContexts("Processors", report.getNumberOfProcessors());
             scope.setContexts("Screen devices", report.getScreenDevices());
             scope.setContexts("Screen size", report.getScreenSize());
             scope.setContexts("VM", report.getVm());
+            scope.setContexts("OpenGL Profile", report.getGlProfile());
             scope.setContexts("OpenGL Vendor", report.getGlVendor());
             scope.setContexts("OpenGL Renderer", report.getGlRenderer());
             scope.setContexts("OpenGL Version", report.getGlVersion());
-            scope.setContexts("Description", report.getUserDescription());
-
-            //User
-            scope.setUser(user);
-
-            // Log
-            Attachment log =
-                new Attachment(anonymizeLog(report.getLog()).getBytes(StandardCharsets.UTF_8), "messages.log",
-                    "text/plain");
-            scope.addAttachment(log);
-
-            // Send
-            Sentry.captureException(report.getThrowable());
+            eventId[0] = Sentry.captureException(report.getThrowable(), hint);
         });
+        report.setSentryEventId(eventId[0]);
     }
 
     public Document buildReportDocument(Report report) {
@@ -167,7 +185,10 @@ public class ReportController {
         logMemoryInfo(report);
         logJavaInfo(report);
         logGLInfo(report);
-        //logModules(report);
+//        logModules(report);
+        if (NbPreferences.forModule(ReportController.class).getBoolean(SEND_CRASH_REPORTS, DEFAULT_SEND_CRASH_REPORTS)) {
+            captureExceptionToSentry(report);
+        }
         return buildXMLDocument(report);
     }
 
@@ -231,13 +252,24 @@ public class ReportController {
             LineNumberReader lineNumberReader = new LineNumberReader(new StringReader(output));
             String line;
             while ((line = lineNumberReader.readLine()) != null) {
-                if (line.contains("GL_VENDOR:")) {
-                    report.setGlVendor(line.replaceFirst(".*GL_VENDOR:", ""));
-                } else if (line.contains("GL_RENDERER:")) {
-                    report.setGlRenderer(line.replaceFirst(".*GL_RENDERER:", ""));
-                } else if (line.contains("GL_VERSION:")) {
-                    report.setGlVersion(line.replaceFirst(".*GL_VERSION:", ""));
-                    break;
+                if (line.contains("Chosen GL Profile: ")) {
+                    report.setGlProfile(line.replaceFirst(".*Chosen GL Profile: ", "").trim());
+                } else if (line.contains("OpenGL Vendor: ")) {
+                    String rest = line.replaceFirst(".*OpenGL Vendor: ", "");
+                    int rendererIdx = rest.indexOf(", Renderer: ");
+                    if (rendererIdx >= 0) {
+                        report.setGlVendor(rest.substring(0, rendererIdx).trim());
+                        rest = rest.substring(rendererIdx + ", Renderer: ".length());
+                        int versionIdx = rest.indexOf(", Version: ");
+                        if (versionIdx >= 0) {
+                            report.setGlRenderer(rest.substring(0, versionIdx).trim());
+                            report.setGlVersion(rest.substring(versionIdx + ", Version: ".length()).trim());
+                        } else {
+                            report.setGlRenderer(rest.trim());
+                        }
+                    } else {
+                        report.setGlVendor(rest.trim());
+                    }
                 }
             }
             lineNumberReader.close();
