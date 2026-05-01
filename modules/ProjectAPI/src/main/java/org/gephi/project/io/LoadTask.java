@@ -185,7 +185,7 @@ public class LoadTask implements LongTask {
                 Progress.switchToIndeterminate(progressTicket);
 
                 //Add project
-                if (!cancel) {
+                if (!cancel && project != null) {
 
                     //Set current workspace
                     for (Workspace workspace : project.getWorkspaces()) {

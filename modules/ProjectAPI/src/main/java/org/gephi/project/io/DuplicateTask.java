@@ -44,6 +44,9 @@ public class DuplicateTask implements LongTask {
 
             // First the bytes model
             for (WorkspacePersistenceProvider provider : providers) {
+                if (cancel) {
+                    return null;
+                }
                 if (provider instanceof WorkspaceBytesPersistenceProvider) {
                     duplicateWorkspaceModel(workspace, newWorkspace, (WorkspaceBytesPersistenceProvider) provider);
                 }
@@ -54,10 +57,11 @@ public class DuplicateTask implements LongTask {
 
             // And then the XML ones
             for (WorkspacePersistenceProvider provider : providers) {
-                if (!cancel) {
-                    if (provider instanceof WorkspaceXMLPersistenceProvider) {
-                        duplicateWorkspaceModel(workspace, newWorkspace, (WorkspaceXMLPersistenceProvider) provider);
-                    }
+                if (cancel) {
+                    return null;
+                }
+                if (provider instanceof WorkspaceXMLPersistenceProvider) {
+                    duplicateWorkspaceModel(workspace, newWorkspace, (WorkspaceXMLPersistenceProvider) provider);
                 }
             }
 

@@ -131,9 +131,9 @@ public class GephiReader {
 
                     //Status
                     String workspaceStatus = reader.getAttributeValue(null, "status");
-                    if (workspaceStatus.equals("open")) {
+                    if ("open".equals(workspaceStatus)) {
                         info.setStatus(WorkspaceInformationImpl.Status.OPEN);
-                    } else if (workspaceStatus.equals("closed")) {
+                    } else if ("closed".equals(workspaceStatus)) {
                         info.setStatus(WorkspaceInformationImpl.Status.CLOSED);
                     } else {
                         info.invalid();
