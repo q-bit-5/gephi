@@ -52,6 +52,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import org.gephi.desktop.visualization.selection.SelectionPropertiesToolbar;
 import org.gephi.ui.utils.UIUtils;
+import org.gephi.visualization.VizConfig;
 import org.gephi.visualization.api.VisualizationModel;
 import org.gephi.visualization.api.VisualizationController;
 import org.openide.util.Lookup;
@@ -64,7 +65,7 @@ public class PropertiesBar extends JPanel {
     private final SelectionPropertiesToolbar selectionBar;
     private final JLabel fpsLabel;
     private volatile boolean fpsThreadRunning = false;
-    private Thread fpsThread;
+    private volatile Thread fpsThread;
 
     public PropertiesBar() {
         super(new BorderLayout());
@@ -109,30 +110,33 @@ public class PropertiesBar extends JPanel {
     }
 
     private void startFpsThread() {
+        if(!VizConfig.isShowFps()) {
+            return;
+        }
         if (fpsThreadRunning) {
             return;
         }
         fpsThreadRunning = true;
         fpsThread = new Thread(() -> {
-            final VisualizationController controller = Lookup.getDefault().lookup(VisualizationController.class);
-            while (fpsThreadRunning) {
-                VisualizationModel model = controller.getModel();
-                String text = "";
-                if (model != null) {
-                    text = String.valueOf(model.getFps());
-                }
-                final String fpsText = text;
-                SwingUtilities.invokeLater(() -> {
-                    if (fpsLabel != null) {
-                        fpsLabel.setText(fpsText);
+            try {
+                final VisualizationController controller = Lookup.getDefault().lookup(VisualizationController.class);
+                while (fpsThreadRunning) {
+                    VisualizationModel model = controller != null ? controller.getModel() : null;
+                    String text = "";
+                    if (model != null) {
+                        text = String.valueOf(model.getFps());
                     }
-                });
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    break;
+                    final String fpsText = text;
+                    SwingUtilities.invokeLater(() -> fpsLabel.setText(fpsText));
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        break;
+                    }
                 }
+            } finally {
+                fpsThreadRunning = false;
             }
         }, "Refresh FPS Label");
         fpsThread.setDaemon(true);

@@ -269,6 +269,8 @@ public class VizConfig {
         NbPreferences.forModule(VizConfig.class).getInt(ANTIALIASING, DEFAULT_ANTIALIASING);
     protected static final boolean enableContextMenu =
         NbPreferences.forModule(VizConfig.class).getBoolean(CONTEXT_MENU, DEFAULT_CONTEXT_MENU);
+    protected static final boolean showFps =
+        NbPreferences.forModule(VizConfig.class).getBoolean(SHOW_FPS, DEFAULT_SHOW_FPS);
 
     public static int getAntialiasing() {
         return antialiasing;
@@ -276,6 +278,10 @@ public class VizConfig {
 
     public static boolean isEnableContextMenu() {
         return enableContextMenu;
+    }
+
+    public static boolean isShowFps() {
+        return showFps;
     }
 
     public static float getDefaultZoom() {
