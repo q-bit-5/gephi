@@ -117,17 +117,6 @@ jobs:
           echo waiting...; while pgrep XProtect; do sleep 3; done;
         if: runner.os == 'macOS'
 
-      - name: Windows Prepare Codesign
-        env:
-          CODESIGN_CERT: ${{ secrets.CODESIGN_CERT}}
-        run: |
-          New-Item -ItemType directory -Path certificate
-          Set-Content -Path codesign.txt -Value $env:CODESIGN_CERT
-          certutil -decode codesign.txt codesign.pfx
-          Remove-Item codesign.txt
-        working-directory: modules/application
-        if: runner.os == 'Windows'
-
       - name: Retrieve modules output
         uses: actions/download-artifact@v8
         with:
@@ -154,7 +143,7 @@ jobs:
 
       - name: Build and publish bundle
         shell: bash
-        run: mvn --batch-mode -Djava.awt.headless=true -Dgephi.apple.notarization.username=$APPLE_USERNAME -Dgephi.apple.notarization.password=$APPLE_PASSWORD -Dgephi.apple.notarization.teamId=$APPLE_TEAM_ID -Dgephi.windows.codesign.password=$CODESIGN_PASSWORD -Dgephi.bundle.arch=${{ matrix.arch }} deploy -P deployment,sign-artifacts,${{ matrix.task }}
+        run: mvn --batch-mode -Djava.awt.headless=true -Dgephi.apple.notarization.username=$APPLE_USERNAME -Dgephi.apple.notarization.password=$APPLE_PASSWORD -Dgephi.apple.notarization.teamId=$APPLE_TEAM_ID -Dgephi.windows.codesign.username=$CODESIGN_USERNAME -Dgephi.windows.codesign.password=$CODESIGN_PASSWORD -Dgephi.windows.codesign.totp=$CODESIGN_TOTP -Dgephi.bundle.arch=${{ matrix.arch }} deploy -P deployment,sign-artifacts,${{ matrix.task }}
         working-directory: modules/application
         env:
           OSSRH_USER: ${{ secrets.OSSRH_TOKEN_USER }}
@@ -163,16 +152,13 @@ jobs:
           APPLE_USERNAME: ${{ secrets.APPLE_USERNAME }}
           APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          CODESIGN_USERNAME: ${{ secrets.CODESIGN_USERNAME }}
           CODESIGN_PASSWORD: ${{ secrets.CODESIGN_PASSWORD }}
+          CODESIGN_TOTP: ${{ secrets.CODESIGN_TOTP }}
           
       - name: CleanUp MacOS keychain
         run: ./.github/workflows/release/remove-key.sh
         if: runner.os == 'macOS'
-
-      - name: CleanUp Windows codesign
-        run: Remove-Item codesign.pfx
-        working-directory: modules/application
-        if: runner.os == 'Windows'
 
       - name: Output download link
         shell: bash

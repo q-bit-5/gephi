@@ -1095,9 +1095,12 @@
                                     </fileset>
                                     <name>Gephi</name>
                                     <url>https://gephi.org</url>
-                                    <keystore>${gephi.windows.codesign.keystore}</keystore>
-                                    <storepass>${gephi.windows.codesign.password}</storepass>
-                                    <tsaurl>http://timestamp.sectigo.com</tsaurl>
+                                    <storetype>ESIGNER</storetype>
+                                    <alias>22db8e8d-981f-462c-a675-35ae68b9de27</alias>
+                                    <storepass>${gephi.windows.codesign.username}|${gephi.windows.codesign.password}</storepass>
+                                    <keypass>${gephi.windows.codesign.totp}</keypass>
+                                    <tsaurl>http://ts.ssl.com</tsaurl>
+                                    <tsmode>RFC3161</tsmode>
                                 </configuration>
                             </execution>
                         </executions>

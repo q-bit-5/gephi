@@ -204,8 +204,9 @@
         <gephi.apple.notarization.timeout>15m</gephi.apple.notarization.timeout>
 
         <!-- Windows signing settings -->
-        <gephi.windows.codesign.keystore>codesign.pfx</gephi.windows.codesign.keystore>
+        <gephi.windows.codesign.username/>
         <gephi.windows.codesign.password/>
+        <gephi.windows.codesign.totp/>
         
         <!--==== Dependency Versions ==================================================================================-->
         
