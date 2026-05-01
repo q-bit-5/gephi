@@ -19,6 +19,7 @@ import com.jogamp.opengl.util.TileRendererBase;
 import java.awt.Frame;
 import java.awt.image.BufferedImage;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BooleanSupplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -35,6 +36,8 @@ import org.gephi.viz.engine.util.TimeUtils;
  */
 public class JOGLRenderingTarget implements RenderingTarget, GLEventListener, com.jogamp.newt.event.KeyListener,
     com.jogamp.newt.event.MouseListener, TileRendererBase.TileRendererListener {
+
+    private static final AtomicBoolean GL_INFO_LOGGED = new AtomicBoolean(false);
 
     private final GLAutoDrawable drawable;
 
@@ -113,13 +116,15 @@ public class JOGLRenderingTarget implements RenderingTarget, GLEventListener, co
     public synchronized void init(GLAutoDrawable drawable) {
         final GL gl = drawable.getGL();
 
-        Logger.getLogger(VizEngine.class.getSimpleName()).log(Level.INFO,
-            "OpenGL Vendor: {0}, Renderer: {1}, Version: {2}",
-            new Object[] {
-                gl.glGetString(GL.GL_VENDOR),
-                gl.glGetString(GL.GL_RENDERER),
-                gl.glGetString(GL.GL_VERSION)
-            });
+        if (GL_INFO_LOGGED.compareAndSet(false, true)) {
+            Logger.getLogger(VizEngine.class.getSimpleName()).log(Level.INFO,
+                "OpenGL Vendor: {0}, Renderer: {1}, Version: {2}",
+                new Object[] {
+                    gl.glGetString(GL.GL_VENDOR),
+                    gl.glGetString(GL.GL_RENDERER),
+                    gl.glGetString(GL.GL_VERSION)
+                });
+        }
 
         engine.getOpenGLOptions().setGlCapabilitiesSummary(new GLCapabilitiesSummary(gl, Profile.CORE));
 
