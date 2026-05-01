@@ -64,7 +64,6 @@ import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import io.sentry.Sentry;
-import org.gephi.branding.desktop.Installer;
 import org.gephi.branding.desktop.SentryIdentity;
 import org.openide.util.NbPreferences;
 import org.netbeans.api.progress.ProgressHandle;
@@ -88,21 +87,23 @@ public class ReportController {
     public static final boolean DEFAULT_SEND_CRASH_REPORTS = true;
 
     public void sendReport(final Report report) {
-        Thread thread = new Thread(new Runnable() {
+        boolean autoSend = NbPreferences.forModule(ReportController.class)
+            .getBoolean(SEND_CRASH_REPORTS, DEFAULT_SEND_CRASH_REPORTS);
+        String sendingKey = autoSend ? "ReportController.autoSend.status.sending" : "ReportController.manual.status.sending";
+        String sentKey = autoSend ? "ReportController.autoSend.status.sent" : "ReportController.manual.status.sent";
 
+        Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
                 ProgressHandle handle = ProgressHandleFactory
-                    .createHandle(NbBundle.getMessage(ReportController.class, "ReportController.status.sending"));
+                    .createHandle(NbBundle.getMessage(ReportController.class, sendingKey));
                 try {
                     handle.start();
-
-                    sendSentryReport(report);
-
+                    sendSentryReport(report, autoSend);
                     handle.finish();
                     DialogDisplayer.getDefault().notify(
                         new NotifyDescriptor.Message(
-                            NbBundle.getMessage(ReportController.class, "ReportController.status.sent"),
+                            NbBundle.getMessage(ReportController.class, sentKey),
                             NotifyDescriptor.INFORMATION_MESSAGE));
                     return;
                 } catch (Exception e) {
@@ -114,42 +115,46 @@ public class ReportController {
                         NbBundle.getMessage(ReportController.class, "ReportController.status.failed"),
                         NotifyDescriptor.WARNING_MESSAGE));
             }
-
         }, "Exception Reporter");
         thread.start();
     }
 
-    private void sendSentryReport(Report report) {
-        SentryId eventId = report.getSentryEventId();
-        if (eventId == null) {
+    private void sendSentryReport(Report report, boolean autoSend) {
+        String username = report.getUserGitHubUsername();
+        if (!username.isEmpty()) {
+            NbPreferences.forModule(ReportController.class).put("github_username", username);
+        }
+
+        if (!autoSend) {
+            // Manual mode: capture the full exception first to obtain a SentryId.
             captureExceptionToSentry(report);
         }
 
-        // The exception was already sent to Sentry when the report dialog opened
-        // (see captureExceptionToSentry). Here we only attach the user-provided details
-        // as User Feedback linked to that event, visible as a "Feedback" tab in Sentry.
-        UserFeedback feedback = new UserFeedback(eventId);
-
-        String username = report.getUserGitHubUsername();
-        if (!username.isEmpty()) {
-            // Prefix with @ so it's clearly a GitHub handle in the Sentry feedback view
-            feedback.setName("@" + username.replace("@", ""));
-            NbPreferences.forModule(Installer.class).put("github_username", username);
+        // Both modes: attach user feedback (username + description) to the Sentry event.
+        SentryId eventId = report.getSentryEventId();
+        if (eventId == null || SentryId.EMPTY_ID.equals(eventId)) {
+            throw new RuntimeException("No Sentry event ID — capture may have failed");
         }
-        if (!report.getUserDescription().isEmpty()) {
-            feedback.setComments(report.getUserDescription());
+        if (!username.isEmpty() || !report.getUserDescription().isEmpty()) {
+            UserFeedback feedback = new UserFeedback(eventId);
+            if (!username.isEmpty()) {
+                feedback.setName("@" + username.replace("@", ""));
+            }
+            if (!report.getUserDescription().isEmpty()) {
+                feedback.setComments(report.getUserDescription());
+            }
+            Sentry.captureUserFeedback(feedback);
         }
-        Sentry.captureUserFeedback(feedback);
     }
 
     /**
-     * Captures the exception to Sentry immediately with all available system context and the
-     * log attachment. Called from {@link #buildReportDocument} so the event is sent as soon as
-     * the report dialog opens, before the user fills in their details. The returned
-     * {@link SentryId} is stored on the {@link Report} and later used by
-     * {@link #sendSentryReport} to attach user feedback.
+     * Captures the exception to Sentry with all available system context and the log attachment.
+     * In auto-send mode, called from {@link ReporterHandler#publish} immediately when the
+     * exception is logged. In manual mode, called from {@link #sendSentryReport} when the user
+     * clicks "Send Report". GitHub username and description are included if already set on the
+     * report.
      */
-    private void captureExceptionToSentry(Report report) {
+    void captureExceptionToSentry(Report report) {
         Attachment log =
             new Attachment(anonymizeLog(report.getLog()).getBytes(StandardCharsets.UTF_8), "messages.log",
                 "text/plain");
@@ -172,12 +177,18 @@ public class ReportController {
             scope.setContexts("OpenGL Vendor", report.getGlVendor());
             scope.setContexts("OpenGL Renderer", report.getGlRenderer());
             scope.setContexts("OpenGL Version", report.getGlVersion());
+
             eventId[0] = Sentry.captureException(report.getThrowable(), hint);
         });
         report.setSentryEventId(eventId[0]);
     }
 
-    public Document buildReportDocument(Report report) {
+    /**
+     * Populates the report with system information. Called from {@link ReporterHandler#publish}
+     * immediately when the exception is logged, before the Sentry capture, so all context is
+     * available at capture time regardless of whether the user opens the dialog.
+     */
+    void populateSystemInfo(Report report) {
         logMessageLog(report);
         logVersion(report);
         logScreenSize(report);
@@ -185,10 +196,10 @@ public class ReportController {
         logMemoryInfo(report);
         logJavaInfo(report);
         logGLInfo(report);
-//        logModules(report);
-        if (NbPreferences.forModule(ReportController.class).getBoolean(SEND_CRASH_REPORTS, DEFAULT_SEND_CRASH_REPORTS)) {
-            captureExceptionToSentry(report);
-        }
+    }
+
+    public Document buildReportDocument(Report report) {
+        populateSystemInfo(report);
         return buildXMLDocument(report);
     }
 

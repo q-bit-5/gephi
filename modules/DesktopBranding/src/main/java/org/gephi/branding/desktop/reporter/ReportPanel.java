@@ -44,7 +44,6 @@ package org.gephi.branding.desktop.reporter;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import org.gephi.branding.desktop.Installer;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
@@ -59,6 +58,7 @@ public class ReportPanel extends javax.swing.JPanel {
     private final Report report;
     private final ReportController reportController;
     private final Document document;
+    private final boolean autoSend;
 
     private javax.swing.JLabel sentLabel;
     private javax.swing.JLabel jLabel1;
@@ -75,6 +75,10 @@ public class ReportPanel extends javax.swing.JPanel {
     public ReportPanel(Report report) {
         this.reportController = new ReportController();
         this.report = report;
+        this.autoSend = NbPreferences.forModule(ReportController.class)
+            .getBoolean(ReportController.SEND_CRASH_REPORTS, ReportController.DEFAULT_SEND_CRASH_REPORTS);
+
+        // Populates system info if not already done (manual mode) and builds XML for View Data.
         this.document = reportController.buildReportDocument(report);
 
         initComponents();
@@ -108,7 +112,8 @@ public class ReportPanel extends javax.swing.JPanel {
 
         sentLabel.setFont(sentLabel.getFont().deriveFont(java.awt.Font.BOLD));
         sentLabel.setForeground(new java.awt.Color(39, 119, 198));
-        sentLabel.setText(NbBundle.getMessage(ReportPanel.class, "ReportPanel.sentLabel.text"));
+        String sentKey = autoSend ? "ReportPanel.autoSend.sentLabel.text" : "ReportPanel.manual.sentLabel.text";
+        sentLabel.setText(NbBundle.getMessage(ReportPanel.class, sentKey));
 
         jLabel1.setText(NbBundle.getMessage(ReportPanel.class, "ReportPanel.jLabel1.text"));
 
@@ -186,19 +191,22 @@ public class ReportPanel extends javax.swing.JPanel {
         summaryTextField.setText(report.getSummary());
         problemArea.setText(report.getUserDescription());
         // Pre-fill saved GitHub username if available
-        String savedUsername = NbPreferences.forModule(Installer.class).get("github_username", "");
+        String savedUsername = NbPreferences.forModule(ReportController.class).get("github_username", "");
         githubUsernameTextField.setText(savedUsername);
         report.setUserGitHubUsername(savedUsername);
     }
 
     public void showDialog() {
-        Object[] options = new Object[2];
-        options[0] = NbBundle.getMessage(ReportPanel.class, "ReportPanel.dialog.addDetailsButton");
-        options[1] = NbBundle.getMessage(ReportPanel.class, "ReportPanel.dialog.dismissButton");
-        String title = NbBundle.getMessage(ReportPanel.class, "ReportPanel.dialog.title");
+        String title = NbBundle.getMessage(ReportPanel.class,
+            autoSend ? "ReportPanel.autoSend.dialog.title" : "ReportPanel.manual.dialog.title");
+        String actionButton = NbBundle.getMessage(ReportPanel.class,
+            autoSend ? "ReportPanel.autoSend.dialog.actionButton" : "ReportPanel.manual.dialog.actionButton");
+        String dismissButton = NbBundle.getMessage(ReportPanel.class,
+            autoSend ? "ReportPanel.autoSend.dialog.dismissButton" : "ReportPanel.manual.dialog.dismissButton");
 
+        Object[] options = {actionButton, dismissButton};
         DialogDescriptor dd =
-            new DialogDescriptor(this, title, true, options, options[1], DialogDescriptor.DEFAULT_ALIGN, null, null);
+            new DialogDescriptor(this, title, true, options, dismissButton, DialogDescriptor.DEFAULT_ALIGN, null, null);
         if (DialogDisplayer.getDefault().notify(dd) == options[0]) {
             report.setUserDescription(problemArea.getText());
             report.setUserGitHubUsername(githubUsernameTextField.getText().trim());

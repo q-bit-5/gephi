@@ -43,7 +43,6 @@ Portions Copyrighted 2011 Gephi Consortium.
 package org.gephi.branding.desktop.reporter;
 
 import javax.swing.JPanel;
-import org.gephi.branding.desktop.Installer;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 
