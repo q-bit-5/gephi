@@ -50,10 +50,11 @@ import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
 @OptionsPanelController.SubRegistration(location = "Gephi",
+    id="Analytics",
     displayName = "#AdvancedOption_DisplayName_Analytics",
     keywords = "#AdvancedOption_Keywords_Analytics",
     keywordsCategory = "Gephi/Analytics",
-    position = 600)
+    position = 2000)
 public final class AnalyticsOptionsPanelController extends OptionsPanelController {
 
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);

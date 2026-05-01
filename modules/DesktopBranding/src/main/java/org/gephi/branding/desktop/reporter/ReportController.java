@@ -84,7 +84,12 @@ import org.w3c.dom.Document;
 public class ReportController {
 
     public static final String SEND_CRASH_REPORTS = "send_crash_reports";
-    public static final boolean DEFAULT_SEND_CRASH_REPORTS = true;
+    public static final boolean DEFAULT_SEND_CRASH_REPORTS = false;
+
+    public static final String TRACK_USAGE = "track_usage";
+    public static final boolean DEFAULT_TRACK_USAGE = false;
+
+    public static final String DO_NOT_REMIND_ANALYTICS = "do_not_remind_analytics";
 
     public void sendReport(final Report report) {
         boolean autoSend = NbPreferences.forModule(ReportController.class)

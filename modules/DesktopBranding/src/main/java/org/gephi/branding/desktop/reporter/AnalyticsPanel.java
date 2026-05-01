@@ -50,7 +50,10 @@ final class AnalyticsPanel extends JPanel {
 
     private final AnalyticsOptionsPanelController controller;
     private javax.swing.JCheckBox sendCrashReportsCheckBox;
-    private javax.swing.JLabel descriptionLabel;
+    private javax.swing.JLabel crashReportsDescriptionLabel;
+    private javax.swing.JCheckBox trackUsageCheckBox;
+    private javax.swing.JLabel trackUsageDescriptionLabel;
+    private javax.swing.JCheckBox doNotRemindCheckBox;
     private javax.swing.JSeparator separator;
     private javax.swing.JLabel titleLabel;
 
@@ -63,7 +66,10 @@ final class AnalyticsPanel extends JPanel {
         titleLabel = new javax.swing.JLabel();
         separator = new javax.swing.JSeparator();
         sendCrashReportsCheckBox = new javax.swing.JCheckBox();
-        descriptionLabel = new javax.swing.JLabel();
+        crashReportsDescriptionLabel = new javax.swing.JLabel();
+        trackUsageCheckBox = new javax.swing.JCheckBox();
+        trackUsageDescriptionLabel = new javax.swing.JLabel();
+        doNotRemindCheckBox = new javax.swing.JCheckBox();
 
         titleLabel.setFont(titleLabel.getFont().deriveFont(java.awt.Font.BOLD));
         titleLabel.setText(NbBundle.getMessage(AnalyticsPanel.class, "AnalyticsPanel.title"));
@@ -72,9 +78,21 @@ final class AnalyticsPanel extends JPanel {
             NbBundle.getMessage(AnalyticsPanel.class, "AnalyticsPanel.sendCrashReports.text"));
         sendCrashReportsCheckBox.addActionListener(e -> controller.changed());
 
-        descriptionLabel.setForeground(new java.awt.Color(132, 132, 132));
-        descriptionLabel.setFont(descriptionLabel.getFont().deriveFont(descriptionLabel.getFont().getSize() - 1f));
-        descriptionLabel.setText(NbBundle.getMessage(AnalyticsPanel.class, "AnalyticsPanel.description.text"));
+        crashReportsDescriptionLabel.setForeground(new java.awt.Color(132, 132, 132));
+        crashReportsDescriptionLabel.setFont(crashReportsDescriptionLabel.getFont().deriveFont(crashReportsDescriptionLabel.getFont().getSize() - 1f));
+        crashReportsDescriptionLabel.setText(NbBundle.getMessage(AnalyticsPanel.class, "AnalyticsPanel.sendCrashReports.description"));
+
+        org.openide.awt.Mnemonics.setLocalizedText(trackUsageCheckBox,
+            NbBundle.getMessage(AnalyticsPanel.class, "AnalyticsPanel.trackUsage.text"));
+        trackUsageCheckBox.addActionListener(e -> controller.changed());
+
+        trackUsageDescriptionLabel.setForeground(new java.awt.Color(132, 132, 132));
+        trackUsageDescriptionLabel.setFont(trackUsageDescriptionLabel.getFont().deriveFont(trackUsageDescriptionLabel.getFont().getSize() - 1f));
+        trackUsageDescriptionLabel.setText(NbBundle.getMessage(AnalyticsPanel.class, "AnalyticsPanel.trackUsage.description"));
+
+        org.openide.awt.Mnemonics.setLocalizedText(doNotRemindCheckBox,
+            NbBundle.getMessage(AnalyticsPanel.class, "AnalyticsPanel.doNotRemind.text"));
+        doNotRemindCheckBox.addActionListener(e -> controller.changed());
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -89,7 +107,10 @@ final class AnalyticsPanel extends JPanel {
                         .addGap(10, 10, 10)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(sendCrashReportsCheckBox)
-                            .addComponent(descriptionLabel))))
+                            .addComponent(crashReportsDescriptionLabel)
+                            .addComponent(trackUsageCheckBox)
+                            .addComponent(trackUsageDescriptionLabel)
+                            .addComponent(doNotRemindCheckBox))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -102,7 +123,13 @@ final class AnalyticsPanel extends JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(sendCrashReportsCheckBox)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(descriptionLabel)
+                .addComponent(crashReportsDescriptionLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(trackUsageCheckBox)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(trackUsageDescriptionLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(doNotRemindCheckBox)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }
@@ -110,10 +137,16 @@ final class AnalyticsPanel extends JPanel {
     void load() {
         sendCrashReportsCheckBox.setSelected(
             NbPreferences.forModule(ReportController.class).getBoolean(ReportController.SEND_CRASH_REPORTS, ReportController.DEFAULT_SEND_CRASH_REPORTS));
+        trackUsageCheckBox.setSelected(
+            NbPreferences.forModule(ReportController.class).getBoolean(ReportController.TRACK_USAGE, ReportController.DEFAULT_TRACK_USAGE));
+        doNotRemindCheckBox.setSelected(
+            NbPreferences.forModule(ReportController.class).getBoolean(ReportController.DO_NOT_REMIND_ANALYTICS, false));
     }
 
     void store() {
         NbPreferences.forModule(ReportController.class).putBoolean(ReportController.SEND_CRASH_REPORTS, sendCrashReportsCheckBox.isSelected());
+        NbPreferences.forModule(ReportController.class).putBoolean(ReportController.TRACK_USAGE, trackUsageCheckBox.isSelected());
+        NbPreferences.forModule(ReportController.class).putBoolean(ReportController.DO_NOT_REMIND_ANALYTICS, doNotRemindCheckBox.isSelected());
     }
 
     boolean valid() {

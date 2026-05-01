@@ -61,10 +61,26 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Frame;
+import java.awt.Insets;
+import java.awt.Rectangle;
+import java.awt.Toolkit;
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 import javax.swing.UIManager;
+import org.gephi.branding.desktop.reporter.ReportController;
 import org.gephi.branding.desktop.reporter.ReporterHandler;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.openide.modules.ModuleInstall;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
@@ -129,6 +145,17 @@ public class Installer extends ModuleInstall {
             }
         });
 
+        //Analytics consent notification (30s after startup):
+        WindowManager.getDefault().invokeWhenUIReady(() -> new Thread(() -> {
+            try {
+                Thread.sleep(15_000);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return;
+            }
+            showAnalyticsConsentNotification();
+        }, "Analytics Consent Notification").start());
+
         //Output logger
         installOutputLogger();
     }
@@ -177,23 +204,110 @@ public class Installer extends ModuleInstall {
             options.setEnableUncaughtExceptionHandler(false);
             options.setEnableDeduplication(false);
         });
-        try {
-            Sentry.startSession();
-        } catch (Exception e) {
-            Logger.getLogger(Installer.class.getName())
-                .log(Level.WARNING, "Can't start Sentry session", e);
+        boolean trackUsage = NbPreferences.forModule(ReportController.class)
+            .getBoolean(ReportController.TRACK_USAGE, ReportController.DEFAULT_TRACK_USAGE);
+        if (trackUsage) {
+            try {
+                Sentry.startSession();
+            } catch (Exception e) {
+                Logger.getLogger(Installer.class.getName())
+                    .log(Level.WARNING, "Can't start Sentry session", e);
+            }
+            try {
+                Sentry.metrics().count("start", 1.0);
+            } catch (Exception e) {
+                Logger.getLogger(Installer.class.getName())
+                    .log(Level.WARNING, "Can't count Sentry metric", e);
+            }
         }
-        try {
-            Sentry.metrics().count("start", 1.0);
-        } catch (Exception e) {
-            Logger.getLogger(Installer.class.getName())
-                .log(Level.WARNING, "Can't count Sentry metric", e);
+    }
+
+    private void showAnalyticsConsentNotification() {
+        java.util.prefs.Preferences prefs = NbPreferences.forModule(ReportController.class);
+        boolean doNotRemind = prefs.getBoolean(ReportController.DO_NOT_REMIND_ANALYTICS, false);
+        boolean bothEnabled = prefs.getBoolean(ReportController.SEND_CRASH_REPORTS, ReportController.DEFAULT_SEND_CRASH_REPORTS)
+            && prefs.getBoolean(ReportController.TRACK_USAGE, ReportController.DEFAULT_TRACK_USAGE);
+        if (doNotRemind || bothEnabled) {
+            return;
         }
+        SwingUtilities.invokeLater(() -> {
+            Frame mainFrame = WindowManager.getDefault().getMainWindow();
+
+            JDialog dialog = new JDialog(mainFrame);
+            dialog.setUndecorated(true);
+            dialog.setAlwaysOnTop(true);
+            dialog.setFocusableWindowState(false);
+
+            JLabel titleLabel = new JLabel(NbBundle.getMessage(Installer.class, "AnalyticsConsent.notification.title"));
+            titleLabel.setFont(titleLabel.getFont().deriveFont(Font.BOLD));
+
+            JLabel msgLabel = new JLabel("<html><body style='width:220px'>" +
+                NbBundle.getMessage(Installer.class, "AnalyticsConsent.notification.details") +
+                "</body></html>");
+            msgLabel.setFont(msgLabel.getFont().deriveFont(msgLabel.getFont().getSize() - 1f));
+
+            JButton enableBtn = new JButton(NbBundle.getMessage(Installer.class, "AnalyticsConsent.notification.enable"));
+            enableBtn.addActionListener(e -> {
+                prefs.putBoolean(ReportController.SEND_CRASH_REPORTS, true);
+                prefs.putBoolean(ReportController.TRACK_USAGE, true);
+                dialog.dispose();
+            });
+
+            JButton settingsBtn = new JButton(NbBundle.getMessage(Installer.class, "AnalyticsConsent.notification.button"));
+            settingsBtn.addActionListener(e -> {
+                dialog.dispose();
+                OptionsDisplayer.getDefault().open("Gephi/Analytics");
+            });
+
+            JButton dismissBtn = new JButton("✕");
+            dismissBtn.setMargin(new Insets(0, 4, 0, 4));
+            dismissBtn.setFont(dismissBtn.getFont().deriveFont(dismissBtn.getFont().getSize() - 1f));
+            dismissBtn.addActionListener(e -> dialog.dispose());
+
+            JPanel header = new JPanel(new BorderLayout(8, 0));
+            header.setOpaque(false);
+            header.add(titleLabel, BorderLayout.CENTER);
+            header.add(dismissBtn, BorderLayout.EAST);
+
+            JPanel buttons = new JPanel(new BorderLayout(6, 0));
+            buttons.setOpaque(false);
+            buttons.add(enableBtn, BorderLayout.CENTER);
+            buttons.add(settingsBtn, BorderLayout.EAST);
+
+            JPanel content = new JPanel(new BorderLayout(0, 8));
+            content.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(UIManager.getColor("controlShadow"), 1),
+                BorderFactory.createEmptyBorder(10, 14, 10, 14)));
+            content.add(header, BorderLayout.NORTH);
+            content.add(msgLabel, BorderLayout.CENTER);
+            content.add(buttons, BorderLayout.SOUTH);
+
+            dialog.add(content);
+            dialog.pack();
+
+            // Position at bottom-right of the main frame
+            Rectangle frameBounds = mainFrame.getBounds();
+            Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+            int x = Math.min(frameBounds.x + frameBounds.width - dialog.getWidth() - 16,
+                screenSize.width - dialog.getWidth() - 8);
+            int y = Math.min(frameBounds.y + frameBounds.height - dialog.getHeight() - 48,
+                screenSize.height - dialog.getHeight() - 48);
+            dialog.setLocation(x, y);
+            dialog.setVisible(true);
+
+            Timer timer = new Timer(15_000, e -> dialog.dispose());
+            timer.setRepeats(false);
+            timer.start();
+        });
     }
 
     private void closeSession() {
         try {
-            Sentry.endSession();
+            boolean trackUsage = NbPreferences.forModule(ReportController.class)
+                .getBoolean(ReportController.TRACK_USAGE, ReportController.DEFAULT_TRACK_USAGE);
+            if (trackUsage) {
+                Sentry.endSession();
+            }
             Sentry.flush(500);
         } finally {
             Sentry.close();
