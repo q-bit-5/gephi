@@ -400,6 +400,9 @@ public class StandardVizEventManager {
     }
 
     public void removeListener(VisualizationEventListener listener) {
+        if (listener == null) {
+            return;
+        }
         handlers[listener.getType().ordinal()].removeListener(listener);
     }
 

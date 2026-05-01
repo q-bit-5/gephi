@@ -131,8 +131,10 @@ public class EdgePencil implements Tool {
     public void unselect() {
         listeners = null;
         sourceNode = null;
-        color = edgePencilPanel.getColor();
-        weight = edgePencilPanel.getWeight();
+        if (edgePencilPanel != null) {
+            color = edgePencilPanel.getColor();
+            weight = edgePencilPanel.getWeight();
+        }
     }
 
     @Override

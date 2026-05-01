@@ -142,15 +142,18 @@ public class DesktopToolController implements ToolController {
 
     public void unselect() {
         if (currentTool != null) {
-            //Disconnect events
-            for (ToolEventHandler handler : currentHandlers) {
-                handler.unselect();
-            }
-            currentTool.unselect();
-            currentHandlers = null;
-            currentTool = null;
-            if (toolsPropertiesBar != null) {
-                toolsPropertiesBar.unselect();
+            try {
+                //Disconnect events
+                for (ToolEventHandler handler : currentHandlers) {
+                    handler.unselect();
+                }
+                currentTool.unselect();
+            } finally {
+                currentHandlers = null;
+                currentTool = null;
+                if (toolsPropertiesBar != null) {
+                    toolsPropertiesBar.unselect();
+                }
             }
         }
     }
