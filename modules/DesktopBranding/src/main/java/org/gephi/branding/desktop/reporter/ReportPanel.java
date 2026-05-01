@@ -129,7 +129,7 @@ public class ReportPanel extends javax.swing.JPanel {
 
         helpLabel.setFont(helpLabel.getFont().deriveFont(helpLabel.getFont().getSize() - 1f));
         helpLabel.setForeground(new java.awt.Color(132, 132, 132));
-        helpLabel.setText(NbBundle.getMessage(ReportPanel.class, "ReportPanel.helpLabel.text"));
+        helpLabel.setText(NbBundle.getMessage(ReportPanel.class, "ReportPanel.githubUsernameHelpLabel.text"));
 
         jLabel3.setText(NbBundle.getMessage(ReportPanel.class, "ReportPanel.jLabel3.text"));
 
