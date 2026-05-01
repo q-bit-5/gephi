@@ -142,6 +142,8 @@ public class EdgeLabelsSettingsPanel extends javax.swing.JPanel implements Visua
                 Lookup.getDefault().lookup(UniqueLabelColorTransformerUI.class);
             appearanceUIController.setSelectedTransformerUI(transformerUI);
         });
+        selfColorLink.setToolTipText(org.openide.util.NbBundle.getMessage(EdgeLabelsSettingsPanel.class,
+            "EdgeLabelsSettingsPanel.selfColorLink.toolTipText"));
 
         // Size mode
         final DefaultComboBoxModel<LabelSizeMode> sizeModeModel = new DefaultComboBoxModel<>(LabelSizeMode.values());
