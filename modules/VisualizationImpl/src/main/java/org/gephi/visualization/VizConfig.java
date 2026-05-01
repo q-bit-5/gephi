@@ -123,7 +123,7 @@ public class VizConfig {
     public static final float DEFAULT_ZOOM = 0.3f;
     public static final boolean DEFAULT_HIDE_NONSELECTED_NODE_LABELS = false;
     public static final boolean DEFAULT_HIDE_NONSELECTED_EDGE_LABELS = false;
-    public static final boolean DEFAULT_FIT_NODE_LABELS_TO_NODE_SIZE = false;
+    public static final boolean DEFAULT_FIT_NODE_LABELS_TO_NODE_SIZE = true;
     public static final boolean DEFAULT_AVOID_NODE_LABEL_OVERLAP = true;
     public static final boolean DEFAULT_SELECTEDEDGE_HAS_COLOR = false;
     public static final Color DEFAULT_SELECTEDEDGE_IN_COLOR = new Color(32, 95, 154, 255);
