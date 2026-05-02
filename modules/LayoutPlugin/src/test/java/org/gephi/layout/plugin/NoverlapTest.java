@@ -42,7 +42,6 @@ Portions Copyrighted 2011 Gephi Consortium.
 
 package org.gephi.layout.plugin;
 
-import junit.framework.TestCase;
 import org.gephi.graph.api.GraphModel;
 import org.gephi.io.importer.GraphImporter;
 import org.gephi.layout.plugin.noverlap.NoverlapLayout;
@@ -52,12 +51,12 @@ import org.junit.Test;
 /**
  * @author Mathieu Jacomy
  */
-public class NoverlapTest extends TestCase {
+public class NoverlapTest {
 
     @Test
     public void test2nodesNoverlap() {
 
-        GraphModel graphModel = GraphImporter.importGraph(DummyTest.class, "2nodes.gexf");
+        GraphModel graphModel = GraphImporter.importGraph(NoverlapTest.class, "2nodes.gexf");
 
         NoverlapLayoutBuilder layoutBuilder = new NoverlapLayoutBuilder();
         NoverlapLayout layout = new NoverlapLayout(layoutBuilder);
@@ -82,7 +81,7 @@ public class NoverlapTest extends TestCase {
     @Test
     public void test10KnodesNoverlap() {
 
-        GraphModel graphModel = GraphImporter.importGraph(DummyTest.class, "10K_randomlayout.gexf");
+        GraphModel graphModel = GraphImporter.importGraph(NoverlapTest.class, "10K_randomlayout.gexf");
 
         NoverlapLayoutBuilder layoutBuilder = new NoverlapLayoutBuilder();
         NoverlapLayout layout = new NoverlapLayout(layoutBuilder);

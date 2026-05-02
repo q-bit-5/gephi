@@ -42,7 +42,6 @@
 
 package org.gephi.layout.plugin.noverlap;
 
-import java.awt.Color;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -50,7 +49,6 @@ import java.util.Map;
 import java.util.Random;
 import org.gephi.graph.api.Graph;
 import org.gephi.graph.api.Node;
-import org.gephi.graph.api.NodeIterable;
 import org.gephi.layout.plugin.AbstractLayout;
 import org.gephi.layout.spi.Layout;
 import org.gephi.layout.spi.LayoutBuilder;
@@ -141,7 +139,7 @@ public class NoverlapLayout extends AbstractLayout implements Layout, LongTask {
             this.ymax = ycenter + securityRatio * yheight / 2;
 
             // Estimate necessary number of columns
-            double area = xwidth*yheight;
+            double area = xwidth * yheight;
             double areaPerNode = area / graph.getNodeCount();
             // Explanation for the weird line below:
             // If nodes were equally distributed in space, we would like to have grid cells that contain
@@ -179,7 +177,7 @@ public class NoverlapLayout extends AbstractLayout implements Layout, LongTask {
                                 nodePair[0] = n;
                                 nodePair[1] = n2;
 
-                                proximities.put(nid+"|"+n2id, nodePair);
+                                proximities.put(nid + "|" + n2id, nodePair);
                             }
                         }
                     }
