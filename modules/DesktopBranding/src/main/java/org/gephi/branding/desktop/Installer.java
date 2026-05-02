@@ -204,30 +204,32 @@ public class Installer extends ModuleInstall {
             options.setEnableUncaughtExceptionHandler(false);
             options.setEnableDeduplication(false);
         });
-        boolean trackUsage = NbPreferences.forModule(ReportController.class)
-            .getBoolean(ReportController.TRACK_USAGE, ReportController.DEFAULT_TRACK_USAGE);
-        if (trackUsage) {
+        boolean disableAll = NbPreferences.forModule(ReportController.class)
+            .getBoolean(ReportController.DISABLE_ALL_TRACKING, false);
+        if (!disableAll) {
             try {
                 Sentry.startSession();
             } catch (Exception e) {
                 Logger.getLogger(Installer.class.getName())
                     .log(Level.WARNING, "Can't start Sentry session", e);
             }
-            try {
-                Sentry.metrics().count("start", 1.0);
-            } catch (Exception e) {
-                Logger.getLogger(Installer.class.getName())
-                    .log(Level.WARNING, "Can't count Sentry metric", e);
+            boolean trackUsage = NbPreferences.forModule(ReportController.class)
+                .getBoolean(ReportController.TRACK_USAGE, ReportController.DEFAULT_TRACK_USAGE);
+            if (trackUsage) {
+                try {
+                    Sentry.metrics().count("start", 1.0);
+                } catch (Exception e) {
+                    Logger.getLogger(Installer.class.getName())
+                        .log(Level.WARNING, "Can't count Sentry metric", e);
+                }
             }
         }
     }
 
     private void showAnalyticsConsentNotification() {
         java.util.prefs.Preferences prefs = NbPreferences.forModule(ReportController.class);
-        boolean doNotRemind = prefs.getBoolean(ReportController.DO_NOT_REMIND_ANALYTICS, false);
-        boolean bothEnabled = prefs.getBoolean(ReportController.SEND_CRASH_REPORTS, ReportController.DEFAULT_SEND_CRASH_REPORTS)
-            && prefs.getBoolean(ReportController.TRACK_USAGE, ReportController.DEFAULT_TRACK_USAGE);
-        if (doNotRemind || bothEnabled) {
+        boolean consentShown = prefs.getBoolean(ReportController.ANALYTICS_CONSENT_SHOWN, false);
+        if (consentShown) {
             return;
         }
         SwingUtilities.invokeLater(() -> {
@@ -248,6 +250,7 @@ public class Installer extends ModuleInstall {
 
             JButton enableBtn = new JButton(NbBundle.getMessage(Installer.class, "AnalyticsConsent.notification.enable"));
             enableBtn.addActionListener(e -> {
+                prefs.putBoolean(ReportController.ANALYTICS_CONSENT_SHOWN, true);
                 prefs.putBoolean(ReportController.SEND_CRASH_REPORTS, true);
                 prefs.putBoolean(ReportController.TRACK_USAGE, true);
                 dialog.dispose();
@@ -255,6 +258,7 @@ public class Installer extends ModuleInstall {
 
             JButton settingsBtn = new JButton(NbBundle.getMessage(Installer.class, "AnalyticsConsent.notification.button"));
             settingsBtn.addActionListener(e -> {
+                prefs.putBoolean(ReportController.ANALYTICS_CONSENT_SHOWN, true);
                 dialog.dispose();
                 OptionsDisplayer.getDefault().open("Gephi/Analytics");
             });
@@ -262,7 +266,10 @@ public class Installer extends ModuleInstall {
             JButton dismissBtn = new JButton("✕");
             dismissBtn.setMargin(new Insets(0, 4, 0, 4));
             dismissBtn.setFont(dismissBtn.getFont().deriveFont(dismissBtn.getFont().getSize() - 1f));
-            dismissBtn.addActionListener(e -> dialog.dispose());
+            dismissBtn.addActionListener(e -> {
+                prefs.putBoolean(ReportController.ANALYTICS_CONSENT_SHOWN, true);
+                dialog.dispose();
+            });
 
             JPanel header = new JPanel(new BorderLayout(8, 0));
             header.setOpaque(false);
@@ -295,6 +302,7 @@ public class Installer extends ModuleInstall {
             dialog.setLocation(x, y);
             dialog.setVisible(true);
 
+            // Auto-close after 15s, but this does NOT count as a user interaction.
             Timer timer = new Timer(15_000, e -> dialog.dispose());
             timer.setRepeats(false);
             timer.start();
@@ -303,9 +311,9 @@ public class Installer extends ModuleInstall {
 
     private void closeSession() {
         try {
-            boolean trackUsage = NbPreferences.forModule(ReportController.class)
-                .getBoolean(ReportController.TRACK_USAGE, ReportController.DEFAULT_TRACK_USAGE);
-            if (trackUsage) {
+            boolean disableAll = NbPreferences.forModule(ReportController.class)
+                .getBoolean(ReportController.DISABLE_ALL_TRACKING, false);
+            if (!disableAll) {
                 Sentry.endSession();
             }
             Sentry.flush(500);
