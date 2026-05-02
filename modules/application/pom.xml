@@ -11,10 +11,120 @@
         <relativePath>../..</relativePath>
     </parent>
 
+    <groupId>org.gephi</groupId>
     <artifactId>gephi</artifactId>
     <packaging>nbm-application</packaging>
     <version>0.11.0</version>
     <name>gephi-app</name>
+    <description>Gephi - The Open Graph Viz Platform</description>
+    <url>https://gephi.org</url>
+
+    <licenses>
+        <license>
+            <name>CDDL 1.0</name>
+            <url>https://www.opensource.org/licenses/CDDL-1.0</url>
+            <comments>CDDL License 1.0</comments>
+        </license>
+        <license>
+            <name>GPL v3</name>
+            <url>https://www.opensource.org/licenses/GPL-3.0</url>
+            <comments>GPL v3 License</comments>
+        </license>
+    </licenses>
+
+    <scm>
+        <connection>scm:git:git://github.com/gephi/gephi.git</connection>
+        <developerConnection>scm:git:git@github.com:gephi/gephi.git</developerConnection>
+        <url>https://github.com/gephi/gephi</url>
+    </scm>
+
+    <developers>
+        <developer>
+            <id>mbastian</id>
+            <name>Mathieu Bastian</name>
+            <email>mathieu.bastian@gephi.org</email>
+        </developer>
+        <developer>
+            <id>eduramiba</id>
+            <name>Eduardo Ramos</name>
+            <email>eduardo.ramos@gephi.org</email>
+        </developer>
+        <developer>
+            <id>jacomyma</id>
+            <name>Mathieu Jacomy</name>
+            <email>mathieu.jacomy@gephi.org</email>
+        </developer>
+        <developer>
+            <id>sheymann</id>
+            <name>Sébastien Heymann</name>
+            <email>sebastien.heymann@gephi.org</email>
+        </developer>
+        <developer>
+            <id>jbilcke</id>
+            <name>Julian Bilcke</name>
+            <email>julian.bilcke@gephi.org</email>
+        </developer>
+        <developer>
+            <id>jersub</id>
+            <name>Jeremy Subtil</name>
+            <email>jeremy.subtil@gephi.org</email>
+        </developer>
+        <developer>
+            <id>cbartosiak</id>
+            <name>Cezary Bartosiak</name>
+            <email>cezary.bartosiak@gephi.org</email>
+        </developer>
+        <developer>
+            <id>megaterik</id>
+            <name>Taras Klaskovsky</name>
+            <email>taras.klaskovsky@gephi.org</email>
+        </developer>
+        <developer>
+            <id>vojtech-bardiovsky</id>
+            <name>Vojtech Bardiovsky</name>
+            <email>vojtech.bardiovsky@gephi.org</email>
+        </developer>
+        <developer>
+            <id>luizribeiro</id>
+            <name>Luiz Ribeiro</name>
+            <email>luiz.ribeiro@gephi.org</email>
+        </developer>
+        <developer>
+            <id>baiacu</id>
+            <name>Helder Suzuki</name>
+            <email>helder.suzuki@gephi.org</email>
+        </developer>
+        <developer>
+            <id>daniel-bernardes</id>
+            <name>Daniel Bernades</name>
+            <email>daniel.bernades@gephi.org</email>
+        </developer>
+        <developer>
+            <id>taynaud</id>
+            <name>Thomas Aynaud</name>
+            <email>thomas.aynaud@gephi.org</email>
+        </developer>
+        <developer>
+            <id>panisson</id>
+            <name>André Panisson</name>
+            <email>andre.panission@gephi.org</email>
+        </developer>
+        <developer>
+            <id>annaalkh</id>
+            <name>Anna Kharitonova</name>
+            <email>anna.kharitonova@gephi.org</email>
+        </developer>
+        <developer>
+            <id>binarycrayon</id>
+            <name>Yudi Xue</name>
+            <email>yudi.xue@gephi.org</email>
+        </developer>
+        <developer>
+            <id>totetmatt</id>
+            <name>Matthieu Totet</name>
+            <email>mattieu.totet@gephi.org</email>
+        </developer>
+    </developers>
     
     <properties>
         <jarGoalPhase>package</jarGoalPhase>
@@ -514,6 +624,35 @@
                 <configuration>
                     <allowIncompleteProjects>true</allowIncompleteProjects>
                 </configuration>
+            </plugin>
+
+            <!-- Flatten the POM before deployment so that dependency versions inherited from
+                 dependencyManagement are resolved inline. This is required because the application
+                 module is deployed in a separate Maven invocation (bundle job) where the parent POM
+                 is not part of the same Sonatype Central bundle, making it unresolvable by the validator. -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>flatten-maven-plugin</artifactId>
+                <configuration>
+                    <flattenMode>oss</flattenMode>
+                    <updatePomFile>true</updatePomFile>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>flatten</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>flatten</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>flatten.clean</id>
+                        <phase>clean</phase>
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

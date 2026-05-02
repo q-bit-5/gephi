@@ -121,6 +121,11 @@
             <name>Yudi Xue</name>
             <email>yudi.xue@gephi.org</email>
         </developer>
+        <developer>
+            <id>totetmatt</id>
+            <name>Matthieu Totet</name>
+            <email>mattieu.totet@gephi.org</email>
+        </developer>
     </developers>
 
     <!-- Properties -->
@@ -269,6 +274,8 @@
         <gephi.checkstyle.version>10.17.0</gephi.checkstyle.version>
 
         <gephi.jcp-maven-plugin.version>7.1.2</gephi.jcp-maven-plugin.version>
+
+        <gephi.flatten-maven-plugin.version>1.7.3</gephi.flatten-maven-plugin.version>
     </properties>
     
     <!-- Repositories -->
@@ -948,6 +955,11 @@
                     <groupId>com.igormaznitsa</groupId>
                     <artifactId>jcp</artifactId>
                     <version>${gephi.jcp-maven-plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>flatten-maven-plugin</artifactId>
+                    <version>${gephi.flatten-maven-plugin.version}</version>
                 </plugin>
             </plugins>
         </pluginManagement>
