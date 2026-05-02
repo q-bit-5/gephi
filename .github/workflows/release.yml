@@ -143,7 +143,7 @@ jobs:
 
       - name: Build and publish bundle
         shell: bash
-        run: mvn --batch-mode -Djava.awt.headless=true -Dgephi.apple.notarization.username=$APPLE_USERNAME -Dgephi.apple.notarization.password=$APPLE_PASSWORD -Dgephi.apple.notarization.teamId=$APPLE_TEAM_ID -Dgephi.windows.codesign.username=$CODESIGN_USERNAME -Dgephi.windows.codesign.password=$CODESIGN_PASSWORD -Dgephi.windows.codesign.totp=$CODESIGN_TOTP -Dgephi.bundle.arch=${{ matrix.arch }} deploy -P deployment,sign-artifacts,${{ matrix.task }}
+        run: mvn --batch-mode -Djava.awt.headless=true -DautoPublish=true -DwaitUntil=published -Dgephi.apple.notarization.username=$APPLE_USERNAME -Dgephi.apple.notarization.password=$APPLE_PASSWORD -Dgephi.apple.notarization.teamId=$APPLE_TEAM_ID -Dgephi.windows.codesign.username=$CODESIGN_USERNAME -Dgephi.windows.codesign.password=$CODESIGN_PASSWORD -Dgephi.windows.codesign.totp=$CODESIGN_TOTP -Dgephi.bundle.arch=${{ matrix.arch }} deploy -P deployment,sign-artifacts,${{ matrix.task }}
         working-directory: modules/application
         env:
           OSSRH_USER: ${{ secrets.OSSRH_TOKEN_USER }}
