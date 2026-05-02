@@ -75,9 +75,9 @@ import org.openide.windows.TopComponent;
 @ConvertAsProperties(dtd = "-//org.gephi.desktop.appearance//Appearance//EN",
     autostore = false)
 @TopComponent.Description(preferredID = "AppearanceTopComponent",
-    iconBase = "org/gephi/desktop/appearance/resources/small.png",
+    iconBase = "DesktopAppearance/small.svg",
     persistenceType = TopComponent.PERSISTENCE_ALWAYS)
-@TopComponent.Registration(mode = "rankingmode", openAtStartup = true, roles = {"overview"})
+@TopComponent.Registration(mode = "rankingmode", openAtStartup = true, roles = {"overview"}, position = 10)
 @ActionID(category = "Window", id = "org.gephi.desktop.appearance.AppearanceTopComponent")
 @ActionReference(path = "Menu/Window", position = 1100)
 @TopComponent.OpenActionRegistration(displayName = "#CTL_AppearanceAction",
@@ -258,11 +258,12 @@ public class AppearanceTopComponent extends TopComponent implements Lookup.Provi
     }
 
     private void refreshCombo() {
-        if (model != null && model.getSelectedTransformerUI() != null &&
-            model.isAttributeTransformerUI(model.getSelectedTransformerUI())) {
+        final AppearanceUIModel currentModel = model;
+        if (currentModel != null && currentModel.getSelectedTransformerUI() != null &&
+            currentModel.isAttributeTransformerUI(currentModel.getSelectedTransformerUI())) {
 
 
-            final List<Function> rows = new ArrayList<>(model.getFunctions());
+            final List<Function> rows = new ArrayList<>(currentModel.getFunctions());
 
             Collections.sort(rows, (o1, o2) -> {
                 if (o1.isAttribute() && !o2.isAttribute()) {
@@ -277,7 +278,7 @@ public class AppearanceTopComponent extends TopComponent implements Lookup.Provi
                 final DefaultComboBoxModel comboBoxModel = new DefaultComboBoxModel();
 
                 //Ranking
-                Function selectedColumn = model.getSelectedFunction();
+                Function selectedColumn = currentModel.getSelectedFunction();
                 attibuteBox.removeItemListener(attributeListener);
 
                 comboBoxModel.addElement(NO_SELECTION);
@@ -456,7 +457,7 @@ public class AppearanceTopComponent extends TopComponent implements Lookup.Provi
          * southToolbar.add(barChartButton);
          */
 //        localScaleButton = new JToggleButton();
-//        localScaleButton.setIcon(ImageUtilities.loadImageIcon("DesktopAppearance/funnel.png", false)); // NOI18N
+//        localScaleButton.setIcon(ImageUtilities.loadImageIcon("DesktopAppearance/funnel.svg", false)); // NOI18N
 //        localScaleButton.setToolTipText(NbBundle.getMessage(RankingTopComponent.class, "RankingTopComponent.localScaleButton.text"));
 //        localScaleButton.setEnabled(false);
 //        localScaleButton.setFocusable(false);
@@ -594,20 +595,20 @@ public class AppearanceTopComponent extends TopComponent implements Lookup.Provi
         controlToolbar.setMargin(new java.awt.Insets(0, 4, 0, 0));
         controlToolbar.setOpaque(true);
 
-        rankingLocalScaleButton.setIcon(ImageUtilities.loadImageIcon("DesktopAppearance/funnel.png", false)); // NOI18N
+        rankingLocalScaleButton.setIcon(ImageUtilities.loadImageIcon("DesktopAppearance/funnel.svg", false)); // NOI18N
         rankingLocalScaleButton.setToolTipText(org.openide.util.NbBundle
             .getMessage(AppearanceTopComponent.class, "AppearanceTopComponent.localScaleButton.toolTipText")); // NOI18N
         rankingLocalScaleButton.setFocusable(false);
         controlToolbar.add(rankingLocalScaleButton);
 
-        partitionLocalScaleButton.setIcon(ImageUtilities.loadImageIcon("DesktopAppearance/funnel.png", false)); // NOI18N
+        partitionLocalScaleButton.setIcon(ImageUtilities.loadImageIcon("DesktopAppearance/funnel.svg", false)); // NOI18N
         partitionLocalScaleButton.setToolTipText(org.openide.util.NbBundle
             .getMessage(AppearanceTopComponent.class,
                 "AppearanceTopComponent.partitionLocalScaleButton.toolTipText")); // NOI18N
         partitionLocalScaleButton.setFocusable(false);
         controlToolbar.add(partitionLocalScaleButton);
 
-        transformNullValuesButton.setIcon(ImageUtilities.loadImageIcon("DesktopAppearance/transformNull.png", false)); // NOI18N
+        transformNullValuesButton.setIcon(ImageUtilities.loadImageIcon("DesktopAppearance/transformNull.svg", false)); // NOI18N
         transformNullValuesButton.setToolTipText(org.openide.util.NbBundle
             .getMessage(AppearanceTopComponent.class,
                 "AppearanceTopComponent.transformNullValues.toolTipText")); // NOI18N
@@ -636,7 +637,7 @@ public class AppearanceTopComponent extends TopComponent implements Lookup.Provi
         controlPanel.setOpaque(true);
         controlPanel.setLayout(new java.awt.GridBagLayout());
 
-        applyButton.setIcon(ImageUtilities.loadImageIcon("DesktopAppearance/apply.gif", false)); // NOI18N
+        applyButton.setIcon(ImageUtilities.loadImageIcon("DesktopAppearance/apply.svg", false)); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(applyButton, org.openide.util.NbBundle
             .getMessage(AppearanceTopComponent.class, "AppearanceTopComponent.applyButton.text")); // NOI18N
         applyButton.setToolTipText(org.openide.util.NbBundle
@@ -649,7 +650,7 @@ public class AppearanceTopComponent extends TopComponent implements Lookup.Provi
         gridBagConstraints.insets = new java.awt.Insets(0, 18, 3, 5);
         controlPanel.add(applyButton, gridBagConstraints);
 
-        stopAutoApplyButton.setIcon(ImageUtilities.loadImageIcon("DesktopAppearance/stop.png", false)); // NOI18N
+        stopAutoApplyButton.setIcon(ImageUtilities.loadImageIcon("DesktopAppearance/stop.svg", false)); // NOI18N
         stopAutoApplyButton.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(stopAutoApplyButton, org.openide.util.NbBundle
             .getMessage(AppearanceTopComponent.class, "AppearanceTopComponent.stopAutoApplyButton.text")); // NOI18N
@@ -670,7 +671,7 @@ public class AppearanceTopComponent extends TopComponent implements Lookup.Provi
         autoApplyToolbar.setRollover(true);
         autoApplyToolbar.setOpaque(true);
 
-        enableAutoButton.setIcon(ImageUtilities.loadImageIcon("DesktopAppearance/chain.png", false)); // NOI18N
+        enableAutoButton.setIcon(ImageUtilities.loadImageIcon("DesktopAppearance/chain.svg", false)); // NOI18N
         enableAutoButton.setToolTipText(org.openide.util.NbBundle
             .getMessage(AppearanceTopComponent.class, "AppearanceTopComponent.enableAutoButton.toolTipText")); // NOI18N
         enableAutoButton.setFocusable(false);
@@ -686,7 +687,7 @@ public class AppearanceTopComponent extends TopComponent implements Lookup.Provi
         gridBagConstraints.weightx = 1.0;
         controlPanel.add(autoApplyToolbar, gridBagConstraints);
 
-        autoApplyButton.setIcon(ImageUtilities.loadImageIcon("DesktopAppearance/apply.gif", false)); // NOI18N
+        autoApplyButton.setIcon(ImageUtilities.loadImageIcon("DesktopAppearance/apply.svg", false)); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(autoApplyButton, org.openide.util.NbBundle
             .getMessage(AppearanceTopComponent.class, "AppearanceTopComponent.autoApplyButton.text")); // NOI18N
         autoApplyButton.setToolTipText(org.openide.util.NbBundle

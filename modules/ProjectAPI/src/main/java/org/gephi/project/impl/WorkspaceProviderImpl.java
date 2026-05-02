@@ -61,13 +61,17 @@ public class WorkspaceProviderImpl implements WorkspaceProvider {
         workspaces = new ArrayList<>();
     }
 
-    protected WorkspaceImpl newWorkspace() {
-        return newWorkspace(project.nextWorkspaceId());
+    protected WorkspaceImpl newWorkspace(int id, Object... objectsForLookup) {
+        synchronized (workspaces) {
+            WorkspaceImpl workspace = new WorkspaceImpl(project, id, true, objectsForLookup);
+            workspaces.add(workspace);
+            return workspace;
+        }
     }
 
-    protected WorkspaceImpl newWorkspace(int id) {
+    protected WorkspaceImpl newWorkspaceWithoutModels(int id, Object... objectsForLookup) {
         synchronized (workspaces) {
-            WorkspaceImpl workspace = new WorkspaceImpl(project, id);
+            WorkspaceImpl workspace = new WorkspaceImpl(project, id, false, objectsForLookup);
             workspaces.add(workspace);
             return workspace;
         }
@@ -102,6 +106,10 @@ public class WorkspaceProviderImpl implements WorkspaceProvider {
         synchronized (workspaces) {
             return currentWorkspace;
         }
+    }
+
+    public ProjectImpl getProject() {
+        return project;
     }
 
     protected void purge() {
@@ -145,5 +153,10 @@ public class WorkspaceProviderImpl implements WorkspaceProvider {
         synchronized (workspaces) {
             return currentWorkspace != null;
         }
+    }
+
+    @Override
+    public int getNextWorkspaceId() {
+        return project.getWorkspaceIds();
     }
 }

@@ -44,8 +44,6 @@ package org.gephi.project.impl;
 
 import java.io.File;
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -134,11 +132,19 @@ public class ProjectImpl implements Project, Comparable<ProjectImpl>, Lookup.Pro
     }
 
     public WorkspaceImpl newWorkspace() {
-        return workspaceProvider.newWorkspace();
+        return workspaceProvider.newWorkspace(workspaceProvider.getProject().nextWorkspaceId());
     }
 
     public WorkspaceImpl newWorkspace(int id) {
         return workspaceProvider.newWorkspace(id);
+    }
+
+    public WorkspaceImpl newWorkspaceWithoutModels(int id) {
+        return workspaceProvider.newWorkspaceWithoutModels(id);
+    }
+
+    public WorkspaceImpl newWorkspace(int id, Object... objectsForLookup) {
+        return workspaceProvider.newWorkspace(id, objectsForLookup);
     }
 
     @Override
@@ -152,7 +158,7 @@ public class ProjectImpl implements Project, Comparable<ProjectImpl>, Lookup.Pro
     }
 
     protected void setLastOpened() {
-        lastOpened = LocalDateTime.now().toInstant(ZoneOffset.UTC);
+        lastOpened = Instant.now();
     }
 
     protected void setLastOpened(Instant lastOpened) {

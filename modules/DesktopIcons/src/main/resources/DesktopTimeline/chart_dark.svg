@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="svg19713" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 16 16" width="15.999999" height="15.999999">
+  <!-- Generator: Adobe Illustrator 29.6.0, SVG Export Plug-In . SVG Version: 2.1.1 Build 207)  -->
+  <defs>
+    <style>
+      .st0 {
+        fill: none;
+      }
+
+      .st1 {
+        fill: #aaa;
+      }
+    </style>
+  </defs>
+  <g id="g26351">
+    <g id="g26349">
+      <path id="path26345" class="st1" d="M1,1v13c0,.552.448,1,1,1h13v-1H2V1H1ZM11.5,4.5v1h1.795l-3.795,3.795-2.145-2.15c-.194-.196-.511-.198-.707-.004-.001.001-.003.003-.004.004l-3.645,3.65.705.705,3.295-3.295,2.145,2.15c.194.196.511.198.707.004.001-.001.003-.003.004-.004l4.145-4.15v1.795h1v-3.5h-3.5Z"/>
+      <rect id="rect26347" class="st0" y="0" width="16" height="16"/>
+    </g>
+  </g>
+</svg>

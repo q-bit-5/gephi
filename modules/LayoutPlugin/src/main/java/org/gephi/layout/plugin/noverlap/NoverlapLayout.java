@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import org.gephi.graph.api.Graph;
 import org.gephi.graph.api.Node;
 import org.gephi.graph.api.NodeIterable;
@@ -57,6 +58,7 @@ import org.gephi.layout.spi.LayoutProperty;
 import org.gephi.utils.longtask.spi.LongTask;
 import org.gephi.utils.progress.ProgressTicket;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  * @author Mathieu Jacomy
@@ -65,6 +67,9 @@ public class NoverlapLayout extends AbstractLayout implements Layout, LongTask {
 
     protected boolean cancel;
     protected Graph graph;
+    private Random random;
+    private long seed;
+    private double speed;
     private double ratio;
     private double margin;
     private double xmin;
@@ -79,6 +84,7 @@ public class NoverlapLayout extends AbstractLayout implements Layout, LongTask {
     @Override
     public void initAlgo() {
         this.graph = graphModel.getGraphVisible();
+        random = new Random(seed);
         setConverged(false);
         cancel = false;
     }
@@ -196,20 +202,28 @@ public class NoverlapLayout extends AbstractLayout implements Layout, LongTask {
                 float n1Weight = n1radius * n1radius;
                 float n2Weight = n2radius * n2radius;
                 float n1Ratio = n2Weight / (n1Weight + n2Weight);
-                float n2Ratio = 1-n1Ratio;
+                float n2Ratio = 1 - n1Ratio;
 
                 // Check sizes
                 double xDist = n2x - n1x;
                 double yDist = n2y - n1y;
-                double angle = Math.atan2(yDist, xDist);
                 double dist = Math.sqrt(xDist * xDist + yDist * yDist);
                 double overlap = n1radius + n2radius - dist;
                 boolean collision = overlap > 0;
                 if (collision) {
-                    overlap += 0.05; // We need to overshoot a bit
                     collisions += 1;
-                    double xOverlap = 1. * overlap * Math.cos(angle);
-                    double yOverlap = 1. * overlap * Math.sin(angle);
+                    double xOverlap;
+                    double yOverlap;
+                    if (dist > 0) {
+                        overlap += 0.05; // We need to overshoot a bit
+                        double angle = Math.atan2(yDist, xDist);
+                        xOverlap = overlap * Math.cos(angle);
+                        yOverlap = overlap * Math.sin(angle);
+                    } else {
+                        // Same exact position: jitter
+                        xOverlap = 0.01 * (0.5 - random.nextDouble());
+                        yOverlap = 0.01 * (0.5 - random.nextDouble());
+                    }
 
                     // n1 and n2 move each other of part of the overlap
                     NoverlapLayoutData n1ldata = n1.getLayoutData();
@@ -233,8 +247,8 @@ public class NoverlapLayout extends AbstractLayout implements Layout, LongTask {
             for (Node n : graph.getNodes()) {
                 NoverlapLayoutData layoutData = n.getLayoutData();
                 if (!n.isFixed()) {
-                    float x = n.x() + layoutData.dx;
-                    float y = n.y() + layoutData.dy;
+                    float x = n.x() + (float) (layoutData.dx * speed);
+                    float y = n.y() + (float) (layoutData.dy * speed);
                     n.setX(x);
                     n.setY(y);
                 }
@@ -259,16 +273,48 @@ public class NoverlapLayout extends AbstractLayout implements Layout, LongTask {
     @Override
     public LayoutProperty[] getProperties() {
         List<LayoutProperty> properties = new ArrayList<>();
-        final String NOVERLAP_CATEGORY = "Noverlap";
+        final String NOVERLAP_CATEGORY = NbBundle.getMessage(getClass(), "name");
         try {
             properties.add(LayoutProperty.createProperty(
-                this, Double.class, "ratio", NOVERLAP_CATEGORY, "ratio", "getRatio", "setRatio"));
+                this, Double.class,
+                NbBundle.getMessage(getClass(), "Noverlap.speed.name"),
+                NOVERLAP_CATEGORY,
+                "Noverlap.speed.name",
+                NbBundle.getMessage(getClass(), "Noverlap.speed.desc"),
+                "getSpeed", "setSpeed"));
         } catch (Exception e) {
             Exceptions.printStackTrace(e);
         }
         try {
             properties.add(LayoutProperty.createProperty(
-                this, Double.class, "margin", NOVERLAP_CATEGORY, "margin", "getMargin", "setMargin"));
+                this, Double.class,
+                NbBundle.getMessage(getClass(), "Noverlap.ratio.name"),
+                NOVERLAP_CATEGORY,
+                "Noverlap.ratio.name",
+                NbBundle.getMessage(getClass(), "Noverlap.ratio.desc"),
+                "getRatio", "setRatio"));
+        } catch (Exception e) {
+            Exceptions.printStackTrace(e);
+        }
+        try {
+            properties.add(LayoutProperty.createProperty(
+                this, Double.class,
+                NbBundle.getMessage(getClass(), "Noverlap.margin.name"),
+                NOVERLAP_CATEGORY,
+                "Noverlap.margin.name",
+                NbBundle.getMessage(getClass(), "Noverlap.margin.desc"),
+                "getMargin", "setMargin"));
+        } catch (Exception e) {
+            Exceptions.printStackTrace(e);
+        }
+        try {
+            properties.add(LayoutProperty.createProperty(
+                this, Long.class,
+                NbBundle.getMessage(getClass(), "Noverlap.seed.name"),
+                NOVERLAP_CATEGORY,
+                "Noverlap.seed.name",
+                NbBundle.getMessage(getClass(), "Noverlap.seed.desc"),
+                "getSeed", "setSeed"));
         } catch (Exception e) {
             Exceptions.printStackTrace(e);
         }
@@ -277,8 +323,18 @@ public class NoverlapLayout extends AbstractLayout implements Layout, LongTask {
 
     @Override
     public void resetPropertiesValues() {
-        setRatio(1.1);
-        setMargin(2.5);
+        setSpeed(3.);
+        setRatio(1.2);
+        setMargin(5.);
+        setSeed(new Random().nextLong());
+    }
+
+    public Double getSpeed() {
+        return speed;
+    }
+
+    public void setSpeed(Double speed) {
+        this.speed = speed;
     }
 
     public Double getRatio() {
@@ -295,6 +351,14 @@ public class NoverlapLayout extends AbstractLayout implements Layout, LongTask {
 
     public void setMargin(Double margin) {
         this.margin = margin;
+    }
+
+    public Long getSeed() {
+        return seed;
+    }
+
+    public void setSeed(Long seed) {
+        this.seed = seed;
     }
 
     @Override

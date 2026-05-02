@@ -50,6 +50,7 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectList;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -77,7 +78,6 @@ import org.gephi.io.importer.api.Issue.Level;
 import org.gephi.io.importer.api.MetadataDraft;
 import org.gephi.io.importer.api.NodeDraft;
 import org.gephi.io.importer.api.Report;
-import org.joda.time.DateTimeZone;
 import org.openide.util.NbBundle;
 
 /**
@@ -118,7 +118,7 @@ public class ImportContainerImpl implements Container, ContainerLoader, Containe
     //Dynamic
     private TimeFormat timeFormat = TimeFormat.DOUBLE;
     private TimeRepresentation timeRepresentation = TimeRepresentation.INTERVAL;
-    private DateTimeZone timeZone = DateTimeZone.getDefault();
+    private ZoneId timeZone = ZoneId.systemDefault();
     private Double timestamp;
     private Interval interval;
     //Report flag
@@ -222,8 +222,11 @@ public class ImportContainerImpl implements Container, ContainerLoader, Containe
     public boolean edgeExists(String source, String target) {
         checkId(source);
         checkId(target);
-        NodeDraftImpl sourceNode = getNode(source);
-        NodeDraftImpl targetNode = getNode(target);
+        if (!nodeExists(source) || !nodeExists(target)) {
+            return false;
+        }
+        NodeDraftImpl sourceNode = nodeList.get(nodeMap.getInt(source));
+        NodeDraftImpl targetNode = nodeList.get(nodeMap.getInt(target));
         if (sourceNode != null && targetNode != null) {
             boolean undirected = edgeDefault.equals(EdgeDirectionDefault.UNDIRECTED) ||
                 (undirectedEdgesCount > 0 && directedEdgesCount == 0);
@@ -401,9 +404,8 @@ public class ImportContainerImpl implements Container, ContainerLoader, Containe
                     }
                 }
                 edgeTypeSet.put(sourceTargetLong, newEdges);
-            } else {
-                edgeTypeSet.put(sourceTargetLong, new int[0]);
             }
+            // else: key was already removed above; don't re-insert an empty array
         }
 
         //Remove edge
@@ -480,12 +482,12 @@ public class ImportContainerImpl implements Container, ContainerLoader, Containe
     }
 
     @Override
-    public DateTimeZone getTimeZone() {
+    public ZoneId getTimeZone() {
         return timeZone;
     }
 
     @Override
-    public void setTimeZone(DateTimeZone timeZone) {
+    public void setTimeZone(ZoneId timeZone) {
         this.timeZone = timeZone;
     }
 
@@ -703,6 +705,9 @@ public class ImportContainerImpl implements Container, ContainerLoader, Containe
         if (elementIdType.equals(ElementIdType.INTEGER) || elementIdType.equals(ElementIdType.LONG)) {
             try {
                 for (NodeDraftImpl node : nodeList) {
+                    if (node == null) {
+                        continue;
+                    }
                     if (elementIdType.equals(ElementIdType.INTEGER)) {
                         Integer.parseInt(node.getId());
                     } else if (elementIdType.equals(ElementIdType.LONG)) {
@@ -829,10 +834,10 @@ public class ImportContainerImpl implements Container, ContainerLoader, Containe
                     }
                 }
             }
-
-            report.logIssue(new Issue(NbBundle.getMessage(
-                ImportContainerImpl.class, "ImportContainerClose_MutualEdgesRemoved", mutualEdgesRemoved
-            ), Level.WARNING));
+            if (mutualEdgesRemoved != 0)
+                report.logIssue(new Issue(NbBundle.getMessage(
+                    ImportContainerImpl.class, "ImportContainerClose_MutualEdgesRemoved", mutualEdgesRemoved
+                ), Level.WARNING));
         }
         //TODO check when mixed is forced
 
@@ -1199,6 +1204,7 @@ public class ImportContainerImpl implements Container, ContainerLoader, Containe
 
         private final Iterator<T> itr;
         private T pointer;
+        private boolean hasNext = false;
 
         public NullFilterIterator(Collection<T> elementCollection) {
             this.itr = elementCollection.iterator();
@@ -1206,9 +1212,13 @@ public class ImportContainerImpl implements Container, ContainerLoader, Containe
 
         @Override
         public boolean hasNext() {
+            if (hasNext) {
+                return true;
+            }
             while (itr.hasNext()) {
                 pointer = itr.next();
                 if (pointer != null) {
+                    hasNext = true;
                     return true;
                 }
             }
@@ -1217,6 +1227,10 @@ public class ImportContainerImpl implements Container, ContainerLoader, Containe
 
         @Override
         public T next() {
+            if (!hasNext) {
+                hasNext();
+            }
+            hasNext = false;
             return pointer;
         }
 

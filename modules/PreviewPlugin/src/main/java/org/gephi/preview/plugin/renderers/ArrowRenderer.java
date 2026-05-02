@@ -98,6 +98,10 @@ public class ArrowRenderer implements Renderer {
         final RenderTarget target,
         final PreviewProperties properties) {
         final Helper h = new Helper(item, properties);
+        // Do not draw an arrow when nodes are at the same position (zero-length edge)
+        if (h.length == 0f) {
+            return;
+        }
         final Color color = EdgeRenderer.getColor(item, properties);
 
         if (target instanceof G2DTarget) {
@@ -165,9 +169,7 @@ public class ArrowRenderer implements Renderer {
         final float minY = Math.min(Math.min(h.p1.y, h.p2.y), h.p3.y);
         final float maxX = Math.max(Math.max(h.p1.x, h.p2.x), h.p3.x);
         final float maxY = Math.max(Math.max(h.p1.y, h.p2.y), h.p3.y);
-        return properties.getBooleanValue(PreviewProperty.EDGE_CURVED)
-            ? new CanvasSize()
-            : new CanvasSize(minX, minY, maxX - minX, maxY - minY);
+        return new CanvasSize(minX, minY, maxX - minX, maxY - minY);
     }
 
     @Override
@@ -176,7 +178,8 @@ public class ArrowRenderer implements Renderer {
             PreviewProperty.createProperty(this, PreviewProperty.ARROW_SIZE, Float.class,
                 NbBundle.getMessage(EdgeRenderer.class, "ArrowRenderer.property.size.displayName"),
                 NbBundle.getMessage(EdgeRenderer.class, "ArrowRenderer.property.size.description"),
-                PreviewProperty.CATEGORY_EDGE_ARROWS, PreviewProperty.SHOW_EDGES).setValue(defaultArrowSize)};
+                PreviewProperty.CATEGORY_EDGE_ARROWS, PreviewProperty.SHOW_EDGES).setMinMax(0f, null).setValue(
+                defaultArrowSize)};
     }
 
     private boolean showArrows(PreviewProperties properties) {
@@ -209,6 +212,7 @@ public class ArrowRenderer implements Renderer {
 
         public final Item sourceItem;
         public final Item targetItem;
+        public final float length;
         public final Vector p1;
         public final Vector p2;
         public final Vector p3;
@@ -228,63 +232,55 @@ public class ArrowRenderer implements Renderer {
             final float size = properties.getFloatValue(PreviewProperty.ARROW_SIZE)
                 * weight.floatValue();
             float radius = -(properties.getFloatValue(PreviewProperty.EDGE_RADIUS)
-                + (Float) targetItem.getData(NodeItem.SIZE) / 2f);
+                + SizeUtils.getNodeSize(targetItem, properties) / 2f);
 
             //Avoid arrow from passing the node's center:
             if (radius > 0) {
                 radius = 0;
             }
 
-            final Vector direction = new Vector(x2, y2);
+            Vector direction = new Vector(x2, y2);
             direction.sub(new Vector(x1, y1));
-            final float length = direction.mag();
+            length = direction.mag();
+            if (length == 0f) {
+                // Nodes overlap; p1/p2/p3 are unused (render() returns early).
+                p1 = p2 = p3 = new Vector(x1, y1);
+                return;
+            }
             direction.normalize();
 
             if (properties.getBooleanValue(PreviewProperty.EDGE_CURVED)) {
                 // Change the direction to account for the curvature
+                // The direction won't be changed if no edge is drawn.
                 double newAngle = Math.atan2(direction.y, direction.x);
                 double curvature = properties.getDoubleValue(ARC_CURVENESS);
                 double r = length / curvature;
-                double h = Math.sqrt(Math.pow(r, 2) - Math.pow(length / 2, 2));
-                newAngle += Math.PI / 2 - Math.atan2(h, length / 2);
                 final Float targetRadius = item.getData(TARGET_RADIUS);
-                double rt = -targetRadius;
-                double h2 = Math.sqrt(Math.pow(r, 2) - Math.pow(rt / 2, 2));
-                newAngle -= Math.PI / 2 - Math.atan2(h2, rt / 2);
-                Vector newDirection = new Vector((float) Math.cos(newAngle), (float) Math.sin(newAngle));
+                double rt = Math.max(0., -targetRadius);
 
-                p1 = new Vector(newDirection.x, newDirection.y);
-                p1.mult(radius);
-                p1.add(new Vector(x2, y2));
-
-                final Vector p1r = new Vector(newDirection.x, newDirection.y);
-                p1r.mult(radius - size);
-                p1r.add(new Vector(x2, y2));
-
-                p2 = new Vector(-newDirection.y, newDirection.x);
-                p2.mult(size * BASE_RATIO);
-                p2.add(p1r);
-
-                p3 = new Vector(newDirection.y, -newDirection.x);
-                p3.mult(size * BASE_RATIO);
-                p3.add(p1r);
-            } else {
-                p1 = new Vector(direction.x, direction.y);
-                p1.mult(radius);
-                p1.add(new Vector(x2, y2));
-
-                final Vector p1r = new Vector(direction.x, direction.y);
-                p1r.mult(radius - size);
-                p1r.add(new Vector(x2, y2));
-
-                p2 = new Vector(-direction.y, direction.x);
-                p2.mult(size * BASE_RATIO);
-                p2.add(p1r);
-
-                p3 = new Vector(direction.y, -direction.x);
-                p3.mult(size * BASE_RATIO);
-                p3.add(p1r);
+                if (r >= rt / 2) {
+                    double h = Math.sqrt(Math.pow(r, 2) - Math.pow(length / 2, 2));
+                    newAngle += Math.PI / 2 - Math.atan2(h, length / 2);
+                    double h2 = Math.sqrt(Math.pow(r, 2) - Math.pow(rt / 2, 2));
+                    newAngle -= Math.PI / 2 - Math.atan2(h2, rt / 2);
+                    direction = new Vector((float) Math.cos(newAngle), (float) Math.sin(newAngle));
+                }
             }
+            p1 = new Vector(direction.x, direction.y);
+            p1.mult(radius);
+            p1.add(new Vector(x2, y2));
+
+            final Vector p1r = new Vector(direction.x, direction.y);
+            p1r.mult(radius - size);
+            p1r.add(new Vector(x2, y2));
+
+            p2 = new Vector(-direction.y, direction.x);
+            p2.mult(size * BASE_RATIO);
+            p2.add(p1r);
+
+            p3 = new Vector(direction.y, -direction.x);
+            p3.mult(size * BASE_RATIO);
+            p3.add(p1r);
         }
     }
 }

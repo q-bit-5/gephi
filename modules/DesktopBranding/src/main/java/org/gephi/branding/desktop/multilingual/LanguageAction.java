@@ -43,10 +43,14 @@
 package org.gephi.branding.desktop.multilingual;
 
 import java.awt.event.ActionEvent;
+import java.awt.Desktop;
+import java.net.URI;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.IOException;
+import java.net.URISyntaxException;
 import javax.swing.AbstractAction;
 import javax.swing.Icon;
 import javax.swing.JMenu;
@@ -55,6 +59,7 @@ import javax.swing.JOptionPane;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.LifecycleManager;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -109,13 +114,35 @@ public final class LanguageAction extends CallableSystemAction {
             if (lang.getCountry() != null) {
                 iconFile += "_" + lang.getCountry();
             }
-            iconFile += ".png";
+            iconFile += ".svg";
             Icon icon = ImageUtilities.loadImageIcon(iconFile, false);
             if (icon != null) {
                 menuItem.setIcon(icon);
             }
             menu.add(menuItem);
         }
+
+        // Add "support localization" button to language menu
+        JMenuItem supportLocalization = new JMenuItem(new AbstractAction(NbBundle.getMessage(LanguageAction.class, "CTL_SupportLocalization")) {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Desktop desktop = Desktop.getDesktop();
+                URI uri;
+                try {
+                    uri = new URI("https://hosted.weblate.org/projects/gephi/");
+                    try {
+                        desktop.browse(uri);
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                } catch (URISyntaxException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        });
+
+        menu.add(supportLocalization);
 
         return menu;
     }
@@ -184,7 +211,12 @@ public final class LanguageAction extends CallableSystemAction {
         RU_RU("ru", "Русский"),
         ZH_CN("zh", "CN", "中文"),
         JA_JA("ja", "日本語"),
-        RO_RO("ro", "Română");
+        RO_RO("ro", "Română"),
+        EL_GR("el", "GR", "Ελληνικά"),
+        HU_HU("hu", "HU", "Magyar"),
+        KO_KR("ko", "KR", "한국어"),
+        SV_SE("sv", "SE", "Svenska"),
+        UK_UA("uk", "UA", "Українська");
         private final String language;
         private String country = null;
         private final String name;

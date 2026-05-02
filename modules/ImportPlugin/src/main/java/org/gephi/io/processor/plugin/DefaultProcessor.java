@@ -42,7 +42,6 @@
 
 package org.gephi.io.processor.plugin;
 
-import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.gephi.graph.api.Configuration;
@@ -51,10 +50,6 @@ import org.gephi.graph.api.Graph;
 import org.gephi.graph.api.GraphController;
 import org.gephi.graph.api.GraphFactory;
 import org.gephi.graph.api.Node;
-import org.gephi.graph.api.TimeRepresentation;
-import org.gephi.graph.api.types.IntervalDoubleMap;
-import org.gephi.graph.api.types.TimestampDoubleMap;
-import org.gephi.io.importer.api.ColumnDraft;
 import org.gephi.io.importer.api.ContainerUnloader;
 import org.gephi.io.importer.api.EdgeDirection;
 import org.gephi.io.importer.api.EdgeDraft;
@@ -85,20 +80,24 @@ public class DefaultProcessor extends AbstractProcessor {
     }
 
     @Override
-    public void process() {
+    public Workspace[] process() {
         try {
             if (containers.length > 1) {
                 throw new RuntimeException("This processor can only handle single containers");
             }
             ContainerUnloader container = containers[0];
 
+            // Get config
+            Configuration config = createConfiguration(container);
+
             //Workspace
             ProjectController pc = Lookup.getDefault().lookup(ProjectController.class);
             if (workspace == null) {
-                workspace = pc.openNewWorkspace();
+                workspace = pc.openNewWorkspace(config);
+            } else {
+                validateConfigurationMatchesExisting(container, config, workspace);
             }
             processMeta(container, workspace);
-            processConfiguration(container, workspace);
 
             if (container.getSource() != null && !container.getSource().isEmpty()) {
                 pc.setSource(workspace, container.getSource());
@@ -110,6 +109,7 @@ public class DefaultProcessor extends AbstractProcessor {
             Progress.start(progressTicket, calculateWorkUnits());
             process(container, workspace);
             Progress.finish(progressTicket);
+            return new Workspace[] {workspace};
         } finally {
             clean();
         }
@@ -123,55 +123,6 @@ public class DefaultProcessor extends AbstractProcessor {
             }
             if (metaData.getTitle().isEmpty()) {
                 metaData.setTitle(container.getMetadata().getTitle());
-            }
-        }
-    }
-
-    protected void processConfiguration(ContainerUnloader container, Workspace workspace) {
-        //Configuration
-        GraphController graphController = Lookup.getDefault().lookup(GraphController.class);
-        Configuration configuration = new Configuration();
-        configuration.setTimeRepresentation(container.getTimeRepresentation());
-        if (container.getEdgeTypeLabelClass() != null) {
-            configuration.setEdgeLabelType(container.getEdgeTypeLabelClass());
-        }
-        configuration.setNodeIdType(container.getElementIdType().getTypeClass());
-        configuration.setEdgeIdType(container.getElementIdType().getTypeClass());
-
-        ColumnDraft weightColumn = container.getEdgeColumn("weight");
-        if (weightColumn != null && weightColumn.isDynamic()) {
-            if (container.getTimeRepresentation().equals(TimeRepresentation.INTERVAL)) {
-                configuration.setEdgeWeightType(IntervalDoubleMap.class);
-            } else {
-                configuration.setEdgeWeightType(TimestampDoubleMap.class);
-            }
-        }
-
-        GraphConfigurationWrapper originalConfig =
-            new GraphConfigurationWrapper(graphController.getGraphModel(workspace).getConfiguration());
-        if (container.getEdgeCount() == 0) {
-            //Fix different config problems that are not actually problems since no edges are present:
-            //A case user-friendly specially for spreadsheet import
-
-            //Make weight types match:
-            if (!originalConfig.edgeWeightType.equals(configuration.getEdgeWeightType())) {
-                configuration.setEdgeWeightType(originalConfig.edgeWeightType);
-            }
-        }
-
-        GraphConfigurationWrapper newConfig = new GraphConfigurationWrapper(configuration);
-
-        if (!originalConfig.equals(newConfig)) {
-            try {
-                graphController.getGraphModel(workspace).setConfiguration(configuration);
-            } catch (Exception e) {
-                String message = NbBundle.getMessage(
-                    DefaultProcessor.class, "DefaultProcessor.error.configurationChangeForbidden",
-                    new GraphConfigurationWrapper(graphController.getGraphModel(workspace).getConfiguration())
-                        .toString(),
-                    new GraphConfigurationWrapper(configuration).toString()
-                );
-                report.logIssue(new Issue(message, Issue.Level.SEVERE));
             }
         }
     }
@@ -272,6 +223,29 @@ public class DefaultProcessor extends AbstractProcessor {
                     Progress.progress(progressTicket);
                     continue;
                 }
+            } else if (edge == null) {
+                //No direct match, but a reverse-direction conflict may still prevent creating this edge:
+                final Edge incompatibleEdge = findIncompatibleEdge(graph, source, target, createDirected, edgeType);
+                if (incompatibleEdge != null) {
+                    String message = NbBundle.getMessage(
+                        DefaultProcessor.class, "DefaultProcessor.warning.incompatibleEdgeDirectedness",
+                        String.format(
+                            "[%s -> %s; %s, type %s]",
+                            sourceId, targetId, createDirected ? "Directed" : "Undirected", type
+                        ),
+                        String.format(
+                            "[%s -> %s; %s; type: %s; id: %s]",
+                            incompatibleEdge.getSource().getId(), incompatibleEdge.getTarget().getId(),
+                            incompatibleEdge.isDirected() ? "Directed" : "Undirected",
+                            incompatibleEdge.getTypeLabel(),
+                            incompatibleEdge.getId()
+                        )
+                    );
+                    report.logIssue(new Issue(message, Issue.Level.WARNING));
+
+                    Progress.progress(progressTicket);
+                    continue;
+                }
             }
 
             boolean newEdge = edge == null;
@@ -298,14 +272,19 @@ public class DefaultProcessor extends AbstractProcessor {
         //Report
         int touchedNodes = container.getNodeCount();
         int touchedEdges = container.getEdgeCount();
-        if (touchedNodes != addedNodes || touchedEdges != addedEdges) {
+        int overlappedNodes = touchedNodes - addedNodes;
+        int overlappedEdges = touchedEdges - addedEdges;
+        if (overlappedNodes != 0) {
             Logger.getLogger(getClass().getSimpleName())
                 .log(Level.INFO, "# Nodes loaded: {0} ({1} added)", new Object[] {touchedNodes, addedNodes});
-            Logger.getLogger(getClass().getSimpleName())
-                .log(Level.INFO, "# Edges loaded: {0} ({1} added)", new Object[] {touchedEdges, addedEdges});
         } else {
             Logger.getLogger(getClass().getSimpleName())
                 .log(Level.INFO, "# Nodes loaded: {0}", new Object[] {touchedNodes});
+        }
+        if (overlappedEdges != 0) {
+            Logger.getLogger(getClass().getSimpleName())
+                .log(Level.INFO, "# Edges loaded: {0} ({1} added)", new Object[] {touchedEdges, addedEdges});
+        } else {
             Logger.getLogger(getClass().getSimpleName())
                 .log(Level.INFO, "# Edges loaded: {0}", new Object[] {touchedEdges});
         }
@@ -315,14 +294,18 @@ public class DefaultProcessor extends AbstractProcessor {
         Edge edge = graph.getEdge(source, target, edgeType);
 
         if (edge == null) {
-            if (directed) {
-                //The edge may exist with opposite source-target but undirected. In that case we can't create a directed one:
-                edge = graph.getEdge(target, source, edgeType);
-
-                if (edge != null && edge.isDirected()) {
-                    //Actually it's directed so we can create the opposite directed edge, not incompatible
+            //Check reverse direction for potential directedness conflicts
+            edge = graph.getEdge(target, source, edgeType);
+            if (edge != null) {
+                if (directed && edge.isDirected()) {
+                    //Two directed edges in opposite directions can coexist
+                    edge = null;
+                } else if (!directed && !edge.isDirected()) {
+                    //Undirected edges are symmetric — already found as forward, would be merged not conflicting
                     edge = null;
                 }
+                //directed=false + existing directed: incompatible (return it)
+                //directed=true + existing undirected: incompatible (return it)
             }
         } else {
             if (edge.isDirected() == directed) {
@@ -348,73 +331,5 @@ public class DefaultProcessor extends AbstractProcessor {
                 break;
         }
         return id;
-    }
-
-    private class GraphConfigurationWrapper {
-
-        private final Class nodeIdType;
-        private final Class edgeIdType;
-        private final Class edgeLabelType;
-        private final Class edgeWeightType;
-        private final Boolean edgeWeightColumn;
-        private final TimeRepresentation timeRepresentation;
-
-        public GraphConfigurationWrapper(Configuration configuration) {
-            nodeIdType = configuration.getNodeIdType();
-            edgeIdType = configuration.getEdgeIdType();
-            edgeLabelType = configuration.getEdgeLabelType();
-            edgeWeightType = configuration.getEdgeWeightType();
-            edgeWeightColumn = configuration.getEdgeWeightColumn();
-            timeRepresentation = configuration.getTimeRepresentation();
-        }
-
-        @Override
-        public int hashCode() {
-            int hash = 7;
-            hash = 19 * hash + Objects.hashCode(this.nodeIdType);
-            hash = 19 * hash + Objects.hashCode(this.edgeIdType);
-            hash = 19 * hash + Objects.hashCode(this.edgeLabelType);
-            hash = 19 * hash + Objects.hashCode(this.edgeWeightType);
-            hash = 19 * hash + Objects.hashCode(this.edgeWeightColumn);
-            hash = 19 * hash + Objects.hashCode(this.timeRepresentation);
-            return hash;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (this == obj) {
-                return true;
-            }
-            if (obj == null) {
-                return false;
-            }
-            if (getClass() != obj.getClass()) {
-                return false;
-            }
-            final GraphConfigurationWrapper other = (GraphConfigurationWrapper) obj;
-            if (!Objects.equals(this.nodeIdType, other.nodeIdType)) {
-                return false;
-            }
-            if (!Objects.equals(this.edgeIdType, other.edgeIdType)) {
-                return false;
-            }
-            if (!Objects.equals(this.edgeLabelType, other.edgeLabelType)) {
-                return false;
-            }
-            if (!Objects.equals(this.edgeWeightType, other.edgeWeightType)) {
-                return false;
-            }
-            if (!Objects.equals(this.edgeWeightColumn, other.edgeWeightColumn)) {
-                return false;
-            }
-            return this.timeRepresentation == other.timeRepresentation;
-        }
-
-        @Override
-        public String toString() {
-            return "GraphConfigurationWrapper{" + "nodeIdType=" + nodeIdType + ", edgeIdType=" + edgeIdType +
-                ", edgeLabelType=" + edgeLabelType + ", edgeWeightType=" + edgeWeightType + ", edgeWeightColumn=" +
-                edgeWeightColumn + ", timeRepresentation=" + timeRepresentation + '}';
-        }
     }
 }
