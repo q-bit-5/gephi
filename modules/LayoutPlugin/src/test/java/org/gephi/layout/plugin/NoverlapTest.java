@@ -42,10 +42,13 @@ Portions Copyrighted 2011 Gephi Consortium.
 
 package org.gephi.layout.plugin;
 
+import org.gephi.graph.api.Graph;
 import org.gephi.graph.api.GraphModel;
+import org.gephi.graph.api.Node;
 import org.gephi.io.importer.GraphImporter;
 import org.gephi.layout.plugin.noverlap.NoverlapLayout;
 import org.gephi.layout.plugin.noverlap.NoverlapLayoutBuilder;
+import org.junit.Assert;
 import org.junit.Test;
 
 /**
@@ -53,53 +56,71 @@ import org.junit.Test;
  */
 public class NoverlapTest {
 
+    private static final long FIXED_SEED = 42L;
+    private static final int MAX_ITERATIONS = 100;
+
     @Test
     public void test2nodesNoverlap() {
-
         GraphModel graphModel = GraphImporter.importGraph(NoverlapTest.class, "2nodes.gexf");
 
-        NoverlapLayoutBuilder layoutBuilder = new NoverlapLayoutBuilder();
-        NoverlapLayout layout = new NoverlapLayout(layoutBuilder);
-        layout.setGraphModel(graphModel);
-
-        layout.initAlgo();
-        layout.resetPropertiesValues();
-        int iterations = 10;
-        for (int i = 0; i < iterations; i++) {
-            layout.goAlgo();
-            if (layout.isConverged()) {
-                break;
-            }
-        }
-        if (layout.isConverged()) {
-            System.out.println("Noverlap has prevented all overlaps.");
-        }
+        NoverlapLayout layout = createLayout(graphModel);
+        runLayout(layout);
         layout.endAlgo();
 
+        Assert.assertTrue("Noverlap should converge for 2 overlapping nodes", layout.isConverged());
+        assertNoOverlaps(graphModel, layout);
     }
 
     @Test
     public void test10KnodesNoverlap() {
-
         GraphModel graphModel = GraphImporter.importGraph(NoverlapTest.class, "10K_randomlayout.gexf");
 
-        NoverlapLayoutBuilder layoutBuilder = new NoverlapLayoutBuilder();
-        NoverlapLayout layout = new NoverlapLayout(layoutBuilder);
-        layout.setGraphModel(graphModel);
+        int nodeCountBefore = graphModel.getGraph().getNodeCount();
 
-        layout.initAlgo();
+        NoverlapLayout layout = createLayout(graphModel);
+        runLayout(layout);
+        layout.endAlgo();
+
+        Assert.assertEquals("Node count should not change after layout", nodeCountBefore,
+            graphModel.getGraph().getNodeCount());
+    }
+
+    private NoverlapLayout createLayout(GraphModel graphModel) {
+        NoverlapLayout layout = new NoverlapLayout(new NoverlapLayoutBuilder());
         layout.resetPropertiesValues();
-        int iterations = 10;
-        for (int i = 0; i < iterations; i++) {
+        layout.setSeed(FIXED_SEED);
+        layout.setGraphModel(graphModel);
+        layout.initAlgo();
+        return layout;
+    }
+
+    private void runLayout(NoverlapLayout layout) {
+        for (int i = 0; i < MAX_ITERATIONS; i++) {
             layout.goAlgo();
             if (layout.isConverged()) {
                 break;
             }
         }
-        if (layout.isConverged()) {
-            System.out.println("Noverlap has prevented all overlaps.");
-        }
-        layout.endAlgo();
+    }
 
+    private void assertNoOverlaps(GraphModel graphModel, NoverlapLayout layout) {
+        Graph graph = graphModel.getGraph();
+        Node[] nodes = graph.getNodes().toArray();
+        double ratio = layout.getRatio();
+        double margin = layout.getMargin();
+        for (int i = 0; i < nodes.length; i++) {
+            for (int j = i + 1; j < nodes.length; j++) {
+                Node n1 = nodes[i];
+                Node n2 = nodes[j];
+                double dx = n2.x() - n1.x();
+                double dy = n2.y() - n1.y();
+                double dist = Math.sqrt(dx * dx + dy * dy);
+                double r1 = n1.size() * ratio + margin;
+                double r2 = n2.size() * ratio + margin;
+                Assert.assertTrue(
+                    "Nodes " + n1.getId() + " and " + n2.getId() + " should not overlap after Noverlap",
+                    dist >= r1 + r2 - 0.01);
+            }
+        }
     }
 }
