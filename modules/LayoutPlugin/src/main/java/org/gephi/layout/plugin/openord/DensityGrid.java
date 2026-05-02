@@ -58,8 +58,14 @@ public class DensityGrid implements Cloneable {
     private float[][] fallOff;
     private ArrayDeque<Node>[][] bins;
 
-    public static float getViewSize() {
-        return (VIEW_SIZE * 0.8f) - (RADIUS / 0.25f) * 2f;
+    /**
+     * Returns the usable coordinate range for layout, excluding boundary padding.
+     * Used to scale fixed nodes so they fit within the active area of the grid.
+     */
+    public static float getUsableSize() {
+        return (VIEW_SIZE * 0.8f) - (RADIUS / VIEW_TO_GRID) * 2f;
+    }
+
     /**
      * Clamps a layout coordinate to the valid range that maps within the density grid bounds.
      */
