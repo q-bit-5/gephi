@@ -52,9 +52,9 @@ final class AnalyticsPanel extends JPanel {
     private javax.swing.JCheckBox disableAllTrackingCheckBox;
     private javax.swing.JSeparator disableAllSeparator;
     private javax.swing.JCheckBox sendCrashReportsCheckBox;
-    private javax.swing.JLabel crashReportsDescriptionLabel;
+    private javax.swing.JTextArea crashReportsDescriptionLabel;
     private javax.swing.JCheckBox usageAnalyticsCheckBox;
-    private javax.swing.JLabel usageAnalyticsDescriptionLabel;
+    private javax.swing.JTextArea usageAnalyticsDescriptionLabel;
     private javax.swing.JSeparator separator;
     private javax.swing.JLabel titleLabel;
 
@@ -67,9 +67,9 @@ final class AnalyticsPanel extends JPanel {
         titleLabel = new javax.swing.JLabel();
         separator = new javax.swing.JSeparator();
         sendCrashReportsCheckBox = new javax.swing.JCheckBox();
-        crashReportsDescriptionLabel = new javax.swing.JLabel();
+        crashReportsDescriptionLabel = createDescriptionLabel();
         usageAnalyticsCheckBox = new javax.swing.JCheckBox();
-        usageAnalyticsDescriptionLabel = new javax.swing.JLabel();
+        usageAnalyticsDescriptionLabel = createDescriptionLabel();
         disableAllSeparator = new javax.swing.JSeparator();
         disableAllTrackingCheckBox = new javax.swing.JCheckBox();
 
@@ -80,16 +80,12 @@ final class AnalyticsPanel extends JPanel {
             NbBundle.getMessage(AnalyticsPanel.class, "AnalyticsPanel.sendCrashReports.text"));
         sendCrashReportsCheckBox.addActionListener(e -> controller.changed());
 
-        crashReportsDescriptionLabel.setForeground(new java.awt.Color(132, 132, 132));
-        crashReportsDescriptionLabel.setFont(crashReportsDescriptionLabel.getFont().deriveFont(crashReportsDescriptionLabel.getFont().getSize() - 1f));
         crashReportsDescriptionLabel.setText(NbBundle.getMessage(AnalyticsPanel.class, "AnalyticsPanel.sendCrashReports.description"));
 
         org.openide.awt.Mnemonics.setLocalizedText(usageAnalyticsCheckBox,
             NbBundle.getMessage(AnalyticsPanel.class, "AnalyticsPanel.usageAnalytics.text"));
         usageAnalyticsCheckBox.addActionListener(e -> controller.changed());
 
-        usageAnalyticsDescriptionLabel.setForeground(new java.awt.Color(132, 132, 132));
-        usageAnalyticsDescriptionLabel.setFont(usageAnalyticsDescriptionLabel.getFont().deriveFont(usageAnalyticsDescriptionLabel.getFont().getSize() - 1f));
         usageAnalyticsDescriptionLabel.setText(NbBundle.getMessage(AnalyticsPanel.class, "AnalyticsPanel.usageAnalytics.description"));
 
         org.openide.awt.Mnemonics.setLocalizedText(disableAllTrackingCheckBox,
@@ -118,9 +114,9 @@ final class AnalyticsPanel extends JPanel {
                         .addGap(10, 10, 10)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(sendCrashReportsCheckBox)
-                            .addComponent(crashReportsDescriptionLabel)
+                            .addComponent(crashReportsDescriptionLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(usageAnalyticsCheckBox)
-                            .addComponent(usageAnalyticsDescriptionLabel)))
+                            .addComponent(usageAnalyticsDescriptionLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                     .addComponent(disableAllSeparator, javax.swing.GroupLayout.DEFAULT_SIZE, 679, Short.MAX_VALUE)
                     .addComponent(disableAllTrackingCheckBox))
                 .addContainerGap())
@@ -135,17 +131,30 @@ final class AnalyticsPanel extends JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(sendCrashReportsCheckBox)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(crashReportsDescriptionLabel)
+                .addComponent(crashReportsDescriptionLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(usageAnalyticsCheckBox)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(usageAnalyticsDescriptionLabel)
+                .addComponent(usageAnalyticsDescriptionLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(disableAllSeparator, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(disableAllTrackingCheckBox)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+    }
+
+    private static javax.swing.JTextArea createDescriptionLabel() {
+        javax.swing.JTextArea textArea = new javax.swing.JTextArea();
+        textArea.setEditable(false);
+        textArea.setFocusable(false);
+        textArea.setOpaque(false);
+        textArea.setLineWrap(true);
+        textArea.setWrapStyleWord(true);
+        textArea.setBorder(null);
+        textArea.setForeground(new java.awt.Color(132, 132, 132));
+        textArea.setFont(textArea.getFont().deriveFont(textArea.getFont().getSize() - 1f));
+        return textArea;
     }
 
     void load() {
