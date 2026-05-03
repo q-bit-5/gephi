@@ -30,8 +30,8 @@ assignees: ''
 
 ## Your Environment
 
-* Version used: Gephi 0.10.1
+* Version used: Gephi 0.11.1
 * Operating System: 
 
-<!--- Or preferably, include a copy of your messages.log file in your user directory (see https://github.com/gephi/gephi/wiki/Troubleshooting) -->
+<!--- Or preferably, include a copy of your messages.log file in your user directory (see https://docs.gephi.org/desktop/User_Manual/Troubleshooting#where-are-user-files) -->
 

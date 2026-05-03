@@ -15,8 +15,9 @@ The only exception when it comes to **connecting to the web** is for crash repor
 We monitor security vulnerabilities in the dependencies we use, as well as within the core codebase. In case of a major vulnerability, we would release a new patch version of Gephi to address it.
 
 | Version | Supported          |
-| ------- | ------------------ |
-| 0.10.1   | :white_check_mark: |
+|---------| ------------------ |
+| 0.11.1  | :white_check_mark: |
+| 0.10.1  | :white_check_mark: |
 | 0.9.7   | :x:                |
 
 ## Code security
