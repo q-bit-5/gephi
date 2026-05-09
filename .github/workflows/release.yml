@@ -144,7 +144,7 @@ jobs:
           gpg-passphrase: GPG_PASSPHRASE
 
       - name: Install MacOS requirements
-        run: brew install gnupg@1.4
+        run: brew install gnupg@1.4 create-dmg
         if: runner.os == 'macOS'
 
       - name: Apple Developer Certificates
