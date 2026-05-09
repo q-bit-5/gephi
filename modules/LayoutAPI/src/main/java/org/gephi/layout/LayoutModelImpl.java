@@ -222,6 +222,33 @@ public class LayoutModelImpl implements LayoutModel, Model {
         }
     }
 
+    // Coerce a Number to the target type if there is a mismatch (e.g. Integer saved, Long expected).
+    private Object coerceNumeric(Object value, Class<?> targetType) {
+        if (!(value instanceof Number) || targetType == null) {
+            return value;
+        }
+        Number n = (Number) value;
+        if (targetType == Long.class || targetType == Long.TYPE) {
+            return n.longValue();
+        }
+        if (targetType == Integer.class || targetType == Integer.TYPE) {
+            return n.intValue();
+        }
+        if (targetType == Double.class || targetType == Double.TYPE) {
+            return n.doubleValue();
+        }
+        if (targetType == Float.class || targetType == Float.TYPE) {
+            return n.floatValue();
+        }
+        if (targetType == Short.class || targetType == Short.TYPE) {
+            return n.shortValue();
+        }
+        if (targetType == Byte.class || targetType == Byte.TYPE) {
+            return n.byteValue();
+        }
+        return value;
+    }
+
     // Returns true if only the default values were applied (no saved properties)
     public boolean loadProperties(Layout layout) {
         // In case some properties are only locally defined (like cooling in ForceAtlas)
@@ -245,14 +272,14 @@ public class LayoutModelImpl implements LayoutModel, Model {
                             propertyEditor.setAsText(savedProperties.get(l).toString());
                             onlyDefaults = false;
                         } else {
-                            property.getProperty().setValue(savedProperties.get(l));
+                            Object val = coerceNumeric(savedProperties.get(l), property.getProperty().getValueType());
+                            property.getProperty().setValue(val);
                             onlyDefaults = false;
                         }
                     } catch (Exception e) {
                         Logger.getLogger("").log(
-                            Level.WARNING,
-                            String.format("Error while loading layout '%s' property '%s' from saved properties", layout.getBuilder().getName(), property.getCanonicalName()),
-                            e);
+                            Level.FINE,
+                            String.format("Skipping incompatible saved value for layout '%s' property '%s'", layout.getBuilder().getName(), property.getCanonicalName()));
                     }
                 }
             }
