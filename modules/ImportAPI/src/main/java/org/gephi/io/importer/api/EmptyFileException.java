@@ -57,12 +57,19 @@ public final class EmptyFileException extends ImportException {
     private final String fileName;
 
     public EmptyFileException(String fileName) {
-        super(NbBundle.getMessage(EmptyFileException.class, "EmptyFileException.message", fileName));
+        super(buildMessage(fileName));
         this.fileName = fileName;
     }
 
+    private static String buildMessage(String fileName) {
+        if (fileName == null || fileName.isEmpty()) {
+            return NbBundle.getMessage(EmptyFileException.class, "EmptyFileException.messageNoName");
+        }
+        return NbBundle.getMessage(EmptyFileException.class, "EmptyFileException.message", fileName);
+    }
+
     /**
-     * @return the name of the empty file that triggered this exception
+     * @return the name of the empty file that triggered this exception, or {@code null} if it isn't known
      */
     public String getFileName() {
         return fileName;
