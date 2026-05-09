@@ -582,14 +582,22 @@ public class ProjectControllerUIImpl implements ProjectListener {
 
         if (returnFile == JFileChooser.APPROVE_OPTION) {
             File[] files = chooser.getSelectedFiles();
-            FileObject[] fileObjects = new FileObject[files.length];
+            List<FileObject> fileObjects = new ArrayList<>();
 
-            int i = 0;
             File gephiFile = null;
             for (File file : files) {
                 file = FileUtil.normalizeFile(file);
                 FileObject fileObject = FileUtil.toFileObject(file);
-                fileObjects[i++] = fileObject;
+
+                if (fileObject == null) {
+                    NotifyDescriptor.Message msg = new NotifyDescriptor.Message(NbBundle
+                        .getMessage(ProjectControllerUIImpl.class, "ProjectControllerUI.error.fileNotAccessible",
+                            file.getName()), NotifyDescriptor.ERROR_MESSAGE);
+                    DialogDisplayer.getDefault().notify(msg);
+                    return;
+                }
+
+                fileObjects.add(fileObject);
 
                 if (fileObject.getExt().equalsIgnoreCase("gephi")) {
                     if (gephiFile != null) {
@@ -621,7 +629,7 @@ public class ProjectControllerUIImpl implements ProjectListener {
                 });
             } else {
                 //Import
-                importControllerUI.importFiles(fileObjects);
+                importControllerUI.importFiles(fileObjects.toArray(new FileObject[0]));
             }
         }
     }
