@@ -87,6 +87,9 @@ public final class OpenFile extends AbstractAction {
         if (isEnabled()) {
             if (ev != null && ev.getSource() != null && ev.getSource() instanceof File) {
                 FileObject fileObject = FileUtil.toFileObject((File) ev.getSource());
+                if (fileObject == null) {
+                    return;
+                }
                 if (fileObject.hasExt(GEPHI_EXTENSION)) {
                     Lookup.getDefault().lookup(ProjectControllerUIImpl.class).openProject(FileUtil.toFile(fileObject));
                 } else {
