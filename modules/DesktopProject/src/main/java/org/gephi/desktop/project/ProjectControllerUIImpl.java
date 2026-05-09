@@ -590,7 +590,11 @@ public class ProjectControllerUIImpl implements ProjectListener {
                 FileObject fileObject = FileUtil.toFileObject(file);
 
                 if (fileObject == null) {
-                    continue;
+                    NotifyDescriptor.Message msg = new NotifyDescriptor.Message(NbBundle
+                        .getMessage(ProjectControllerUIImpl.class, "ProjectControllerUI.error.fileNotAccessible",
+                            file.getName()), NotifyDescriptor.ERROR_MESSAGE);
+                    DialogDisplayer.getDefault().notify(msg);
+                    return;
                 }
 
                 fileObjects.add(fileObject);

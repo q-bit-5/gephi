@@ -86,8 +86,13 @@ public final class OpenFile extends AbstractAction {
     public void actionPerformed(ActionEvent ev) {
         if (isEnabled()) {
             if (ev != null && ev.getSource() != null && ev.getSource() instanceof File) {
-                FileObject fileObject = FileUtil.toFileObject((File) ev.getSource());
+                File sourceFile = (File) ev.getSource();
+                FileObject fileObject = FileUtil.toFileObject(sourceFile);
                 if (fileObject == null) {
+                    NotifyDescriptor.Message msg = new NotifyDescriptor.Message(NbBundle
+                        .getMessage(OpenFile.class, "OpenFile.fileNotAccessible", sourceFile.getName()),
+                        NotifyDescriptor.ERROR_MESSAGE);
+                    DialogDisplayer.getDefault().notify(msg);
                     return;
                 }
                 if (fileObject.hasExt(GEPHI_EXTENSION)) {
