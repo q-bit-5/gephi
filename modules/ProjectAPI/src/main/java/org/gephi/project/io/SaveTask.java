@@ -48,6 +48,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.Collection;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -64,7 +66,6 @@ import org.gephi.project.spi.WorkspaceXMLPersistenceProvider;
 import org.gephi.utils.longtask.spi.LongTask;
 import org.gephi.utils.progress.Progress;
 import org.gephi.utils.progress.ProgressTicket;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -199,15 +200,7 @@ public class SaveTask implements LongTask {
 
             //Rename file
             if (!cancel && writeFile.exists() && file != writeFile) {
-                //Delete original file
-                if (file.exists()) {
-                    file.delete();
-                }
-
-                FileObject tempFileObject = FileUtil.toFileObject(writeFile);
-                FileLock lock = tempFileObject.lock();
-                tempFileObject.rename(lock, getFileNameWithoutExt(file), getFileExtension(file));
-                lock.releaseLock();
+                Files.move(writeFile.toPath(), file.toPath(), StandardCopyOption.REPLACE_EXISTING);
             }
         } catch (Exception ex) {
             if (ex instanceof GephiFormatException) {
