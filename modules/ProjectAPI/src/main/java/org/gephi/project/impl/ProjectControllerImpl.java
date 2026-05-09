@@ -242,9 +242,7 @@ public class ProjectControllerImpl implements ProjectController {
 
     @Override
     public ProjectsImpl getProjects() {
-        synchronized (this) {
-            return projects;
-        }
+        return projects;
     }
 
     @Override
@@ -254,9 +252,7 @@ public class ProjectControllerImpl implements ProjectController {
 
     @Override
     public boolean hasCurrentProject() {
-        synchronized (this) {
-            return projects.hasCurrentProject();
-        }
+        return projects.hasCurrentProject();
     }
 
     @Override
@@ -334,19 +330,15 @@ public class ProjectControllerImpl implements ProjectController {
 
     @Override
     public ProjectImpl getCurrentProject() {
-        synchronized (this) {
-            return projects.getCurrentProject();
-        }
+        return projects.getCurrentProject();
     }
 
     @Override
     public WorkspaceImpl getCurrentWorkspace() {
-        synchronized (this) {
-            if (projects.hasCurrentProject()) {
-                return getCurrentProject().getCurrentWorkspace();
-            }
-            return null;
-        }
+        // Read-only access; do not acquire the controller-wide monitor here, as long-running
+        // write operations (open/save/load) hold it and the EDT frequently calls this method.
+        ProjectImpl current = projects.getCurrentProject();
+        return current != null ? current.getCurrentWorkspace() : null;
     }
 
     @Override
