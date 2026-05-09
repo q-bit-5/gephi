@@ -129,23 +129,23 @@ public class WorkspacePanel extends javax.swing.JPanel implements WorkspaceListe
             @Override
             public void actionPerformed(ActionEvent e) {
                 TabActionEvent tabActionEvent = (TabActionEvent) e;
-                if (tabActionEvent.getActionCommand().equals(TabbedContainer.COMMAND_CLOSE)) {
+                if (TabbedContainer.COMMAND_CLOSE.equals(tabActionEvent.getActionCommand())) {
                     TabData tabData = tabDataModel.getTab(tabActionEvent.getTabIndex());
                     Actions.forID("Workspace", "org.gephi.desktop.project.actions.DeleteWorkspace").actionPerformed(
                         new ActionEvent(tabData.getUserObject(), 0, null));
 
                     tabActionEvent.consume();
-                } else if (tabActionEvent.getActionCommand().equals(TabbedContainer.COMMAND_CLOSE_ALL)) {
+                } else if (TabbedContainer.COMMAND_CLOSE_ALL.equals(tabActionEvent.getActionCommand())) {
                     Actions.forID("File", "org.gephi.desktop.project.actions.CloseProject").actionPerformed(null);
                     tabActionEvent.consume();
-                } else if (tabActionEvent.getActionCommand().equals(TabbedContainer.COMMAND_CLOSE_ALL_BUT_THIS)) {
+                } else if (TabbedContainer.COMMAND_CLOSE_ALL_BUT_THIS.equals(tabActionEvent.getActionCommand())) {
                     TabData tabData = tabDataModel.getTab(tabActionEvent.getTabIndex());
 
                     Actions.forID("Workspace", "org.gephi.desktop.project.actions.DeleteOtherWorkspaces").actionPerformed(
                         new ActionEvent(tabData.getUserObject(), 0, null));
 
                     tabActionEvent.consume();
-                } else if (tabActionEvent.getActionCommand().equals(TabbedContainer.COMMAND_SELECT)) {
+                } else if (TabbedContainer.COMMAND_SELECT.equals(tabActionEvent.getActionCommand())) {
                     TabData tabData = tabDataModel.getTab(tabActionEvent.getTabIndex());
                     ProjectController pc = Lookup.getDefault().lookup(ProjectController.class);
                     pc.openWorkspace((Workspace) tabData.getUserObject());
