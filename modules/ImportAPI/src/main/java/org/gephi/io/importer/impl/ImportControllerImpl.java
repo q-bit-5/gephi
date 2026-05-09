@@ -54,6 +54,7 @@ import java.util.stream.Collectors;
 import org.gephi.io.importer.api.Container;
 import org.gephi.io.importer.api.ContainerUnloader;
 import org.gephi.io.importer.api.Database;
+import org.gephi.io.importer.api.EmptyFileException;
 import org.gephi.io.importer.api.FileType;
 import org.gephi.io.importer.api.ImportController;
 import org.gephi.io.importer.api.ImportUtils;
@@ -145,6 +146,7 @@ public class ImportControllerImpl implements ImportController {
         FileObject fileObject = FileUtil.toFileObject(file);
         if (fileObject != null) {
             fileObject = ImportUtils.getArchivedFile(fileObject);   //Unzip and return content file
+            checkFileNotEmpty(fileObject);
             file = FileUtil.toFile(fileObject);
             FileImporterBuilder builder = getMatchingImporter(fileObject);
             if (fileObject != null && builder != null) {
@@ -160,6 +162,7 @@ public class ImportControllerImpl implements ImportController {
         FileObject fileObject = FileUtil.toFileObject(file);
         if (fileObject != null) {
             fileObject = ImportUtils.getArchivedFile(fileObject);   //Unzip and return content file
+            checkFileNotEmpty(fileObject);
             file = FileUtil.toFile(fileObject);
             if (fileObject != null) {
                 Container c = importFile(fileObject.getInputStream(), importer, file);
@@ -167,6 +170,12 @@ public class ImportControllerImpl implements ImportController {
             }
         }
         return null;
+    }
+
+    private static void checkFileNotEmpty(FileObject fileObject) {
+        if (fileObject != null && fileObject.getSize() == 0) {
+            throw new EmptyFileException(fileObject.getNameExt());
+        }
     }
 
     @Override
