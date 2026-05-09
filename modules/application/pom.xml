@@ -873,20 +873,34 @@
                                             <arg value="${gephi.codesign.identity}" />
                                         </exec>
 
-                                        <!-- Create application folder and add Applications dynamic link -->
-                                        <mkdir dir="${project.build.directory}/${gephi.app.title}"/>
-                                        <move file="${project.build.directory}/${gephi.appbundle.name}.app" todir="${project.build.directory}/${gephi.app.title}/" />
-                                        <symlink link="${project.build.directory}/${gephi.app.title}/Applications" resource="/Applications" failonerror="false" />
-
-                                        <!-- Create DMG (Mac OS X) -->
-                                        <exec dir="${project.build.directory}" os="Mac OS X" executable="hdiutil">
-                                            <arg value="create"/>
-                                            <arg value="-noanyowners"/>
-                                            <arg value="-imagekey"/>
-                                            <arg value="zlib-level=9"/>
-                                            <arg value="-srcfolder"/>
-                                            <arg value="${project.build.directory}/${gephi.app.title}"/>
+                                        <!-- Create DMG (Mac OS X) using create-dmg for background image and icon layout -->
+                                        <exec dir="${project.build.directory}" os="Mac OS X" executable="create-dmg" failonerror="true">
+                                            <arg value="--volname"/>
+                                            <arg value="${gephi.app.title}"/>
+                                            <arg value="--background"/>
+                                            <arg value="${basedir}/src/main/app-resources/dmg-background.tiff"/>
+                                            <arg value="--window-pos"/>
+                                            <arg value="200"/>
+                                            <arg value="120"/>
+                                            <arg value="--window-size"/>
+                                            <arg value="600"/>
+                                            <arg value="400"/>
+                                            <arg value="--icon-size"/>
+                                            <arg value="120"/>
+                                            <arg value="--icon"/>
+                                            <arg value="${gephi.appbundle.name}.app"/>
+                                            <arg value="150"/>
+                                            <arg value="200"/>
+                                            <arg value="--app-drop-link"/>
+                                            <arg value="450"/>
+                                            <arg value="200"/>
+                                            <arg value="--hide-extension"/>
+                                            <arg value="${gephi.appbundle.name}.app"/>
+                                            <arg value="--format"/>
+                                            <arg value="UDZO"/>
+                                            <arg value="--no-internet-enable"/>
                                             <arg value="${project.artifactId}-${project.version}-${gephi.bundle.arch}.dmg"/>
+                                            <arg value="${project.build.directory}/${gephi.appbundle.name}.app"/>
                                         </exec>
 
                                         <!-- Codesign dmg -->
