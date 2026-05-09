@@ -365,6 +365,14 @@ public class ProjectControllerUIImpl implements ProjectListener {
     }
 
     public void openProject(Project project) {
+        if (!project.hasFile()) {
+            NotifyDescriptor.Message msg = new NotifyDescriptor.Message(
+                NbBundle.getMessage(ProjectControllerUIImpl.class,
+                    "ProjectControllerUI.error.noFileAssociated", project.getName()),
+                NotifyDescriptor.WARNING_MESSAGE);
+            DialogDisplayer.getDefault().notify(msg);
+            return;
+        }
         longTaskExecutor.execute(null, () -> {
             if (controller.getCurrentProject() != null) {
                 if (!closeCurrentProject()) {
