@@ -43,7 +43,6 @@
 package org.gephi.io.importer.plugin.file;
 
 import java.awt.Color;
-import java.io.IOException;
 import java.io.Reader;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -146,10 +145,6 @@ public class ImporterGEXF implements FileImporter, LongTask {
         this.report = new Report();
         Progress.start(progress);
         try {
-
-            if (!reader.ready()) {
-                throw new IOException("The GEXF file is empty or has no content");
-            }
 
             XMLInputFactory inputFactory = XMLInputFactory.newInstance();
             if (inputFactory.isPropertySupported("javax.xml.stream.isValidating")) {

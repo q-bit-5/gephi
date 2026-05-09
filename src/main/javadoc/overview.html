@@ -64,6 +64,7 @@
         <ul>
             <li>Processors function in <code>ImportController</code> now return a <code>Workspace</code> to clarify which worspaces graph data has been pushed to, given that providing a workspace to <code>process()</code> functions isn't required (and sometimes not even allowed, depending on the processor).</li>
             <li>Added <code>hasIssues()</code> to <code>Report</code> class to check if the report contains any issues.</li>
+            <li>Added a new <code>ImportException</code> base class for known, user-facing import failures, along with an <code>EmptyFileException</code> subclass. Empty files are now detected centrally in <code>ImportController</code> and raised as <code>EmptyFileException</code> with a localized message, so UIs can present a clean error instead of the default unexpected-exception treatment.</li>
         </ul>
         <h3>0.10.0</h3>
         <h4>Project API</h4>

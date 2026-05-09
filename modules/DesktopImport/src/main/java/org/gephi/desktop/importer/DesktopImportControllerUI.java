@@ -67,6 +67,7 @@ import org.gephi.desktop.mrufiles.api.MostRecentFiles;
 import org.gephi.io.importer.api.Container;
 import org.gephi.io.importer.api.Database;
 import org.gephi.io.importer.api.ImportController;
+import org.gephi.io.importer.api.ImportException;
 import org.gephi.io.importer.api.ImportUtils;
 import org.gephi.io.importer.api.Issue;
 import org.gephi.io.importer.api.Report;
@@ -563,11 +564,37 @@ public class DesktopImportControllerUI implements ImportControllerUI {
                 return;
             }
             count.incrementAndGet();
+
+            // Known import failure: surface the localized message via the issues report panel,
+            // without raising the developer-facing "Unexpected Exception" dialog.
+            ImportException known = findImportException(t);
+            if (known != null) {
+                String msg = NbBundle
+                    .getMessage(DesktopImportControllerUI.class, "DesktopImportControllerUI.errorHandler.critical",
+                        source, known.getMessage());
+                errorReport.logIssue(new Issue(msg, Issue.Level.SEVERE));
+                return;
+            }
+
             String msg =
                 NbBundle.getMessage(DesktopImportControllerUI.class, "DesktopImportControllerUI.errorHandler.critical",
                     source, t.getMessage());
             errorReport.logIssue(new Issue(msg, Issue.Level.SEVERE, t));
             Exceptions.printStackTrace(t);
+        }
+
+        private static ImportException findImportException(Throwable t) {
+            Throwable current = t;
+            while (current != null) {
+                if (current instanceof ImportException) {
+                    return (ImportException) current;
+                }
+                if (current.getCause() == current) {
+                    break;
+                }
+                current = current.getCause();
+            }
+            return null;
         }
 
         public int countErrors() {
