@@ -126,6 +126,9 @@ public class AttributesUIControllerImpl implements AttributesUIController, Contr
 
     private void setEditMode(boolean editMode) {
         AttributesUIModelImpl model = getModel();
+        if (model == null) {
+            return;
+        }
         if (model.isEditMode() != editMode) {
             model.setEditMode(editMode);
             if (editMode) {
