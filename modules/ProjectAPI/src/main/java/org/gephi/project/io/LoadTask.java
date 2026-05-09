@@ -116,6 +116,10 @@ public class LoadTask implements LongTask {
                 if (!file.exists()) {
                     throw new FileNotFoundException("File " + file.getPath() + " not found");
                 }
+                if (file.length() == 0) {
+                    throw new GephiFormatException(
+                        "The project file is empty and may be corrupt: " + file.getName());
+                }
                 zip = new ZipFile(file);
 
                 ProjectImpl project = readProject(zip, projects);
