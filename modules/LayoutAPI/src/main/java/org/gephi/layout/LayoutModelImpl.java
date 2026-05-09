@@ -192,7 +192,7 @@ public class LayoutModelImpl implements LayoutModel, Model {
             default:
                 return;
         }
-        for (PropertyChangeListener l : listeners) {
+        for (PropertyChangeListener l : new ArrayList<>(listeners)) {
             l.propertyChange(evt);
         }
     }
