@@ -35,11 +35,8 @@ public class NodeRendererArrayDraw extends AbstractNodeRenderer {
         return nodeData.createWorldData(model, engine);
     }
 
-    private final float[] mvpFloats = new float[16];
-
     @Override
-    public void render(NodeWorldData data, JOGLRenderingTarget target, RenderingLayer layer) {
-        engine.getModelViewProjectionMatrixFloats(mvpFloats);
+    public void render(NodeWorldData data, JOGLRenderingTarget target, RenderingLayer layer, float[] mvpFloats) {
 
         nodeData.drawArrays(target.getDrawable().getGL().getGL2ES2(), layer, data, mvpFloats);
     }

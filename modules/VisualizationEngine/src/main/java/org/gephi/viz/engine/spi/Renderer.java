@@ -13,7 +13,7 @@ public interface Renderer<R extends RenderingTarget, D extends WorldData> extend
 
     D worldUpdated(VizEngineModel model, R target);
 
-    void render(D data, R target, RenderingLayer layer);
+    void render(D data, R target, RenderingLayer layer, float[] mvpFloats);
 
     EnumSet<RenderingLayer> getLayers();
 }
