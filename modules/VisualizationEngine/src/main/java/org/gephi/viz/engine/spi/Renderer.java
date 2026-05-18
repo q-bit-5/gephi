@@ -11,7 +11,7 @@ import org.gephi.viz.engine.pipeline.RenderingLayer;
  */
 public interface Renderer<R extends RenderingTarget, D extends WorldData> extends PipelinedExecutor<R> {
 
-    D worldUpdated(VizEngineModel model, R target);
+    D worldUpdated(VizEngineModel model, R target, float[] mvpFloats);
 
     void render(D data, R target, RenderingLayer layer, float[] mvpFloats);
 

@@ -619,7 +619,7 @@ public class VizEngine<R extends RenderingTarget, I> {
         lastWorldUpdateMillis = TimeUtils.getTimeMillis();
 
         return renderersPipeline.stream().map(
-            r -> r.worldUpdated(model, renderingTarget)
+            r -> r.worldUpdated(model, renderingTarget, mvpFloats)
         ).collect(Collectors.toList());
     }
 
@@ -645,7 +645,7 @@ public class VizEngine<R extends RenderingTarget, I> {
             allUpdatersCompletableFuture = null;
 
             return renderersPipeline.stream().map(
-                r -> r.worldUpdated(modelUsedByUpdaters, renderingTarget)
+                r -> r.worldUpdated(modelUsedByUpdaters, renderingTarget, mvpFloats)
             ).toList();
         } catch (Throwable t) {
             Logger.getLogger(VizEngine.class.getSimpleName()).log(Level.SEVERE, null, t);

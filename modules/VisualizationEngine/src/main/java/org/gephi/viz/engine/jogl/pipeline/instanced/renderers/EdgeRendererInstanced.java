@@ -30,7 +30,7 @@ public class EdgeRendererInstanced extends AbstractEdgeRenderer {
     }
 
     @Override
-    public EdgeWorldData worldUpdated(VizEngineModel model, JOGLRenderingTarget target) {
+    public EdgeWorldData worldUpdated(VizEngineModel model, JOGLRenderingTarget target, float[] mvpFloats) {
         edgeData.updateBuffers(target.getDrawable().getGL());
         return edgeData.createWorldData(model, engine);
     }

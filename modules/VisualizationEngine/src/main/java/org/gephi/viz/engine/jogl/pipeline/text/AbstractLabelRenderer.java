@@ -46,7 +46,7 @@ public abstract class AbstractLabelRenderer<E extends Element>
     }
 
     @Override
-    public LabelWorldData worldUpdated(VizEngineModel model, JOGLRenderingTarget target) {
+    public LabelWorldData worldUpdated(VizEngineModel model, JOGLRenderingTarget target, float[] mvpFloats) {
         // This is the synchronization point between updater and renderer threads
         // The updater has finished preparing batches, now swap the buffers
         labelData.swapBuffers();

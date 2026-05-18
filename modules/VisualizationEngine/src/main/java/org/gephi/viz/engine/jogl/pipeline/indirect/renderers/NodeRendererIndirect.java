@@ -30,7 +30,7 @@ public class NodeRendererIndirect extends AbstractNodeRenderer {
     }
 
     @Override
-    public NodeWorldData worldUpdated(VizEngineModel model, JOGLRenderingTarget target) {
+    public NodeWorldData worldUpdated(VizEngineModel model, JOGLRenderingTarget target, float[] mvpFloats) {
         nodeData.updateBuffers(target.getDrawable().getGL().getGL4());
         return nodeData.createWorldData(model, engine);
     }
