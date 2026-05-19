@@ -34,8 +34,6 @@ import org.joml.Vector2f;
 public class RectangleSelectionArrayDraw implements Renderer<JOGLRenderingTarget, VoidWorldData> {
     private final VizEngine<JOGLRenderingTarget, NEWTEvent> engine;
 
-    final float[] mvpFloats = new float[16];
-
     private static final int VERT_BUFFER = 0;
 
     public static final int VERTEX_COUNT = 6; // 2 triangles
@@ -123,7 +121,7 @@ public class RectangleSelectionArrayDraw implements Renderer<JOGLRenderingTarget
     private boolean render = false;
 
     @Override
-    public VoidWorldData worldUpdated(VizEngineModel model, JOGLRenderingTarget target) {
+    public VoidWorldData worldUpdated(VizEngineModel model, JOGLRenderingTarget target, float[] mvpFloats) {
         final GL2ES2 gl = target.getDrawable().getGL().getGL2ES2();
 
         final GraphSelection graphSelection = model.getGraphSelection();
@@ -188,12 +186,11 @@ public class RectangleSelectionArrayDraw implements Renderer<JOGLRenderingTarget
     private final byte[] booleanData = new byte[1];
 
     @Override
-    public void render(VoidWorldData data, JOGLRenderingTarget target, RenderingLayer layer) {
+    public void render(VoidWorldData data, JOGLRenderingTarget target, RenderingLayer layer, float[] mvpFloats) {
         final GL2ES2 gl = target.getDrawable().getGL().getGL2ES2();
 
         if (render) {
             shaderProgram.use(gl);
-            engine.getModelViewProjectionMatrixFloats(mvpFloats);
 
             gl.glUniformMatrix4fv(shaderProgram.getUniformLocation(UNIFORM_NAME_MODEL_VIEW_PROJECTION), 1, false,
                 mvpFloats, 0);
