@@ -46,7 +46,7 @@ public abstract class AbstractLabelRenderer<E extends Element>
     }
 
     @Override
-    public LabelWorldData worldUpdated(VizEngineModel model, JOGLRenderingTarget target) {
+    public LabelWorldData worldUpdated(VizEngineModel model, JOGLRenderingTarget target, float[] mvpFloats) {
         // This is the synchronization point between updater and renderer threads
         // The updater has finished preparing batches, now swap the buffers
         labelData.swapBuffers();
@@ -59,7 +59,7 @@ public abstract class AbstractLabelRenderer<E extends Element>
     }
 
     @Override
-    public void render(LabelWorldData data, JOGLRenderingTarget target, RenderingLayer layer) {
+    public void render(LabelWorldData data, JOGLRenderingTarget target, RenderingLayer layer, float[] mvpFloats) {
         // Dispose any old renderer that was replaced (e.g., due to font change)
         // This must be done in render thread because dispose() requires GL context
         if (textRenderer != null && data.getTextRenderer() != null && textRenderer != data.getTextRenderer()) {
@@ -85,8 +85,6 @@ public abstract class AbstractLabelRenderer<E extends Element>
         if (batches == null || batches.length == 0 || maxIndex < 0) {
             return;
         }
-
-        engine.getModelViewProjectionMatrixFloats(mvp);
 
         final GL gl = GLContext.getCurrentGL();
 

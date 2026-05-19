@@ -40,8 +40,6 @@ import org.joml.Vector3f;
 public class SimpleMouseSelectionArrayDraw implements Renderer<JOGLRenderingTarget, VoidWorldData> {
     private final VizEngine<JOGLRenderingTarget, NEWTEvent> engine;
 
-    final float[] mvpFloats = new float[16];
-
     private static final int VERT_BUFFER = 0;
 
     public static final int VERTEX_FLOATS = 2;
@@ -70,7 +68,7 @@ public class SimpleMouseSelectionArrayDraw implements Renderer<JOGLRenderingTarg
     }
 
     @Override
-    public VoidWorldData worldUpdated(VizEngineModel model, JOGLRenderingTarget target) {
+    public VoidWorldData worldUpdated(VizEngineModel model, JOGLRenderingTarget target, float[] mvpFloats) {
         final GL2ES2 gl = target.getDrawable().getGL().getGL2ES2();
 
         final GraphSelection graphSelection = model.getGraphSelection();
@@ -121,12 +119,12 @@ public class SimpleMouseSelectionArrayDraw implements Renderer<JOGLRenderingTarg
     }
 
     @Override
-    public void render(VoidWorldData data, JOGLRenderingTarget target, RenderingLayer layer) {
+    public void render(VoidWorldData data, JOGLRenderingTarget target, RenderingLayer layer, float[] mvpFloats) {
+
         final GL2ES2 gl = target.getDrawable().getGL().getGL2ES2();
 
         if (render) {
             shaderProgram.use(gl);
-            engine.getModelViewProjectionMatrixFloats(mvpFloats);
 
             gl.glUniformMatrix4fv(shaderProgram.getUniformLocation(UNIFORM_NAME_MODEL_VIEW_PROJECTION), 1, false,
                 mvpFloats, 0);

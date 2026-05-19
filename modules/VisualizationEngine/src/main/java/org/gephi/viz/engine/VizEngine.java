@@ -72,6 +72,8 @@ public class VizEngine<R extends RenderingTarget, I> {
     private final Matrix4f viewMatrix = new Matrix4f();
     private final Matrix4f projectionMatrix = new Matrix4f();
     private final Matrix4f modelViewProjectionMatrix = new Matrix4f();
+    float[] mvpFloats = new float[16]; // Float[] version of modelViewProjectionMatrix
+
     private final Matrix4f modelViewProjectionMatrixInverted = new Matrix4f();
 
     private final float[] modelViewProjectionMatrixFloats = new float[16];
@@ -106,7 +108,7 @@ public class VizEngine<R extends RenderingTarget, I> {
 
     //Settings:
     private boolean darkLaf = DEFAULT_DARK_LAF;
-    private int maxWorldUpdatesPerSecond = DEFAULT_MAX_WORLD_UPDATES_PER_SECOND;
+    private final int maxWorldUpdatesPerSecond = DEFAULT_MAX_WORLD_UPDATES_PER_SECOND;
 
     public VizEngine(R renderingTarget) {
         this.engineModel = createEmptyModel();
@@ -562,6 +564,10 @@ public class VizEngine<R extends RenderingTarget, I> {
         }
 
         // Render
+
+        // Fetch mvpMatrix
+        modelViewProjectionMatrix.get(mvpFloats);
+
         if (!worldData.isEmpty()) {
             for (RenderingLayer layer : ALL_LAYERS) {
                 int rendererIndex = 0;
@@ -569,7 +575,7 @@ public class VizEngine<R extends RenderingTarget, I> {
                     if (renderer.getLayers().contains(layer)) {
                         // Get world data for this renderer:
                         WorldData localWorldData = worldData.get(rendererIndex);
-                        ((Renderer<R, WorldData>) renderer).render(localWorldData, renderingTarget, layer);
+                        ((Renderer<R, WorldData>) renderer).render(localWorldData, renderingTarget, layer, mvpFloats);
                     }
                     rendererIndex++;
                 }
@@ -613,7 +619,7 @@ public class VizEngine<R extends RenderingTarget, I> {
         lastWorldUpdateMillis = TimeUtils.getTimeMillis();
 
         return renderersPipeline.stream().map(
-            r -> r.worldUpdated(model, renderingTarget)
+            r -> r.worldUpdated(model, renderingTarget, mvpFloats)
         ).collect(Collectors.toList());
     }
 
@@ -639,7 +645,7 @@ public class VizEngine<R extends RenderingTarget, I> {
             allUpdatersCompletableFuture = null;
 
             return renderersPipeline.stream().map(
-                r -> r.worldUpdated(modelUsedByUpdaters, renderingTarget)
+                r -> r.worldUpdated(modelUsedByUpdaters, renderingTarget, mvpFloats)
             ).toList();
         } catch (Throwable t) {
             Logger.getLogger(VizEngine.class.getSimpleName()).log(Level.SEVERE, null, t);
@@ -761,22 +767,6 @@ public class VizEngine<R extends RenderingTarget, I> {
             GraphRenderingOptions.DEFAULT_DARK_BACKGROUND_COLOR)) {
             engineModel.getRenderingOptions().setBackgroundColor(GraphRenderingOptions.DEFAULT_BACKGROUND_COLOR);
         }
-    }
-
-    public int getMaxWorldUpdatesPerSecond() {
-        return maxWorldUpdatesPerSecond;
-    }
-
-    public void setMaxWorldUpdatesPerSecond(int maxWorldUpdatesPerSecond) {
-        this.maxWorldUpdatesPerSecond = maxWorldUpdatesPerSecond;
-    }
-
-    public void getModelViewProjectionMatrixFloats(float[] mvpFloats) {
-        modelViewProjectionMatrix.get(mvpFloats);
-    }
-
-    public float[] getModelViewProjectionMatrixFloats() {
-        return Arrays.copyOf(modelViewProjectionMatrixFloats, modelViewProjectionMatrixFloats.length);
     }
 
     public void pauseUpdating() {
