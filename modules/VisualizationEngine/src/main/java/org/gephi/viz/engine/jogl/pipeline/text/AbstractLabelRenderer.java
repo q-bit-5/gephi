@@ -24,9 +24,6 @@ public abstract class AbstractLabelRenderer<E extends Element>
     private final AbstractLabelData<E> labelData;
     private TextRenderer textRenderer;
 
-    // Scratch
-    private final float[] mvp = new float[16];
-
     public AbstractLabelRenderer(VizEngine engine, AbstractLabelData<E> labelData) {
         this.engine = engine;
         this.labelData = labelData;
@@ -89,7 +86,7 @@ public abstract class AbstractLabelRenderer<E extends Element>
         final GL gl = GLContext.getCurrentGL();
 
         textRenderer.begin3DRendering();
-        textRenderer.setTransform(mvp);
+        textRenderer.setTransform(mvpFloats);
 
         // Render each prepared batch up to maxIndex
         // All glyphs, positions, colors were pre-computed in the updater thread

@@ -19,6 +19,7 @@ import org.gephi.io.importer.api.ImportController;
 import org.gephi.layout.plugin.forceAtlas2.ForceAtlas2;
 import org.gephi.layout.plugin.forceAtlas2.ForceAtlas2Builder;
 import org.gephi.project.api.ProjectController;
+import org.gephi.viz.engine.FrameTimings;
 import org.gephi.viz.engine.VizEngine;
 import org.gephi.viz.engine.VizEngineFactory;
 import org.gephi.viz.engine.jogl.JOGLRenderingTarget;
@@ -128,6 +129,10 @@ public final class VizEngineDemo {
 
         applyDefaultLabelColumn(engine, initialModel);
 
+        // Enable per-frame phase timings so the metrics HUD can break down
+        // world-update / render / per-renderer p50 + p99 latencies.
+        engine.setFrameTimingsEnabled(true);
+
         engine.start();
 
         final NewtCanvasAWT newtCanvas = new NewtCanvasAWT(glWindow);
@@ -139,7 +144,10 @@ public final class VizEngineDemo {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         final RenderingMetricsHud metricsHud = new RenderingMetricsHud(frame);
-        glWindow.addGLEventListener(new FrameTimeRecorder(metricsHud));
+        // Lock display order: frame total first (it drives the sparkline),
+        // then the engine-internal phases.
+        metricsHud.ensureSeries("frame", "world", "render");
+        glWindow.addGLEventListener(new FrameTimeRecorder(metricsHud, engine));
 
         final CountDownLatch closedLatch = new CountDownLatch(1);
         frame.addWindowListener(new WindowAdapter() {
@@ -170,6 +178,9 @@ public final class VizEngineDemo {
                     case KeyEvent.VK_RIGHT:
                         cycleToNextSample(samples, currentIndex, currentGraphModel, engine, frame);
                         break;
+                    case KeyEvent.VK_L:
+                        toggleNodeLabels(engine, currentGraphModel);
+                        break;
                     default:
                         // ignored
                 }
@@ -183,16 +194,53 @@ public final class VizEngineDemo {
         metricsHud.start();
 
         System.out.println(WINDOW_TITLE + " started - SPACE: toggle Force Atlas 2 | "
-                + "RIGHT: next sample (" + samples.size() + " available) | ESC: exit.");
+                + "RIGHT: next sample (" + samples.size() + " available) | "
+                + "L: toggle node labels | ESC: exit.");
     }
 
     /**
-     * Lightweight {@link GLEventListener} that records a frame-time sample
-     * after each rendered frame. It is registered on the {@link GLWindow}
-     * after {@code engine.start()}, so it runs after the engine's own
-     * listener and therefore sees the time between two completed frames.
+     * Toggles node-label visibility on the engine's rendering options.
+     *
+     * <p>Defensively re-applies the default label column from the live graph
+     * model before flipping the flag: when the engine swaps graph models on
+     * sample cycling, a fresh {@link GraphRenderingOptions} instance is
+     * created internally and the previously configured columns are lost
+     * unless we restore them on the new options.</p>
      */
-    private record FrameTimeRecorder(RenderingMetricsHud hud) implements GLEventListener {
+    private static void toggleNodeLabels(VizEngine<JOGLRenderingTarget, NEWTEvent> engine,
+                                         AtomicReference<GraphModel> currentGraphModel) {
+        final GraphModel graphModel = currentGraphModel.get();
+        final GraphRenderingOptions options = engine.getRenderingOptions();
+
+        final Column nodeLabelColumn = graphModel.defaultColumns().nodeLabel();
+        options.setNodeLabelColumns(new Column[] {nodeLabelColumn});
+
+        final boolean newValue = !options.isShowNodeLabels();
+        options.setShowNodeLabels(newValue);
+
+        System.out.println("Node labels: " + (newValue ? "ON" : "OFF")
+                + " (column=" + (nodeLabelColumn != null ? nodeLabelColumn.getId() : "<null>")
+                + ", nodes=" + graphModel.getGraph().getNodeCount() + ")");
+    }
+
+    /**
+     * {@link GLEventListener} that records frame-level metrics into the HUD
+     * after each rendered frame. Registered on the {@link GLWindow} after
+     * {@code engine.start()}, so it runs after the engine's own listener
+     * and therefore sees the time between two completed frames as well as
+     * the per-phase timings the engine just published.
+     */
+    private static final class FrameTimeRecorder implements GLEventListener {
+
+        private final RenderingMetricsHud hud;
+        private final VizEngine<JOGLRenderingTarget, NEWTEvent> engine;
+        private long lastFrameNanos = 0L;
+
+        FrameTimeRecorder(RenderingMetricsHud hud,
+                          VizEngine<JOGLRenderingTarget, NEWTEvent> engine) {
+            this.hud = hud;
+            this.engine = engine;
+        }
 
         @Override
         public void init(GLAutoDrawable drawable) {
@@ -204,7 +252,22 @@ public final class VizEngineDemo {
 
         @Override
         public void display(GLAutoDrawable drawable) {
-            hud.recordFrame();
+            final long now = System.nanoTime();
+            if (lastFrameNanos != 0L) {
+                hud.recordSample("frame", now - lastFrameNanos);
+            }
+            lastFrameNanos = now;
+
+            final FrameTimings t = engine.getLastFrameTimings();
+            if (t == null || t == FrameTimings.EMPTY) {
+                return;
+            }
+            hud.recordSample("world", t.worldUpdateNs());
+            hud.recordSample("render", t.renderNs());
+            for (var entry : t.perRendererCategoryNs().entrySet()) {
+                // Prefix per-renderer rows so the HUD can detect and indent them.
+                hud.recordSample("render:" + entry.getKey(), entry.getValue());
+            }
         }
 
         @Override
