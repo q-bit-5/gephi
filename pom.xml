@@ -1452,6 +1452,7 @@
         <module>modules/VisualizationAPI</module>
         <module>modules/VisualizationImpl</module>
         <module>modules/VisualizationEngine</module>
+        <module>modules/VizEngineDemo</module>
         <module>modules/WelcomeScreen</module>
         <module>modules/BatikWrapper</module>
         <module>modules/CoreLibraryWrapper</module>

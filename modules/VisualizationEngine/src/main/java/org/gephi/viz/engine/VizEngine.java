@@ -5,8 +5,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Queue;
 import java.util.Set;
@@ -109,6 +111,14 @@ public class VizEngine<R extends RenderingTarget, I> {
     //Settings:
     private boolean darkLaf = DEFAULT_DARK_LAF;
     private final int maxWorldUpdatesPerSecond = DEFAULT_MAX_WORLD_UPDATES_PER_SECOND;
+
+    //CPU-side timings of the most recent display() call. Read by external
+    //performance monitors; written only from the render thread. Disabled by
+    //default so production callers don't pay the cost of the nanoTime calls
+    //and the per-frame Map allocation; enable with
+    //{@link #setFrameTimingsEnabled(boolean)}.
+    private volatile boolean frameTimingsEnabled = false;
+    private volatile FrameTimings lastFrameTimings = FrameTimings.EMPTY;
 
     public VizEngine(R renderingTarget) {
         this.engineModel = createEmptyModel();
@@ -552,9 +562,15 @@ public class VizEngine<R extends RenderingTarget, I> {
 
     @SuppressWarnings("unchecked")
     public void display() {
+        // Snapshot the flag once so the rest of the method observes a single
+        // value (and so HotSpot can hoist the check).
+        final boolean timed = frameTimingsEnabled;
+
+        final long frameStartNs = timed ? System.nanoTime() : 0L;
         renderingTarget.frameStart();
 
         // Get world data (might be empty if no world update was done this frame)
+        final long worldUpdateStartNs = timed ? System.nanoTime() : 0L;
         List<? extends WorldData> worldData =
             worldUpdatersExecutionMode.isConcurrent() ? checkConcurrentWorldUpdateIsDone()
                 : runWorldUpdatersSynchronous(this.engineModel);
@@ -562,12 +578,15 @@ public class VizEngine<R extends RenderingTarget, I> {
             // No world update was done this frame, use last one
             worldData = currentWorldData;
         }
+        final long worldUpdateNs = timed ? System.nanoTime() - worldUpdateStartNs : 0L;
 
         // Render
 
         // Fetch mvpMatrix
         modelViewProjectionMatrix.get(mvpFloats);
 
+        final LinkedHashMap<String, Long> perCategoryNs = timed ? new LinkedHashMap<>() : null;
+        final long renderStartNs = timed ? System.nanoTime() : 0L;
         if (!worldData.isEmpty()) {
             for (RenderingLayer layer : ALL_LAYERS) {
                 int rendererIndex = 0;
@@ -575,12 +594,21 @@ public class VizEngine<R extends RenderingTarget, I> {
                     if (renderer.getLayers().contains(layer)) {
                         // Get world data for this renderer:
                         WorldData localWorldData = worldData.get(rendererIndex);
-                        ((Renderer<R, WorldData>) renderer).render(localWorldData, renderingTarget, layer, mvpFloats);
+                        if (timed) {
+                            final long rs = System.nanoTime();
+                            ((Renderer<R, WorldData>) renderer).render(localWorldData, renderingTarget, layer,
+                                mvpFloats);
+                            perCategoryNs.merge(renderer.getCategory(), System.nanoTime() - rs, Long::sum);
+                        } else {
+                            ((Renderer<R, WorldData>) renderer).render(localWorldData, renderingTarget, layer,
+                                mvpFloats);
+                        }
                     }
                     rendererIndex++;
                 }
             }
         }
+        final long renderNs = timed ? System.nanoTime() - renderStartNs : 0L;
 
         //Schedule next concurrent world update:
         if (worldUpdatersExecutionMode.isConcurrent() && updating) {
@@ -591,6 +619,43 @@ public class VizEngine<R extends RenderingTarget, I> {
         currentWorldData = worldData;
 
         renderingTarget.frameEnd();
+
+        if (timed) {
+            final long totalNs = System.nanoTime() - frameStartNs;
+            lastFrameTimings = new FrameTimings(
+                totalNs, worldUpdateNs, renderNs, Map.copyOf(perCategoryNs));
+        }
+    }
+
+    /**
+     * Returns CPU-side timings collected during the most recent
+     * {@link #display()} call, or {@link FrameTimings#EMPTY} when timing
+     * collection is disabled. Safe to call from any thread; values are
+     * updated atomically once per frame.
+     */
+    public FrameTimings getLastFrameTimings() {
+        return lastFrameTimings;
+    }
+
+    /**
+     * Whether per-frame CPU timings (see {@link #getLastFrameTimings()}) are
+     * collected during {@link #display()}.
+     */
+    public boolean isFrameTimingsEnabled() {
+        return frameTimingsEnabled;
+    }
+
+    /**
+     * Toggles per-frame CPU timing collection. Off by default so callers
+     * don't pay the cost of the {@code nanoTime} calls and the per-frame
+     * map allocation. When turned off, {@link #getLastFrameTimings()} starts
+     * returning {@link FrameTimings#EMPTY} again from the next frame on.
+     */
+    public void setFrameTimingsEnabled(boolean enabled) {
+        this.frameTimingsEnabled = enabled;
+        if (!enabled) {
+            this.lastFrameTimings = FrameTimings.EMPTY;
+        }
     }
 
     private long lastWorldUpdateMillis = 0;
