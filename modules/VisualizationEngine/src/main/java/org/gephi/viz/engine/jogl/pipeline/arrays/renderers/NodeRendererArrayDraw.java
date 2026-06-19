@@ -38,7 +38,7 @@ public class NodeRendererArrayDraw extends AbstractNodeRenderer {
     @Override
     public void render(NodeWorldData data, JOGLRenderingTarget target, RenderingLayer layer, float[] mvpFloats) {
 
-        nodeData.drawArrays(target.getDrawable().getGL().getGL2ES2(), layer, data, mvpFloats);
+        nodeData.drawArrays(target.getDrawable().getGL().getGL3ES3(), layer, data, mvpFloats);
     }
 
     @Override

@@ -37,7 +37,7 @@ public class EdgeRendererArrayDraw extends AbstractEdgeRenderer {
 
     @Override
     public void render(EdgeWorldData data, JOGLRenderingTarget target, RenderingLayer layer, float[] mvpFloats) {
-        edgeData.drawArrays(target.getDrawable().getGL().getGL2ES2(), layer, data, mvpFloats);
+        edgeData.drawArrays(target.getDrawable().getGL().getGL3ES3(), layer, data, mvpFloats);
     }
 
     @Override
