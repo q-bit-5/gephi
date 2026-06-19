@@ -38,7 +38,7 @@ public class NodeRendererInstanced extends AbstractNodeRenderer {
     @Override
     public void render(NodeWorldData data, JOGLRenderingTarget target, RenderingLayer layer, float[] mvpFloats) {
 
-        nodeData.drawInstanced(target.getDrawable().getGL().getGL2ES3(), layer, data, mvpFloats);
+        nodeData.drawInstanced(target.getDrawable().getGL().getGL3ES3(), layer, data, mvpFloats);
     }
 
     @Override
