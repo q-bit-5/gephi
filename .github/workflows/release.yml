@@ -11,7 +11,7 @@ jobs:
       is_release: ${{ steps.detect.outputs.is_release }}
       version: ${{ steps.detect.outputs.version }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       # Detect whether this build is a release (no -SNAPSHOT) or a snapshot.
       # - SNAPSHOT: existing flow, each job deploys directly to Central.
@@ -131,7 +131,7 @@ jobs:
             arch: aarch64
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Set up Maven Central Repository
         uses: actions/setup-java@v5
         with:
@@ -387,7 +387,7 @@ jobs:
       (needs.publish-central.result == 'success' || needs.publish-central.result == 'skipped')
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Set up JDK 17
         uses: actions/setup-java@v5
         with:
