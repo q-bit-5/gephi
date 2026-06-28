@@ -67,7 +67,7 @@ jobs:
           else
             echo "Snapshot mode: deploying directly to Central."
           fi
-          mvn -T 4 --batch-mode -Djava.awt.headless=true \
+          mvn --batch-mode -Djava.awt.headless=true \
             -Dkeystore.password=${{ secrets.KEYSTORE_PASSWD }} \
             $SKIP_PUBLISHING \
             site deploy \
